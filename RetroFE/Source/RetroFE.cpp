@@ -1604,24 +1604,33 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
         else if ( input_.keystate(UserInput::KeyCodeCyclePlaylist) ||
                   input_.keystate(UserInput::KeyCodeNextCyclePlaylist) )
         {
-            attract_.reset( );
-            std::string cycleString;
-            config_.getProperty( "cyclePlaylist", cycleString );
-            std::vector<std::string> cycleVector;
-            Utils::listToVector( cycleString, cycleVector, ',' );
-            page->nextCyclePlaylist( cycleVector );
-            state = RETROFE_PLAYLIST_REQUEST;
+            if (currentPage_->getPlaylistName() != "street fighter and capcom fighters" &&
+                currentPage_->getPlaylistName() != "street fighter")
+            {
+                attract_.reset();
+                std::string cycleString;
+                config_.getProperty("cyclePlaylist", cycleString);
+                std::vector<std::string> cycleVector;
+                Utils::listToVector(cycleString, cycleVector, ',');
+                page->nextCyclePlaylist(cycleVector);
+                state = RETROFE_PLAYLIST_REQUEST;
+
+            }
         }
 
         else if ( input_.keystate(UserInput::KeyCodePrevCyclePlaylist) )
         {
-            attract_.reset( );
-            std::string cycleString;
-            config_.getProperty( "cyclePlaylist", cycleString );
-            std::vector<std::string> cycleVector;
-            Utils::listToVector( cycleString, cycleVector, ',' );
-            page->prevCyclePlaylist( cycleVector );
-            state = RETROFE_PLAYLIST_REQUEST;
+            if (currentPage_->getPlaylistName() != "street fighter and capcom fighters" &&
+                currentPage_->getPlaylistName() != "street fighter")
+            {
+                attract_.reset();
+                std::string cycleString;
+                config_.getProperty("cyclePlaylist", cycleString);
+                std::vector<std::string> cycleVector;
+                Utils::listToVector(cycleString, cycleVector, ',');
+                page->prevCyclePlaylist(cycleVector);
+                state = RETROFE_PLAYLIST_REQUEST;
+            }
         }
 
         else if ( input_.keystate(UserInput::KeyCodeRemovePlaylist) )
@@ -1646,7 +1655,7 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
                 page->togglePlaylist( );
                 state = RETROFE_PLAYLIST_REQUEST;
             }
-	    }
+        }
 
         else if ( input_.keystate(UserInput::KeyCodeSkipForward) )
         {
