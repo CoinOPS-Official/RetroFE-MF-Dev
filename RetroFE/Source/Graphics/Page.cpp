@@ -219,7 +219,18 @@ void Page::onResumeItemSelected()
 
 void Page::remeberSelectedItem()
 {
-    lastPlaylistOffsets_[getPlaylistName()] = getScrollOffsetIndex();
+    ScrollingList* amenu = getAnActiveMenu();
+    if (!amenu || !amenu->getItems().size()) return;
+
+    unsigned int i = 0;
+    std::vector<Item*> items = amenu->getItems();
+    for (std::vector<Item*>::iterator it = items.begin(); it != items.end(); ++it) {
+        if (*it == selectedItem_) {
+            break;
+        }
+        i++;
+    }
+    lastPlaylistOffsets_[getPlaylistName()] = i;
 }
 
 void Page::onNewScrollItemSelected()
