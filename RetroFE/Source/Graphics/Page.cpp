@@ -206,6 +206,21 @@ void Page::onNewItemSelected()
 
 }
 
+void Page::onResumeItemSelected()
+{
+    if (!getAnActiveMenu()) return;
+
+    std::string name = getPlaylistName();
+    if (name != "" && lastPlaylistOffsets_[name]) {
+        setScrollOffsetIndex(lastPlaylistOffsets_[name]);
+    }
+    onNewItemSelected();
+}
+
+void Page::remeberSelectedItem()
+{
+    lastPlaylistOffsets_[getPlaylistName()] = getScrollOffsetIndex();
+}
 
 void Page::onNewScrollItemSelected()
 {
@@ -1222,6 +1237,8 @@ void Page::nextPlaylist()
 {
     MenuInfo_S &info = collections_.back();
     unsigned int numlists = info.collection->playlists.size();
+    // save last playlist selected item
+    remeberSelectedItem();
 
     for(unsigned int i = 0; i <= numlists; ++i)
     {
@@ -1247,6 +1264,8 @@ void Page::prevPlaylist()
 {
     MenuInfo_S &info = collections_.back();
     unsigned int numlists = info.collection->playlists.size();
+    // save last playlist selected item
+    remeberSelectedItem();
 
     for(unsigned int i = 0; i <= numlists; ++i)
     {
@@ -1274,6 +1293,8 @@ void Page::selectPlaylist(std::string playlist)
     MenuInfo_S &info = collections_.back();
     info.collection->Save();
     unsigned int numlists = info.collection->playlists.size();
+    // save last playlist selected item
+    remeberSelectedItem();
 
     // Store current playlist
     CollectionInfo::Playlists_T::iterator playlist_store = playlist_;
@@ -1326,7 +1347,7 @@ void Page::nextCyclePlaylist(std::vector<std::string> list)
 
     // Find the current playlist in the list
     std::vector<std::string>::iterator it = list.begin();
-    while (*it != getPlaylistName() && it != list.end())
+    while (it != list.end() && *it != getPlaylistName())
         ++it;
 
     // If current playlist not found, switch to the first found cycle playlist in the playlist list
@@ -1364,7 +1385,7 @@ void Page::prevCyclePlaylist(std::vector<std::string> list)
 
     // Find the current playlist in the list
     std::vector<std::string>::iterator it = list.begin();
-    while (*it != getPlaylistName() && it != list.end())
+    while (it != list.end() && *it != getPlaylistName())
         ++it;
 
     // If current playlist not found, switch to the first found cycle playlist in the playlist list
@@ -1513,13 +1534,13 @@ void Page::togglePlaylist()
 {
     if (!selectedItem_) return;
 
-if(playlist_->first != "favorites")
-  {
-    if (selectedItem_->isFavorite)
-        removePlaylist();
-    else
-        addPlaylist();
-  }
+    if(playlist_->first != "favorites")
+    {
+        if (selectedItem_->isFavorite)
+            removePlaylist();
+        else
+            addPlaylist();
+    }
 }
 
 

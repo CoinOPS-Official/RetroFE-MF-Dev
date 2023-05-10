@@ -45,6 +45,8 @@ public:
     void deInitialize();
     virtual void onNewItemSelected();
     virtual void onNewScrollItemSelected();
+    void onResumeItemSelected();
+    void remeberSelectedItem();
     void highlightLoadArt();
     bool pushCollection(CollectionInfo *collection);
     bool popCollection();
@@ -172,6 +174,7 @@ private:
     std::vector<Component *> LayerComponents;
     std::list<ScrollingList *> deleteMenuList_;
     std::list<CollectionInfo *> deleteCollectionList_;
+    std::map<std::string, unsigned int> lastPlaylistOffsets_;
 
     bool scrollActive_;
 
