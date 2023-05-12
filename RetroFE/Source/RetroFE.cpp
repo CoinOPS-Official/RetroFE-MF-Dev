@@ -544,11 +544,13 @@ bool RetroFE::run( )
                 config_.getProperty("rememberMenu", rememberMenu);
                 if (rememberMenu)
                 {
-                    currentPage_->onResumeItemSelected();
+                    currentPage_->returnToRememberSelectedItem();
+
                 }
                 else {
                     currentPage_->onNewItemSelected();
                 }
+                currentPage_->onNewItemSelected();
                 state = RETROFE_PLAYLIST_LOAD_ART;
             }
             break;
@@ -665,10 +667,11 @@ bool RetroFE::run( )
         case RETROFE_NEXT_PAGE_MENU_EXIT:
             if ( currentPage_->isIdle( ) )
             {
+                std::string collectionName = currentPage_->getCollectionName();
                 if ( currentPage_->getSelectedItem( ) )
                     l.LEDBlinky( 8, currentPage_->getSelectedItem( )->name, currentPage_->getSelectedItem( ) );
-                lastMenuOffsets_[currentPage_->getCollectionName( )]   = currentPage_->getScrollOffsetIndex( );
-                lastMenuPlaylists_[currentPage_->getCollectionName( )] = currentPage_->getPlaylistName( );
+                lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
+                lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName( );
                 std::string nextPageName = nextPageItem_->name;
                 if ( !menuMode_ )
                 {
@@ -700,8 +703,8 @@ bool RetroFE::run( )
 
                 std::string autoPlaylist = "all";
                 config_.getProperty( "autoPlaylist", autoPlaylist );
-
-                if (rememberMenu && lastMenuPlaylists_.find( nextPageName ) != lastMenuPlaylists_.end( ))
+                bool returnToRememberedPlaylist = rememberMenu && lastMenuPlaylists_.find(nextPageName) != lastMenuPlaylists_.end();
+                if (returnToRememberedPlaylist)
                 {
                     currentPage_->selectPlaylist( lastMenuPlaylists_[nextPageName] ); // Switch to last playlist
                 }
@@ -712,9 +715,11 @@ bool RetroFE::run( )
                         currentPage_->selectPlaylist( "all" );
                 }
 
-                if ( rememberMenu && lastMenuOffsets_.find( nextPageName ) != lastMenuOffsets_.end( ) )
+                if (returnToRememberedPlaylist)
                 {
-                    currentPage_->setScrollOffsetIndex( lastMenuOffsets_[nextPageName] );
+                    if (lastMenuOffsets_.size() && lastMenuPlaylists_.find(nextPageName) != lastMenuPlaylists_.end()) {
+                        currentPage_->setScrollOffsetIndex(lastMenuOffsets_[nextPageName]);
+                    }
                 }
 
                 currentPage_->onNewItemSelected( );
@@ -810,8 +815,9 @@ bool RetroFE::run( )
         case RETROFE_COLLECTION_DOWN_EXIT:
             if ( currentPage_->isIdle( ) )
             {
-                lastMenuOffsets_[currentPage_->getCollectionName( )]   = currentPage_->getScrollOffsetIndex( );
-                lastMenuPlaylists_[currentPage_->getCollectionName( )] = currentPage_->getPlaylistName( );
+                std::string collectionName = currentPage_->getCollectionName();
+                lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
+                lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName( );
                 if (currentPage_->getMenuDepth( ) == 1) // Inside a collection with a different layout
                 {
                     currentPage_->deInitialize( );
@@ -824,17 +830,18 @@ bool RetroFE::run( )
                 {
                     currentPage_->popCollection( );
                 }
-                config_.setProperty( "currentCollection", currentPage_->getCollectionName( ) );
+                collectionName = currentPage_->getCollectionName();
+                config_.setProperty( "currentCollection", collectionName );
 
                 bool rememberMenu = false;
                 config_.getProperty( "rememberMenu", rememberMenu );
 
                 std::string autoPlaylist = "all";
                 config_.getProperty( "autoPlaylist", autoPlaylist );
-
-                if (rememberMenu && lastMenuPlaylists_.find( currentPage_->getCollectionName( ) ) != lastMenuPlaylists_.end( ))
+                bool returnToRememberedPlaylist = rememberMenu && lastMenuPlaylists_.find(collectionName) != lastMenuPlaylists_.end();
+                if (returnToRememberedPlaylist)
                 {
-                    currentPage_->selectPlaylist( lastMenuPlaylists_[currentPage_->getCollectionName( )] ); // Switch to last playlist
+                    currentPage_->selectPlaylist( lastMenuPlaylists_[collectionName] ); // Switch to last playlist
                 }
                 else
                 {
@@ -843,9 +850,11 @@ bool RetroFE::run( )
                         currentPage_->selectPlaylist( "all" );
                 }
 
-                if (rememberMenu && lastMenuPlaylists_.find( currentPage_->getCollectionName( ) ) != lastMenuPlaylists_.end( ))
+                if (returnToRememberedPlaylist)
                 {
-                    currentPage_->setScrollOffsetIndex( lastMenuOffsets_[currentPage_->getCollectionName( )] );
+                    if (lastMenuOffsets_.size() && lastMenuPlaylists_.find(collectionName) != lastMenuPlaylists_.end()) {
+                        currentPage_->setScrollOffsetIndex(lastMenuOffsets_[collectionName]);
+                    }
                 }
 
                 state = RETROFE_COLLECTION_DOWN_MENU_ENTER;
@@ -1007,8 +1016,9 @@ bool RetroFE::run( )
         case RETROFE_COLLECTION_UP_EXIT:
             if ( currentPage_->isIdle( ) )
             {
-                lastMenuOffsets_[currentPage_->getCollectionName( )]   = currentPage_->getScrollOffsetIndex( );
-                lastMenuPlaylists_[currentPage_->getCollectionName( )] = currentPage_->getPlaylistName( );
+                std::string collectionName = currentPage_->getCollectionName();
+                lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
+                lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName( );
                 if (currentPage_->getMenuDepth( ) == 1) // Inside a collection with a different layout
                 {
                     currentPage_->deInitialize( );
@@ -1021,17 +1031,18 @@ bool RetroFE::run( )
                 {
                     currentPage_->popCollection( );
                 }
-                config_.setProperty( "currentCollection", currentPage_->getCollectionName( ) );
+                collectionName = currentPage_->getCollectionName();
+                config_.setProperty( "currentCollection", collectionName );
 
                 bool rememberMenu = false;
                 config_.getProperty( "rememberMenu", rememberMenu );
 
                 std::string autoPlaylist = "all";
                 config_.getProperty( "autoPlaylist", autoPlaylist );
-
-                if (rememberMenu && lastMenuPlaylists_.find( currentPage_->getCollectionName( ) ) != lastMenuPlaylists_.end( ))
+                bool returnToRememberedPlaylist = rememberMenu && lastMenuPlaylists_.find(collectionName) != lastMenuPlaylists_.end();
+                if (returnToRememberedPlaylist)
                 {
-                  currentPage_->selectPlaylist( lastMenuPlaylists_[currentPage_->getCollectionName( )] ); // Switch to last playlist
+                    currentPage_->selectPlaylist( lastMenuPlaylists_[collectionName] ); // Switch to last playlist
                 }
                 else
                 {
@@ -1040,9 +1051,11 @@ bool RetroFE::run( )
                         currentPage_->selectPlaylist( "all" );
                 }
 
-                if ( rememberMenu && lastMenuOffsets_.find( currentPage_->getCollectionName( ) ) != lastMenuOffsets_.end( ) )
+                if (returnToRememberedPlaylist)
                 {
-                    currentPage_->setScrollOffsetIndex( lastMenuOffsets_[currentPage_->getCollectionName( )] );
+                   if (lastMenuOffsets_.size() && lastMenuPlaylists_.find(collectionName) != lastMenuPlaylists_.end()) {
+                       currentPage_->setScrollOffsetIndex(lastMenuOffsets_[collectionName]);
+                   }
                 }
 
                 currentPage_->onNewItemSelected( );
@@ -1191,8 +1204,9 @@ bool RetroFE::run( )
         case RETROFE_BACK_MENU_EXIT:
             if ( currentPage_->isIdle( ) )
             {
-                lastMenuOffsets_[currentPage_->getCollectionName( )]   = currentPage_->getScrollOffsetIndex( );
-                lastMenuPlaylists_[currentPage_->getCollectionName( )] = currentPage_->getPlaylistName( );
+                std::string collectionName = currentPage_->getCollectionName();
+                lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
+                lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName( );
                 if (currentPage_->getMenuDepth( ) == 1)
                 {
                     currentPage_->deInitialize( );
@@ -1205,17 +1219,18 @@ bool RetroFE::run( )
                 {
                     currentPage_->popCollection( );
                 }
-                config_.setProperty( "currentCollection", currentPage_->getCollectionName( ) );
+                collectionName = currentPage_->getCollectionName();
+                config_.setProperty( "currentCollection", collectionName );
 
                 bool rememberMenu = false;
                 config_.getProperty( "rememberMenu", rememberMenu );
 
                 std::string autoPlaylist = "all";
                 config_.getProperty( "autoPlaylist", autoPlaylist );
-
-                if (rememberMenu && lastMenuPlaylists_.find( currentPage_->getCollectionName( ) ) != lastMenuPlaylists_.end( ))
+                bool returnToRememberedPlaylist = rememberMenu && lastMenuPlaylists_.find(collectionName) != lastMenuPlaylists_.end();
+                if (returnToRememberedPlaylist)
                 {
-                    currentPage_->selectPlaylist( lastMenuPlaylists_[currentPage_->getCollectionName( )] ); // Switch to last playlist
+                    currentPage_->selectPlaylist( lastMenuPlaylists_[collectionName] ); // Switch to last playlist
                 }
                 else
                 {
@@ -1224,9 +1239,11 @@ bool RetroFE::run( )
                         currentPage_->selectPlaylist( "all" );
                 }
 
-                if ( rememberMenu && lastMenuOffsets_.find( currentPage_->getCollectionName( ) ) != lastMenuOffsets_.end( ) )
+                if (returnToRememberedPlaylist)
                 {
-                    currentPage_->setScrollOffsetIndex( lastMenuOffsets_[currentPage_->getCollectionName( )] );
+                    if (lastMenuOffsets_.size() && lastMenuPlaylists_.find(collectionName) != lastMenuPlaylists_.end()) {
+                        currentPage_->setScrollOffsetIndex(lastMenuOffsets_[collectionName]);
+                    }
                 }
 
                 currentPage_->onNewItemSelected( );
@@ -1263,8 +1280,9 @@ bool RetroFE::run( )
         case RETROFE_MENUMODE_START_REQUEST:
             if ( currentPage_->isIdle( ) )
             {
-                lastMenuOffsets_[currentPage_->getCollectionName( )]   = currentPage_->getScrollOffsetIndex( );
-                lastMenuPlaylists_[currentPage_->getCollectionName( )] = currentPage_->getPlaylistName( );
+                std::string collectionName = currentPage_->getCollectionName();
+                lastMenuOffsets_[collectionName]   = currentPage_->getScrollOffsetIndex( );
+                lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName( );
                 std::string layoutName;
                 config_.getProperty( "layout", layoutName );
                 PageBuilder pb( layoutName, "layout", config_, &fontcache_, true );
@@ -1720,7 +1738,7 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
         {
             attract_.reset( );
             nextPageItem_ = page->getSelectedItem( );
-
+            
             if ( nextPageItem_ )
             {
                 if ( nextPageItem_->leaf )

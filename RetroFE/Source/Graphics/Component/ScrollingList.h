@@ -66,6 +66,7 @@ public:
     bool allocateTexture( unsigned int index, Item *i );
     void deallocateTexture( unsigned int index );
     void setItems( std::vector<Item *> *items );
+    void selectItemByName(std::string name);
     void destroyItems( );
     void setPoints( std::vector<ViewInfo *> *scrollPoints, std::vector<AnimationEvents *> *tweenPoints );
     unsigned int getSelectedIndex( );

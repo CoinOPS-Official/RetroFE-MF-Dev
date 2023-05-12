@@ -125,6 +125,21 @@ void ScrollingList::setItems( std::vector<Item *> *items )
     }
 }
 
+void ScrollingList::selectItemByName(std::string name)
+{
+    size_t size = items_->size();
+    unsigned int index = 0;
+
+    for (unsigned int i = 0; i < size; ++i)
+    {
+        index = loopDecrement(itemIndex_, i, size);
+
+        if (items_->at((index + selectedOffsetIndex_) % size)->name == name) {
+            itemIndex_ = index;
+            break;
+        }
+    }
+}
 
 unsigned int ScrollingList::loopIncrement( unsigned int offset, unsigned int i, unsigned int size )
 {

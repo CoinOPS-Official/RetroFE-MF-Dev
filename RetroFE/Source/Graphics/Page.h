@@ -45,8 +45,9 @@ public:
     void deInitialize();
     virtual void onNewItemSelected();
     virtual void onNewScrollItemSelected();
-    void onResumeItemSelected();
-    void remeberSelectedItem();
+    void returnToRememberSelectedItem();
+    void rememberSelectedItem();
+    std::map<std::string, unsigned int> getLastPlaylistOffsets();
     void highlightLoadArt();
     bool pushCollection(CollectionInfo *collection);
     bool popCollection();
@@ -68,7 +69,7 @@ public:
     void setUnloadSound(Sound *chunk);
     void setHighlightSound(Sound *chunk);
     void setSelectSound(Sound *chunk);
-    void setSelectedItem();
+    Item *getSelectedMenuItem();
     ScrollingList* getAnActiveMenu();
     bool addComponent(Component *c);
     void pageScroll(ScrollDirection direction);
@@ -148,6 +149,7 @@ public:
     bool  isPaused( );
     ScrollingList* getPlaylistMenu();
     void setPlaylistMenu(ScrollingList*);
+    bool playlistExists(std::string);
 
 private:
     void playlistChange();
