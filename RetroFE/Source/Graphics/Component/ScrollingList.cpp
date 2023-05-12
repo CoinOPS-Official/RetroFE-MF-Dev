@@ -289,28 +289,24 @@ Item *ScrollingList::getItemByOffset( int offset )
 }
 
 
-Item *ScrollingList::getSelectedItem( )
+Item* ScrollingList::getSelectedItem()
 {
-    if ( !items_ || items_->size( ) == 0 ) return NULL;
-    return items_->at(getSelectedItemPosition());
-}
-
-unsigned int ScrollingList::getSelectedItemPosition()
-{
-    return  loopIncrement(itemIndex_, selectedOffsetIndex_, items_->size());
-}
-
-void ScrollingList::pageUp( )
-{
-    if ( components_.size( ) == 0 ) return;
-    itemIndex_ = getSelectedItemPosition();
+    if (!items_ || items_->size() == 0) return NULL;
+    return items_->at(loopIncrement(itemIndex_, selectedOffsetIndex_, items_->size()));
 }
 
 
-void ScrollingList::pageDown( )
+void ScrollingList::pageUp()
 {
-    if ( components_.size( ) == 0 ) return;
-    itemIndex_ = getSelectedItemPosition();
+    if (components_.size() == 0) return;
+    itemIndex_ = loopDecrement(itemIndex_, components_.size(), items_->size());
+}
+
+
+void ScrollingList::pageDown()
+{
+    if (components_.size() == 0) return;
+    itemIndex_ = loopIncrement(itemIndex_, components_.size(), items_->size());
 }
 
 
