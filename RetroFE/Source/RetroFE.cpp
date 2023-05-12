@@ -542,12 +542,9 @@ bool RetroFE::run( )
             {
                 bool rememberMenu = false;
                 config_.getProperty("rememberMenu", rememberMenu);
-                if (rememberMenu)
-                {
+                if (rememberMenu) {
                     currentPage_->returnToRememberSelectedItem();
-
-                }
-                else {
+                } else {
                     currentPage_->onNewItemSelected();
                 }
                 currentPage_->onNewItemSelected();
