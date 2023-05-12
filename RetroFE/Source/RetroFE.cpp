@@ -1735,7 +1735,6 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
         {
             attract_.reset( );
             nextPageItem_ = page->getSelectedItem( );
-            
             if ( nextPageItem_ )
             {
                 if ( nextPageItem_->leaf )
