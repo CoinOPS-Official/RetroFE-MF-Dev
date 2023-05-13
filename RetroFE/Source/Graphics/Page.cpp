@@ -245,7 +245,8 @@ void Page::highlightLoadArt()
 {
     if(!getAnActiveMenu()) return;
 
-    selectedItem_ = getSelectedMenuItem();
+    // loading new items art
+    setSelectedItem();
 
     for(std::vector<Component *>::iterator it = LayerComponents.begin(); it != LayerComponents.end(); ++it)
     {
@@ -427,11 +428,15 @@ void Page::stop()
     }
 }
 
+void Page::setSelectedItem()
+{
+    selectedItem_ = getSelectedMenuItem();
+}
 
 Item *Page::getSelectedItem()
 {
     if (!selectedItem_) {
-        selectedItem_ = getSelectedMenuItem();
+       setSelectedItem();
     }
 
     return selectedItem_;
@@ -599,6 +604,9 @@ void Page::highlightExit()
 
 void Page::playlistEnter()
 {
+    // entered in new playlist set selected item
+    setSelectedItem();
+
     Item *item = selectedItem_;
 
     if(!item) return;
@@ -661,6 +669,9 @@ void Page::playlistExit()
 
 void Page::menuJumpEnter()
 {
+    // jumped into new item
+    setSelectedItem();
+
     Item *item = selectedItem_;
 
     if(!item) return;

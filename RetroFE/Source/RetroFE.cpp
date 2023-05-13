@@ -556,7 +556,7 @@ bool RetroFE::run( )
             if (currentPage_->isIdle( ))
             {
                 currentPage_->reallocateMenuSpritePoints( );
-                currentPage_->playlistEnter( );
+                currentPage_->playlistEnter();
                 state = RETROFE_PLAYLIST_ENTER;
             }
             break;
@@ -1650,6 +1650,7 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
         else if ( input_.keystate(UserInput::KeyCodeRemovePlaylist) )
         {
             attract_.reset( );
+            page->rememberSelectedItem();
             page->removePlaylist( );
             state = RETROFE_PLAYLIST_REQUEST;
         }
@@ -1657,6 +1658,7 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
         else if ( input_.keystate(UserInput::KeyCodeAddPlaylist) )
         {
             attract_.reset( );
+            page->rememberSelectedItem();
             page->addPlaylist( );
             state = RETROFE_PLAYLIST_REQUEST;
         }
@@ -1666,8 +1668,8 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             if (currentPage_->getPlaylistName() != "favorites" )
             {
                 attract_.reset();
-                page->togglePlaylist();
                 page->rememberSelectedItem();
+                page->togglePlaylist();
                 state = RETROFE_PLAYLIST_REQUEST;
             }
 	    }
