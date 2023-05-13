@@ -1672,7 +1672,7 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
                 page->togglePlaylist();
                 state = RETROFE_PLAYLIST_REQUEST;
             }
-	    }
+        }
 
         else if ( input_.keystate(UserInput::KeyCodeSkipForward) )
         {
