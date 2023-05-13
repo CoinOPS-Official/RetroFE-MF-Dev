@@ -1567,7 +1567,7 @@ void Page::addPlaylist()
     CollectionInfo *collection = info.collection;
 
     std::vector<Item *> *items = collection->playlists["favorites"];
-    if(playlist_->first != "favorites" && std::find(items->begin(), items->end(), selectedItem_) == items->end())
+    if(getPlaylistName() != "favorites" && std::find(items->begin(), items->end(), selectedItem_) == items->end())
     {
         items->push_back(selectedItem_);
         selectedItem_->isFavorite = true;
@@ -1582,7 +1582,7 @@ void Page::togglePlaylist()
 {
     if (!selectedItem_) return;
 
-    if (playlist_->first != "favorites")
+    if (getPlaylistName() != "favorites")
     {
         if (selectedItem_->isFavorite)
             removePlaylist();

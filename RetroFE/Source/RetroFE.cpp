@@ -1665,11 +1665,12 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
         {
             if (currentPage_->getPlaylistName() != "favorites" )
             {
-                attract_.reset( );
-                page->togglePlaylist( );
+                attract_.reset();
+                page->togglePlaylist();
+                page->rememberSelectedItem();
                 state = RETROFE_PLAYLIST_REQUEST;
             }
-	}
+	    }
 
         else if ( input_.keystate(UserInput::KeyCodeSkipForward) )
         {
