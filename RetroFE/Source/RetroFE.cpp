@@ -542,10 +542,9 @@ bool RetroFE::run( )
             {
                 bool rememberMenu = false;
                 config_.getProperty("rememberMenu", rememberMenu);
-                if (rememberMenu) {
+                // don't return to rembered item for favorites, go to next in list
+                if (rememberMenu && currentPage_->getPlaylistName() != "favorites") {
                     currentPage_->returnToRememberSelectedItem();
-                } else {
-                    currentPage_->onNewItemSelected();
                 }
                 currentPage_->onNewItemSelected();
                 state = RETROFE_PLAYLIST_LOAD_ART;

@@ -1533,12 +1533,27 @@ void Page::removePlaylist()
     std::vector<Item *> *items = collection->playlists["favorites"];
     std::vector<Item *>::iterator it = std::find(items->begin(), items->end(), selectedItem_);
 
+
     if(it != items->end())
     {
+        unsigned int index = NULL;
+        ScrollingList* amenu = NULL;
+        // get the deleted item's position
+        if (getPlaylistName() == "favorites") {
+            amenu = getAnActiveMenu();
+            if (amenu) {
+               index = amenu->getScrollOffsetIndex();
+            }
+        }
         items->erase(it);
         selectedItem_->isFavorite = false;
         collection->sortPlaylists();
         collection->saveRequest = true;
+
+        // set to position to the old deleted position
+        if (amenu) {
+            amenu->setScrollOffsetIndex(index);
+        }
     }
     collection->Save();
 }
