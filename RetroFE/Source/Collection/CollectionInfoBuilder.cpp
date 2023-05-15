@@ -165,6 +165,7 @@ CollectionInfo *CollectionInfoBuilder::buildCollection(std::string name, std::st
     std::string metadataType = name;
     std::string metadataPath;
     
+    // todo make array of listItemsPaths
     conf_.getCollectionAbsolutePath(name, listItemsPath);
 
     (void)conf_.getProperty(extensionsKey, extensions);
@@ -183,7 +184,7 @@ CollectionInfo *CollectionInfoBuilder::buildCollection(std::string name, std::st
 
         Logger::write(Logger::ZONE_NOTICE, "Collections", ss.str());
     }
-
+    // pas into this
     CollectionInfo *collection = new CollectionInfo(name, listItemsPath, extensions, metadataType, metadataPath);
 
     (void)conf_.getProperty("collections." + collection->name + ".launcher", collection->launcher);
@@ -290,7 +291,6 @@ bool CollectionInfoBuilder::ImportDirectory(CollectionInfo *info, std::string me
  
     if (mergedCollectionName != "")
     {
-        
         std::string mergedFile = Utils::combinePath(Configuration::absolutePath, "collections", mergedCollectionName, info->name + ".sub");
         Logger::write(Logger::ZONE_INFO, "CollectionInfoBuilder", "Checking for \"" + mergedFile + "\"");
         (void)conf_.getProperty("collections." + mergedCollectionName + ".list.includeMissingItems", showMissing);
@@ -327,6 +327,7 @@ bool CollectionInfoBuilder::ImportDirectory(CollectionInfo *info, std::string me
     {
         do
         {
+             // todo loop through path array and still support ';' seperators
              std::string rompath;
              size_t position = path.find( ";" );
              if(position != std::string::npos)
@@ -662,7 +663,8 @@ void CollectionInfoBuilder::ImportRomDirectory(std::string path, CollectionInfo 
         Logger::write(Logger::ZONE_INFO, "CollectionInfoBuilder", "Could not read directory \"" + path + "\". Ignore if this is a menu.");
         return;
     }
-
+    // todo " reads one path first and then the other, so if there are 20 roms in the first path, it orders that one first and then shows the other roms from the second path."
+    // todo confirm it merges both paths and orders them all together
     while(dp != NULL && (dirp = readdir(dp)) != NULL)
     {
         std::string file = dirp->d_name;
