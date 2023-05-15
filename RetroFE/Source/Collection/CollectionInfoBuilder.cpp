@@ -530,17 +530,17 @@ void CollectionInfoBuilder::addPlaylists(CollectionInfo *info)
 
 void CollectionInfoBuilder::updateLastPlayedPlaylist(CollectionInfo *info, Item *item, int size)
 {
-    std::string name = info->name;
+    std::string playlistCollectionName = info->name;
     bool globalFavLast = false;
-    conf_.getProperty("globalFavLast", globalFavLast);
+    (void)conf_.getProperty("globalFavLast", globalFavLast);
     if (globalFavLast) {
-        name = "favorites";
+        playlistCollectionName = "Favorites";
     }
-    std::string path = Utils::combinePath(Configuration::absolutePath, "collections", name, "playlists");
+    std::string path = Utils::combinePath(Configuration::absolutePath, "collections", playlistCollectionName, "playlists");
     Logger::write(Logger::ZONE_INFO, "RetroFE", "Updating lastplayed playlist");
 
     std::vector<Item *> lastplayedList;
-    std::string playlistFile = Utils::combinePath(Configuration::absolutePath, "collections", name, "playlists", "lastplayed.txt");
+    std::string playlistFile = Utils::combinePath(Configuration::absolutePath, "collections", playlistCollectionName, "playlists", "lastplayed.txt");
     ImportBasicList(info, playlistFile, lastplayedList);
 
     if (info->playlists["lastplayed"] == NULL)
@@ -583,8 +583,8 @@ void CollectionInfoBuilder::updateLastPlayedPlaylist(CollectionInfo *info, Item 
     }
 
     // Write new lastplayed playlist
-    std::string dir  = Utils::combinePath(Configuration::absolutePath, "collections", name, "playlists");
-    std::string file = Utils::combinePath(Configuration::absolutePath, "collections", name, "playlists/lastplayed.txt");
+    std::string dir  = Utils::combinePath(Configuration::absolutePath, "collections", playlistCollectionName, "playlists");
+    std::string file = Utils::combinePath(Configuration::absolutePath, "collections", playlistCollectionName, "playlists", "lastplayed.txt");
     Logger::write(Logger::ZONE_INFO, "Collection", "Saving " + file);
 
     std::ofstream filestream;
@@ -625,7 +625,7 @@ void CollectionInfoBuilder::updateLastPlayedPlaylist(CollectionInfo *info, Item 
         std::vector<Item *> *saveitems = info->playlists["lastplayed"];
         for(std::vector<Item *>::iterator it = saveitems->begin(); it != saveitems->end(); it++)
         {
-            if ((*it)->collectionInfo->name == info->name)
+            if ((*it)->collectionInfo->name == playlistCollectionName)
             {
                 filestream << (*it)->name << std::endl;
             }

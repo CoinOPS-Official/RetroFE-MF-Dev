@@ -82,14 +82,14 @@ bool CollectionInfo::Save()
     bool retval = true;
     if(saveRequest)
     {
+        std::string playlistCollectionName = name;
         bool globalFavLast = false;
-        conf_.getProperty("globalFavLast", globalFavLast);
+        (void)conf_.getProperty("globalFavLast", globalFavLast);
         if (globalFavLast) {
-            name = "favorites";
+            playlistCollectionName = "Favorites";
         }
-
-        std::string dir  = Utils::combinePath(Configuration::absolutePath, "collections", name, "playlists");
-        std::string file = Utils::combinePath(Configuration::absolutePath, "collections", name, "playlists/favorites.txt");
+        std::string dir  = Utils::combinePath(Configuration::absolutePath, "collections", playlistCollectionName, "playlists");
+        std::string file = Utils::combinePath(Configuration::absolutePath, "collections", playlistCollectionName, "playlists", "favorites.txt");
         Logger::write(Logger::ZONE_INFO, "Collection", "Saving " + file);
 
         std::ofstream filestream;
@@ -130,7 +130,7 @@ bool CollectionInfo::Save()
             std::vector<Item *> *saveitems = playlists["favorites"];
             for(std::vector<Item *>::iterator it = saveitems->begin(); it != saveitems->end(); it++)
             {
-                if ((*it)->collectionInfo->name == name)
+                if ((*it)->collectionInfo->name == (*it)->name)
                 {
                     filestream << (*it)->name << std::endl;
                 }
