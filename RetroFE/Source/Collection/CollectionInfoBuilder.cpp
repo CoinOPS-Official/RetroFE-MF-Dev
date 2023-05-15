@@ -184,7 +184,7 @@ CollectionInfo *CollectionInfoBuilder::buildCollection(std::string name, std::st
         Logger::write(Logger::ZONE_NOTICE, "Collections", ss.str());
     }
 
-    CollectionInfo *collection = new CollectionInfo(name, listItemsPath, extensions, metadataType, metadataPath);
+    CollectionInfo *collection = new CollectionInfo(conf_, name, listItemsPath, extensions, metadataType, metadataPath);
 
     (void)conf_.getProperty("collections." + collection->name + ".launcher", collection->launcher);
 
@@ -530,11 +530,17 @@ void CollectionInfoBuilder::addPlaylists(CollectionInfo *info)
 
 void CollectionInfoBuilder::updateLastPlayedPlaylist(CollectionInfo *info, Item *item, int size)
 {
-    std::string path = Utils::combinePath(Configuration::absolutePath, "collections", info->name, "playlists");
+    std::string name = info->name;
+    bool globalFavLast = false;
+    conf_.getProperty("globalFavLast", globalFavLast);
+    if (globalFavLast) {
+        name = "favorites";
+    }
+    std::string path = Utils::combinePath(Configuration::absolutePath, "collections", name, "playlists");
     Logger::write(Logger::ZONE_INFO, "RetroFE", "Updating lastplayed playlist");
 
     std::vector<Item *> lastplayedList;
-    std::string playlistFile = Utils::combinePath(Configuration::absolutePath, "collections", info->name, "playlists", "lastplayed.txt");
+    std::string playlistFile = Utils::combinePath(Configuration::absolutePath, "collections", name, "playlists", "lastplayed.txt");
     ImportBasicList(info, playlistFile, lastplayedList);
 
     if (info->playlists["lastplayed"] == NULL)
@@ -577,8 +583,8 @@ void CollectionInfoBuilder::updateLastPlayedPlaylist(CollectionInfo *info, Item 
     }
 
     // Write new lastplayed playlist
-    std::string dir  = Utils::combinePath(Configuration::absolutePath, "collections", info->name, "playlists");
-    std::string file = Utils::combinePath(Configuration::absolutePath, "collections", info->name, "playlists/lastplayed.txt");
+    std::string dir  = Utils::combinePath(Configuration::absolutePath, "collections", name, "playlists");
+    std::string file = Utils::combinePath(Configuration::absolutePath, "collections", name, "playlists/lastplayed.txt");
     Logger::write(Logger::ZONE_INFO, "Collection", "Saving " + file);
 
     std::ofstream filestream;
