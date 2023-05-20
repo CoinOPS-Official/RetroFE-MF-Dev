@@ -508,7 +508,15 @@ bool RetroFE::run( )
 
                     currentPage_->pushCollection(info);
 
-                    config_.getProperty( "firstPlaylist", firstPlaylist_ );
+                    // check collection for setting
+                    std::string settingPrefix = "collection" + currentPage_->getCollectionName();
+                    if (config_.propertyExists(settingPrefix + "firstPlaylist")) {
+                        config_.getProperty(settingPrefix + "firstPlaylist", firstPlaylist_);
+                    }
+                    else {
+                        config_.getProperty("firstPlaylist", firstPlaylist_);
+                    }
+
                     currentPage_->selectPlaylist( firstPlaylist_ );
                     if (currentPage_->getPlaylistName() != firstPlaylist_ )
                         currentPage_->selectPlaylist( "all" );
@@ -1379,22 +1387,41 @@ bool RetroFE::run( )
                     if (attractReturn == 1) // Change playlist
                     {
                         attract_.reset( attract_.isSet( ) );
+                        std::string settingPrefix = "collection" + currentPage_->getCollectionName();
 
                         bool cyclePlaylist = true;
-                        config_.getProperty( "attractModeCyclePlaylist", cyclePlaylist );
+                        // check if collection has different setting
+                        if (config_.propertyExists(settingPrefix + "attractModeCyclePlaylist")) {
+                            config_.getProperty(settingPrefix + "attractModeCyclePlaylist", cyclePlaylist);
+                        }
+                        else {
+                            config_.getProperty("attractModeCyclePlaylist", cyclePlaylist);
+                        }
 
                         std::string cycleString;
-                        config_.getProperty( "cyclePlaylist", cycleString );
+                        // check if collection has different setting
+                        if (config_.propertyExists(settingPrefix + "cyclePlaylist")) {
+                            config_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
+                        } else {
+                            config_.getProperty("cyclePlaylist", cycleString);
+                        }
+
                         std::vector<std::string> cycleVector;
                         Utils::listToVector(cycleString, cycleVector, ',' );
-
                         if ( cyclePlaylist )
                             currentPage_->nextCyclePlaylist( cycleVector );
                         else
                             currentPage_->nextPlaylist( );
 
                         std::string attractModeSkipPlaylist = "";
-                        config_.getProperty( "attractModeSkipPlaylist", attractModeSkipPlaylist );
+                        // check if collection has different setting
+                        if (config_.propertyExists(settingPrefix + "attractModeSkipPlaylist")) {
+                            config_.getProperty(settingPrefix + "attractModeSkipPlaylist", attractModeSkipPlaylist);
+                        }
+                        else {
+                            config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
+                        }
+
                         if (currentPage_->getPlaylistName( ) == attractModeSkipPlaylist)
                         {
                             if ( cyclePlaylist )
