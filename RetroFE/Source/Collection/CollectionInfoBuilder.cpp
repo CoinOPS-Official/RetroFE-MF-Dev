@@ -418,6 +418,12 @@ void CollectionInfoBuilder::addPlaylists(CollectionInfo *info)
     bool globalFavLast = false;
     (void)conf_.getProperty("globalFavLast", globalFavLast);
     if (globalFavLast) {
+        // don't use collection's playlist
+        if (!info->playlists["favorites"]) {
+            info->playlists["favorites"] = new std::vector<Item*>();
+        } else {
+            info->playlists["favorites"]->clear();
+        }
         std::string path = Utils::combinePath(Configuration::absolutePath, "collections", "Favorites", "playlists");
         loadPlaylistItems(info, playlistItems, path);
     }
@@ -476,7 +482,9 @@ void CollectionInfoBuilder::loadPlaylistItems(CollectionInfo* info, std::map<std
     while ((dirp = readdir(dp)) != NULL)
     {
         std::string file = dirp->d_name;
-
+        if (file == "." || file == "..") {
+            continue;
+        }
         size_t position = file.find_last_of(".");
         std::string basename = (std::string::npos == position) ? file : file.substr(0, position);
 
@@ -490,7 +498,7 @@ void CollectionInfoBuilder::loadPlaylistItems(CollectionInfo* info, std::map<std
                 Logger::write(Logger::ZONE_INFO, "RetroFE", "Loading playlist: " + basename);
 
                 std::map<std::string, Item*> playlistFilter;
-                std::string playlistFile = Utils::combinePath(Configuration::absolutePath, "collections", info->name, "playlists", file);
+                std::string playlistFile = Utils::combinePath(path, file);
                 ImportBasicList(info, playlistFile, playlistFilter);
 
                 info->playlists[basename] = new std::vector<Item*>();

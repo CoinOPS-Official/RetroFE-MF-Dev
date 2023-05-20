@@ -29,7 +29,7 @@
 #include <locale>
 
 static bool ImportConfiguration(Configuration *c);
-static bool StartLogging();
+static bool StartLogging(Configuration *c);
 
 int main(int argc, char **argv)
 {
@@ -71,7 +71,7 @@ int main(int argc, char **argv)
 
     Configuration config;
 
-    if(!StartLogging())
+    if(!StartLogging(&config))
     {
         return -1;
     }
@@ -219,11 +219,11 @@ bool ImportConfiguration(Configuration *c)
     return true;
 }
 
-bool StartLogging()
+bool StartLogging(Configuration* config)
 {
     std::string logFile = Utils::combinePath(Configuration::absolutePath, "log.txt");
 
-    if(!Logger::initialize(logFile))
+    if(!Logger::initialize(logFile, config))
     {
 	// Can't write to logs give a heads up...
 	fprintf(stderr, "Could not open log: %s for writing!\nRetroFE will now exit...\n", logFile.c_str());
