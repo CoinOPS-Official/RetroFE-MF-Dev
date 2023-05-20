@@ -473,18 +473,6 @@ void CollectionInfoBuilder::loadPlaylistItems(CollectionInfo* info, std::map<std
     struct dirent* dirp;
     dp = opendir(path.c_str());
 
-    if (dp == NULL)
-    {
-        info->playlists["favorites"] = new std::vector<Item*>();
-        return;
-    }
-
-    while ((dirp = readdir(dp)) != NULL)
-    {
-        std::string file = dirp->d_name;
-        if (file == "." || file == "..") {
-            continue;
-        }
         size_t position = file.find_last_of(".");
         std::string basename = (std::string::npos == position) ? file : file.substr(0, position);
 
