@@ -509,7 +509,7 @@ bool RetroFE::run( )
                     currentPage_->pushCollection(info);
 
                     // check collection for setting
-                    std::string settingPrefix = "collection" + currentPage_->getCollectionName();
+                    std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
                     if (config_.propertyExists(settingPrefix + "firstPlaylist")) {
                         config_.getProperty(settingPrefix + "firstPlaylist", firstPlaylist_);
                     }
@@ -1387,7 +1387,7 @@ bool RetroFE::run( )
                     if (attractReturn == 1) // Change playlist
                     {
                         attract_.reset( attract_.isSet( ) );
-                        std::string settingPrefix = "collection" + currentPage_->getCollectionName();
+                        std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
 
                         bool cyclePlaylist = true;
                         // check if collection has different setting
@@ -1655,8 +1655,16 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
                 currentPage_->getPlaylistName() != "street fighter")
             {
                 attract_.reset();
+                std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
                 std::string cycleString;
-                config_.getProperty("cyclePlaylist", cycleString);
+                // check if collection has different setting
+                if (config_.propertyExists(settingPrefix + "cyclePlaylist")) {
+                    config_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
+                }
+                else {
+                    config_.getProperty("cyclePlaylist", cycleString);
+                }
+
                 std::vector<std::string> cycleVector;
                 Utils::listToVector(cycleString, cycleVector, ',');
                 page->nextCyclePlaylist(cycleVector);
@@ -1671,8 +1679,15 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
                 currentPage_->getPlaylistName() != "street fighter")
             {
                 attract_.reset();
+                std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
                 std::string cycleString;
-                config_.getProperty("cyclePlaylist", cycleString);
+                // check if collection has different setting
+                if (config_.propertyExists(settingPrefix + "cyclePlaylist")) {
+                    config_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
+                }
+                else {
+                    config_.getProperty("cyclePlaylist", cycleString);
+                }
                 std::vector<std::string> cycleVector;
                 Utils::listToVector(cycleString, cycleVector, ',');
                 page->prevCyclePlaylist(cycleVector);

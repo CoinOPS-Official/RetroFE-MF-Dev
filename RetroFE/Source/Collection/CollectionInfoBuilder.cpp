@@ -366,6 +366,7 @@ bool CollectionInfoBuilder::ImportDirectory(CollectionInfo *info, std::string me
 
 void CollectionInfoBuilder::addPlaylists(CollectionInfo *info)
 {
+    std::string collectionName = info->name;
     std::map<std::string, Item *> excludeAllFilter;
     std::string excludeAllFile = Utils::combinePath(Configuration::absolutePath, "collections", info->name, "exclude_all.txt");
 
@@ -379,7 +380,6 @@ void CollectionInfoBuilder::addPlaylists(CollectionInfo *info)
             bool found = false;
             for(std::map<std::string, Item *>::iterator itex = excludeAllFilter.begin(); itex != excludeAllFilter.end(); itex++)
             {
-                std::string collectionName = info->name;
                 std::string itemName       = itex->first;
                 if (itemName.at(0) == '_') // name consists of _<collectionName>:<itemName>
                 {
@@ -490,8 +490,15 @@ void CollectionInfoBuilder::addPlaylists(CollectionInfo *info)
         }
     }
     // if cyclePlaylist then order playlist menu items by that
+    std::string settingPrefix = "collections." + collectionName + ".";
     std::string cycleString;
-    conf_.getProperty("cyclePlaylist", cycleString);
+    // check if collection has different setting
+    if (conf_.propertyExists(settingPrefix + "cyclePlaylist")) {
+        conf_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
+    }
+    else {
+        conf_.getProperty("cyclePlaylist", cycleString);
+    }
     std::vector<std::string> cycleVector;
     Utils::listToVector(cycleString, cycleVector, ',');
     if (cycleVector.size())
