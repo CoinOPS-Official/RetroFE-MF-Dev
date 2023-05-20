@@ -312,12 +312,14 @@ bool RetroFE::run( )
     fontcache_.initialize( );
 
     // Define control configuration
-    std::string controlsConfPath = Utils::combinePath( Configuration::absolutePath, "controls.conf" );
-    if ( !config_.import( "controls", controlsConfPath ) )
+    std::string controlsConfPath = Utils::combinePath( Configuration::absolutePath, "controls" );
+    if (!config_.import("controls", controlsConfPath + ".conf"))
     {
-        Logger::write( Logger::ZONE_ERROR, "RetroFE", "Could not import \"" + controlsConfPath + "\"" );
+        Logger::write(Logger::ZONE_ERROR, "RetroFE", "Could not import \"" + controlsConfPath + "\"");
         return false;
     }
+    for (int i = 9; i > 0; i--)
+        config_.import("controls", controlsConfPath + std::to_string(i) + ".conf");  
 
     float preloadTime = 0;
 
