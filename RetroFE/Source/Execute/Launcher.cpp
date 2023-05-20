@@ -67,6 +67,10 @@ bool Launcher::run(std::string collection, Item *collectionItem)
         Logger::write(Logger::ZONE_ERROR, "Launcher", "No file extensions configured for collection \"" + collection + "\"");
         return false;
     }
+
+    // todo populate array of selectedItemDirectories
+    // loop to 9, pass in index into function to pass into getCollectionAbsolutePath to build path0-9
+    // and at the end check if any directory has items then show below error
     if(!collectionDirectory(selectedItemsDirectory, collection))
     {
         Logger::write(Logger::ZONE_ERROR, "Launcher", "Could not find files in directory \"" + selectedItemsDirectory + "\" for collection \"" + collection + "\"");
@@ -78,13 +82,15 @@ bool Launcher::run(std::string collection, Item *collectionItem)
         return false;
     }
 
-
+    // todo maybe move before collectionDirectory if it's just going to overwrite it
     // Overwrite selectedItemsDirectory if already set in the file
     if (collectionItem->filepath != "")
     {
         selectedItemsDirectory = collectionItem->filepath;
     }
 
+    // todo pass selectedItemDirectories to loop on to find
+    // todo return from find path selectedItemsPath to be used in replaceVariables
     // It is ok to continue if the file could not be found. We could be launching a merged romset
     if (collectionItem->file == "")
         findFile(selectedItemsPath, matchedExtension, selectedItemsDirectory, collectionItem->name, extensionstr);
@@ -358,6 +364,7 @@ bool Launcher::collectionDirectory(std::string &directory, std::string collectio
     return true;
 }
 
+// todo support selectedItemDirectories array to loop on to find file
 bool Launcher::findFile(std::string &foundFilePath, std::string &foundFilename, std::string directory, std::string filenameWithoutExtension, std::string extensions)
 {
     std::string extension;
