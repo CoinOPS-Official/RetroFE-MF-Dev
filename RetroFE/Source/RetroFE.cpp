@@ -812,7 +812,15 @@ bool RetroFE::run( )
                         attractModePlaylistCollectionNumber_ = 0;
                         currentPage_->nextPlaylist( );
                         std::string attractModeSkipPlaylist = "";
-                        config_.getProperty( "attractModeSkipPlaylist", attractModeSkipPlaylist );
+                        std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
+                        // check if collection has different setting
+                        if (config_.propertyExists(settingPrefix + "attractModeSkipPlaylist")) {
+                            config_.getProperty(settingPrefix + "attractModeSkipPlaylist", attractModeSkipPlaylist);
+                        }
+                        else {
+                            config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
+                        }
+
                         if (currentPage_->getPlaylistName( ) == attractModeSkipPlaylist)
                             currentPage_->nextPlaylist( );
                         state = RETROFE_PLAYLIST_REQUEST;
@@ -881,7 +889,15 @@ bool RetroFE::run( )
                         attractModePlaylistCollectionNumber_ = 0;
                         currentPage_->nextPlaylist( );
                         std::string attractModeSkipPlaylist = "";
-                        config_.getProperty( "attractModeSkipPlaylist", attractModeSkipPlaylist );
+                        std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
+                        // check if collection has different setting
+                        if (config_.propertyExists(settingPrefix + "attractModeSkipPlaylist")) {
+                            config_.getProperty(settingPrefix + "attractModeSkipPlaylist", attractModeSkipPlaylist);
+                        }
+                        else {
+                            config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
+                        }
+
                         if (currentPage_->getPlaylistName( ) == attractModeSkipPlaylist)
                             currentPage_->nextPlaylist( );
                         state = RETROFE_PLAYLIST_REQUEST;
@@ -1162,9 +1178,16 @@ bool RetroFE::run( )
                 std::string attractModeSkipPlaylist  = "";
                 std::string lastPlayedSkipCollection = "";
                 int         size = 0;
-                config_.getProperty( "attractModeSkipPlaylist",  attractModeSkipPlaylist );
                 config_.getProperty( "lastPlayedSkipCollection", lastPlayedSkipCollection );
                 config_.getProperty( "lastplayedSize", size );
+                std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
+                // check if collection has different setting
+                if (config_.propertyExists(settingPrefix + "attractModeSkipPlaylist")) {
+                    config_.getProperty(settingPrefix + "attractModeSkipPlaylist", attractModeSkipPlaylist);
+                }
+                else {
+                    config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
+                }
 
                 if (currentPage_->getPlaylistName( )    != attractModeSkipPlaylist &&
                     nextPageItem_->collectionInfo->name != lastPlayedSkipCollection)
@@ -1804,9 +1827,17 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
                     std::string attractModeSkipPlaylist  = "";
                     std::string lastPlayedSkipCollection = "";
                     int         size = 0;
-                    config_.getProperty( "attractModeSkipPlaylist",  attractModeSkipPlaylist );
                     config_.getProperty( "lastPlayedSkipCollection", lastPlayedSkipCollection );
                     config_.getProperty("lastplayedCollectionSize", size);
+
+                    std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
+                    // check if collection has different setting
+                    if (config_.propertyExists(settingPrefix + "attractModeSkipPlaylist")) {
+                        config_.getProperty(settingPrefix + "attractModeSkipPlaylist", attractModeSkipPlaylist);
+                    }
+                    else {
+                        config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
+                    }
     
                     if (currentPage_->getPlaylistName( )    != attractModeSkipPlaylist &&
                         nextPageItem_->collectionInfo->name != lastPlayedSkipCollection)
