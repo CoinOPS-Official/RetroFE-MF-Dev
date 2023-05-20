@@ -181,11 +181,8 @@ bool Configuration::parseLine(std::string collection, std::string keyPrefix, std
         {
             value = Utils::replace(value, "%ITEM_COLLECTION_NAME%", collection);
         }
-        if (propertyExists(key)) {
-            setProperty(key, value);
-        } else {
-            properties_.insert(PropertiesPair(key, value));
-        }
+
+        properties_.insert(PropertiesPair(key, value));
 
         std::stringstream ss;
         ss << "Dump: "  << "\"" << key << "\" = \"" << value << "\"";
@@ -290,6 +287,11 @@ bool Configuration::getProperty(std::string key, bool &value)
 void Configuration::setProperty(std::string key, std::string value)
 {
     properties_[key] = value;
+}
+
+bool Configuration::propertiesEmpty()
+{
+    return properties_.empty();
 }
 
 bool Configuration::propertyExists(std::string key)
