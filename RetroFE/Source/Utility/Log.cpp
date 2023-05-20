@@ -74,7 +74,7 @@ void Logger::write(Zone zone, std::string component, std::string message)
 
     // if levels defined and zone not in list then don't log
     if (config_) {
-        std::string level = "";
+        std::string level = "0";// default to not show logs
         config_->getProperty("log", level);
         if (level != "" && level.find(zoneStr) == std::string::npos) {
             return;

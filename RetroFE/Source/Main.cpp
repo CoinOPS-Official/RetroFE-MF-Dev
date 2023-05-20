@@ -135,6 +135,19 @@ bool ImportConfiguration(Configuration *c)
         return false;
     }
     
+    // log version
+    Logger::write(Logger::ZONE_INFO, "RetroFE", "Version " + Version::getString() + " starting");
+
+#ifdef WIN32
+    Logger::write(Logger::ZONE_INFO, "RetroFE", "OS: Windows");
+#elif __APPLE__
+    Logger::write(Logger::ZONE_INFO, "RetroFE", "OS: Mac");
+#else
+    Logger::write(Logger::ZONE_INFO, "RetroFE", "OS: Linux");
+#endif
+
+    Logger::write(Logger::ZONE_INFO, "RetroFE", "Absolute path: " + Configuration::absolutePath);
+
     dp = opendir(launchersPath.c_str());
 
     if(dp == NULL)
@@ -230,18 +243,6 @@ bool StartLogging(Configuration* config)
         //Logger::write(Logger::ZONE_ERROR, "RetroFE", "Could not open \"" + logFile + "\" for writing");
         return false;
     }
-
-    Logger::write(Logger::ZONE_INFO, "RetroFE", "Version " + Version::getString() + " starting");
-
-#ifdef WIN32
-    Logger::write(Logger::ZONE_INFO, "RetroFE", "OS: Windows");
-#elif __APPLE__
-    Logger::write(Logger::ZONE_INFO, "RetroFE", "OS: Mac");
-#else
-    Logger::write(Logger::ZONE_INFO, "RetroFE", "OS: Linux");
-#endif
-
-    Logger::write(Logger::ZONE_INFO, "RetroFE", "Absolute path: " + Configuration::absolutePath);
 
     return true;
 }
