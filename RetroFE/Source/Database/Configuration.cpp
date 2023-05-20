@@ -162,9 +162,9 @@ bool Configuration::parseLine(std::string collection, std::string keyPrefix, std
         retVal = true;
     }
     // all configuration fields must have an assignment operator
-    else if((position = line.find(delimiter)) != std::string::npos)
+    else if ((position = line.find(delimiter)) != std::string::npos)
     {
-        if(keyPrefix.size() != 0)
+        if (keyPrefix.size() != 0)
         {
             keyPrefix += ".";
         }
@@ -177,11 +177,15 @@ bool Configuration::parseLine(std::string collection, std::string keyPrefix, std
         value = line.substr(position + delimiter.length(), line.length());
         value = trimEnds(value);
 
-        if(collection != "")
+        if (collection != "")
         {
             value = Utils::replace(value, "%ITEM_COLLECTION_NAME%", collection);
         }
-        properties_.insert(PropertiesPair(key, value));
+        if (propertyExists(key)) {
+            setProperty(key, value);
+        } else {
+            properties_.insert(PropertiesPair(key, value));
+        }
 
         std::stringstream ss;
         ss << "Dump: "  << "\"" << key << "\" = \"" << value << "\"";
