@@ -21,8 +21,8 @@
 #include "../Database/Configuration.h"
 
 std::ofstream Logger::writeFileStream_;
-std::streambuf *Logger::cerrStream_ = NULL;
-std::streambuf *Logger::coutStream_ = NULL;
+std::streambuf* Logger::cerrStream_ = NULL;
+std::streambuf* Logger::coutStream_ = NULL;
 Configuration* Logger::config_ = NULL;
 
 bool Logger::initialize(std::string file, Configuration* config)
@@ -38,7 +38,7 @@ bool Logger::initialize(std::string file, Configuration* config)
 
 void Logger::deInitialize()
 {
-    if(writeFileStream_.is_open())
+    if (writeFileStream_.is_open())
     {
         writeFileStream_.close();
 
@@ -53,7 +53,7 @@ void Logger::write(Zone zone, std::string component, std::string message)
 {
     std::string zoneStr;
 
-    switch(zone)
+    switch (zone)
     {
     case ZONE_INFO:
         zoneStr = "INFO";

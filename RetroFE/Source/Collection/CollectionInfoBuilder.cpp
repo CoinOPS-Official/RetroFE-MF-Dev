@@ -366,6 +366,8 @@ bool CollectionInfoBuilder::ImportDirectory(CollectionInfo *info, std::string me
 
 void CollectionInfoBuilder::addPlaylists(CollectionInfo *info)
 {
+    std::string itemName;
+    std::string collectionName;
     std::map<std::string, Item *> excludeAllFilter;
     std::string excludeAllFile = Utils::combinePath(Configuration::absolutePath, "collections", info->name, "exclude_all.txt");
 
@@ -379,8 +381,8 @@ void CollectionInfoBuilder::addPlaylists(CollectionInfo *info)
             bool found = false;
             for(std::map<std::string, Item *>::iterator itex = excludeAllFilter.begin(); itex != excludeAllFilter.end(); itex++)
             {
-                std::string collectionName = info->name;
-                std::string itemName       = itex->first;
+                collectionName = info->name;
+                itemName       = itex->first;
                 if (itemName.at(0) == '_') // name consists of _<collectionName>:<itemName>
                 {
                      itemName.erase(0, 1); // Remove _
@@ -411,7 +413,9 @@ void CollectionInfoBuilder::addPlaylists(CollectionInfo *info)
     {
         info->playlists["all"] = &info->items;
     }
-    std::map<std::string, Item*> playlistItems;
+
+    DIR *dp;
+    struct dirent *dirp;
     std::string path = Utils::combinePath(Configuration::absolutePath, "collections", info->name, "playlists");
     loadPlaylistItems(info, playlistItems, path);
 
@@ -432,10 +436,19 @@ void CollectionInfoBuilder::addPlaylists(CollectionInfo *info)
         return;
     }
     // if cyclePlaylist then order playlist menu items by that
+    // get playlist cycle
+    std::string settingPrefix = "collections." + info->name + ".";
     std::string cycleString;
-    conf_.getProperty("cyclePlaylist", cycleString);
+    // check if collection has different setting
+    if (conf_.propertyExists(settingPrefix + "cyclePlaylist")) {
+        conf_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
+    }
+    else {
+        conf_.getProperty("cyclePlaylist", cycleString);
+    }
     std::vector<std::string> cycleVector;
     Utils::listToVector(cycleString, cycleVector, ',');
+
     if (cycleVector.size())
     {
         // add in order according to cycle list
@@ -469,6 +482,19 @@ void CollectionInfoBuilder::addPlaylists(CollectionInfo *info)
 
 void CollectionInfoBuilder::loadPlaylistItems(CollectionInfo* info, std::map<std::string, Item*> playlistItems, std::string path)
 {
+    // get playlist cycle
+    std::string settingPrefix = "collections." + info->name + ".";
+    std::string cycleString;
+    // check if collection has different setting
+    if (conf_.propertyExists(settingPrefix + "cyclePlaylist")) {
+        conf_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
+    }
+    else {
+        conf_.getProperty("cyclePlaylist", cycleString);
+    }
+    std::vector<std::string> cycleVector;
+    Utils::listToVector(cycleString, cycleVector, ',');
+
     DIR* dp;
     struct dirent* dirp;
     dp = opendir(path.c_str());
@@ -495,6 +521,13 @@ void CollectionInfoBuilder::loadPlaylistItems(CollectionInfo* info, std::map<std
         {
             if (file.compare(start, comparator.length(), comparator) == 0)
             {
+                // don't include if not in cyclePlaylist
+                if (cycleVector.size() && std::find(cycleVector.begin(), cycleVector.end(), basename) == cycleVector.end()) {
+                    Logger::write(Logger::ZONE_INFO, "RetroFE", "Don't Loading playlist: " + basename + ", Not in cyclePlaylist");
+
+                    continue;
+                }
+
                 Logger::write(Logger::ZONE_INFO, "RetroFE", "Loading playlist: " + basename);
 
                 std::map<std::string, Item*> playlistFilter;

@@ -39,8 +39,8 @@ public:
     static void deInitialize();
 private:
 
-    static std::streambuf *cerrStream_;
-    static std::streambuf *coutStream_;
+    static std::streambuf* cerrStream_;
+    static std::streambuf* coutStream_;
     static std::ofstream writeFileStream_;
-    static Configuration *config_;
+    static Configuration* config_;
 };
