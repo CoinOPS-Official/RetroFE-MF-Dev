@@ -414,8 +414,7 @@ void CollectionInfoBuilder::addPlaylists(CollectionInfo *info)
         info->playlists["all"] = &info->items;
     }
 
-    DIR *dp;
-    struct dirent *dirp;
+    std::map<std::string, Item*> playlistItems;
     std::string path = Utils::combinePath(Configuration::absolutePath, "collections", info->name, "playlists");
     loadPlaylistItems(info, playlistItems, path);
 

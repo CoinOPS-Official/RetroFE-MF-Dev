@@ -29,7 +29,7 @@ endif()
 
 	set(ZLIB_ROOT "${RETROFE_THIRD_PARTY_DIR}/zlib128-dll")
 
-	set(GSTREAMER_ROOT "C:/gstreamer/1.0/msvc_x86" CACHE STRING "location of where your gstreamer include and lib folders reside")
+	set(GSTREAMER_ROOT "D:/gstreamer/1.0/msvc_x86" CACHE STRING "location of where your gstreamer include and lib folders reside")
 	set(GLIB2_ROOT "${GSTREAMER_ROOT}")
   
 if(MSVC)  
@@ -211,7 +211,8 @@ if(MINGW)
 endif()
 
 add_definitions(-DRETROFE_VERSION_MAJOR=${VERSION_MAJOR})
-add_definitions(-DRETROFE_VERSION_MINOR=${VERSION_MINOR})
+add_definitions(-D
+=${VERSION_MINOR})
 add_definitions(-DRETROFE_VERSION_BUILD=${VERSION_BUILD})
 
 if(MSVC)
