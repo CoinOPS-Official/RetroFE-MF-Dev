@@ -20,4 +20,5 @@ v0.10.34.1
 	- added to filter logs via setting "log=" see CoinOPS-Official/RetroFE/pull/9 (monkofthefunk)
 	- added to only perform layout action if setting "action=" set and "setting=" in layout match see pull/9 (monkofthefunk)
 	- added support for multiple controls1-9.conf for launcher to set controls upon launch (monkofthefunk)
-	- added collection's settings.conf to override global settings.conf firstPlaylist, attractModeCyclePlaylist,cyclePlaylist,attractModeSkipPlaylist (monkofthefunk)
+	- added collection's settings.conf to override global settings.conf firstPlaylist, attractModeCyclePlaylist, cyclePlaylist, attractModeSkipPlaylist (monkofthefunk)
+	- added disabled favtoggle while in favs (bp)
