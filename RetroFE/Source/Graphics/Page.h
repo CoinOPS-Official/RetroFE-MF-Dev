@@ -112,6 +112,11 @@ public:
     void  highlightExit();
     void  playlistEnter();
     void  playlistExit();
+    void playlistNextEnter();
+    void playlistNextExit();
+    void playlistPrevEnter();
+    void playlistPrevExit();
+    void triggerEventOnAllMenus(std::string event);
     void  menuJumpEnter();
     void  menuJumpExit();
     void  attractEnter( );
