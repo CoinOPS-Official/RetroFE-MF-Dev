@@ -43,6 +43,7 @@ Page::Page(Configuration &config, int layoutWidth, int layoutHeight)
     , playlistMenu_(NULL)
     , elapsedTime_(0)
     , anActiveMenu_(NULL)
+    , fromPreviousPlaylist (false)
 {
     for (int i = 0; i < SDL::getNumScreens(); i++)
     {
@@ -563,6 +564,7 @@ void Page::playlistExit()
 
 void Page::playlistNextEnter()
 {
+    fromPreviousPlaylist = false;
     triggerEventOnAllMenus("playlistNextEnter");
 }
 
@@ -573,6 +575,7 @@ void Page::playlistNextExit()
 
 void Page::playlistPrevEnter()
 {
+    fromPreviousPlaylist = true;
     triggerEventOnAllMenus("playlistPrevEnter");
 }
 
@@ -942,6 +945,8 @@ std::string Page::getPlaylistName()
 
 void Page::favPlaylist()
 {
+    playlistNextEnter();
+
     if(playlist_->first == "favorites")
     {
         selectPlaylist("all");
@@ -972,6 +977,8 @@ void Page::nextPlaylist()
         if(playlist_->second->size() != 0) 
             break;
     }
+
+    playlistNextEnter();
 
     for(std::vector<ScrollingList *>::iterator it = activeMenu_.begin(); it != activeMenu_.end(); it++)
     {
@@ -1057,7 +1064,6 @@ void Page::updatePlaylistMenuPosition()
 
 void Page::nextCyclePlaylist(std::vector<std::string> list)
 {
-
     // Empty list
     if (list.size() == 0)
         return;
@@ -1066,6 +1072,8 @@ void Page::nextCyclePlaylist(std::vector<std::string> list)
     std::vector<std::string>::iterator it = list.begin();
     while (it != list.end() && *it != getPlaylistName())
         ++it;
+    
+    playlistNextEnter();
 
     // If current playlist not found, switch to the first found cycle playlist in the playlist list
     if (it == list.end())
@@ -1099,7 +1107,6 @@ void Page::nextCyclePlaylist(std::vector<std::string> list)
 
 void Page::prevCyclePlaylist(std::vector<std::string> list)
 {
-
     // Empty list
     if (list.size() == 0)
         return;

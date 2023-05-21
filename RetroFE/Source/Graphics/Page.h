@@ -156,6 +156,7 @@ public:
     void setPlaylistMenu(ScrollingList*);
     bool playlistExists(std::string);
     void setSelectedItem();
+    bool fromPreviousPlaylist = false;
 
 private:
     void playlistChange();
