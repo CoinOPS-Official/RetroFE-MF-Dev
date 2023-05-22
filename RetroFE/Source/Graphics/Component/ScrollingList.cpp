@@ -911,7 +911,13 @@ bool ScrollingList::allocateTexture( unsigned int index, Item *item )
                 }
             }
 
-            t = imageBuild.CreateImage( imagePath, page, names[n], baseViewInfo.Monitor );
+            name = names[n];
+            if (selectedImage_ && item->name == selectedItemName) {
+                t = imageBuild.CreateImage(imagePath, page, name + "-selected", baseViewInfo.Monitor);
+            }
+            if (!t) {
+                t = imageBuild.CreateImage(imagePath, page, name, baseViewInfo.Monitor);
+            }
 
             // check sub-collection path for art
             if ( !t && !commonMode_ )
