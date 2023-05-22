@@ -26,3 +26,4 @@ v0.10.34.1
 	- fixed playlist menu after globalFavLast merge (monkofthefunk)
 	- fixed remebering last favorite selected in playlist (monkofthefunk)
 	- added playlistNextEnter/Exit and playlistPrevEnter/Exit layout events upon playlist navigation changes (monkofthefunk)
+	- added Logging SDL Backend and ScaleQuality in settings (inigomonyota)
