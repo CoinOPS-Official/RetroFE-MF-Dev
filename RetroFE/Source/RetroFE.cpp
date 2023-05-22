@@ -397,7 +397,6 @@ bool RetroFE::run( )
 
         float lastTime = 0;
         float deltaTime = 0;
-        bool previousPlaylist = false;
 
         // Exit splash mode when an active key is pressed
         SDL_Event e;
@@ -566,11 +565,14 @@ bool RetroFE::run( )
         case RETROFE_PLAYLIST_EXIT:
             if (currentPage_->isIdle( ))
             {
-                if (currentPage_->fromPreviousPlaylist) {
-                    currentPage_->playlistPrevExit();
-                }
-                else {
-                    currentPage_->playlistNextExit();
+                // lots of different toggles and menu jumps trigger this by accident
+                if (currentPage_->fromPlaylistNav) {
+                    if (currentPage_->fromPreviousPlaylist) {
+                        currentPage_->playlistPrevExit();
+                    }
+                    else {
+                        currentPage_->playlistNextExit();
+                    }
                 }
                 bool rememberMenu = false;
                 config_.getProperty("rememberMenu", rememberMenu);
