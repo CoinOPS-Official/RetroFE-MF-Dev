@@ -134,18 +134,18 @@ bool SDL::initialize( Configuration &config )
             if ( i == 0 )
                 config.getProperty( "horizontal", hString );
             config.getProperty( "horizontal" + std::to_string(i), hString );
-            #if defined(__linux)
-			if ( hString == "%X_RES%" )
-			{
-				hString = Utils::replace(hString, "%X_RES%", std::getenv("X_RES"));
-			}
-			#endif
-			if ( hString == "" )
+            if ( hString == "" )
             {
                 Logger::write( Logger::ZONE_ERROR, "Configuration", "Missing property \"horizontal\"" + std::to_string(i) );
                 return false;
             }
-            else if ( hString != "stretch" && (i != 0 || !config.getProperty( "horizontal", windowWidth_[i] )) && !config.getProperty( "horizontal" + std::to_string(i), windowWidth_[i] ))
+            #if defined(__linux)
+			else if ( hString == "%X_RES%" )
+			{
+				hString = std::getenv("X_RES");
+			}
+			#endif
+			else if ( hString != "stretch" && (i != 0 || !config.getProperty( "horizontal", windowWidth_[i] )) && !config.getProperty( "horizontal" + std::to_string(i), windowWidth_[i] ))
             {
                 Logger::write( Logger::ZONE_ERROR, "Configuration", "Invalid property value for \"horizontal\"" + std::to_string(i) );
                 return false;
@@ -157,18 +157,18 @@ bool SDL::initialize( Configuration &config )
             if ( i == 0 )
                 config.getProperty( "vertical", vString );
             config.getProperty( "vertical" + std::to_string(i), vString );
-            #if defined(__linux)
-			if ( vString == "%Y_RES%" )
-			{
-				vString = Utils::replace(vString, "%Y_RES%", std::getenv("Y_RES"));
-			}
-			#endif
-			if ( vString == "" )
+            if ( vString == "" )
             {
                 Logger::write( Logger::ZONE_ERROR, "Configuration", "Missing property \"vertical\"" + std::to_string(i) );
                 return false;
             }
-            else if ( vString != "stretch" && (i != 0 || !config.getProperty( "vertical", windowHeight_[i] )) && !config.getProperty( "vertical" + std::to_string(i), windowHeight_[i] ) )
+            #if defined(__linux)
+			else if ( vString == "%Y_RES%" )
+			{
+				vString = std::getenv("Y_RES");
+			}
+			#endif
+			else if ( vString != "stretch" && (i != 0 || !config.getProperty( "vertical", windowHeight_[i] )) && !config.getProperty( "vertical" + std::to_string(i), windowHeight_[i] ) )
             {
                 Logger::write( Logger::ZONE_ERROR, "Configuration", "Invalid property value for \"vertical\"" + std::to_string(i) );
                 return false;
@@ -212,6 +212,15 @@ bool SDL::initialize( Configuration &config )
             Logger::write( Logger::ZONE_INFO, "SDL", ss.str( ));
             window_[i] = SDL_CreateWindow( "RetroFE", SDL_WINDOWPOS_CENTERED_DISPLAY(screenNum), SDL_WINDOWPOS_CENTERED_DISPLAY(screenNum), windowWidth_[i], windowHeight_[i], windowFlags );
 			
+			
+#ifdef WIN32
+			std::string SDLRenderDriver = "direct3d";
+			config.getProperty("SDLRenderDriver", SDLRenderDriver);
+			if ( SDL_SetHint(SDL_HINT_RENDER_DRIVER, SDLRenderDriver.c_str()) != SDL_TRUE )
+			{
+				Logger::write( Logger::ZONE_ERROR, "SDL", "Error setting renderer to" + SDLRenderDriver );
+			}
+#endif			
 			std::string ScaleQuality = "1";
 			config.getProperty("ScaleQuality", ScaleQuality);
 			if ( SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, ScaleQuality.c_str()) != SDL_TRUE )
