@@ -533,8 +533,8 @@ bool RetroFE::run( )
                     if (currentPage_->getPlaylistName() != firstPlaylist_ )
                         currentPage_->selectPlaylist( "all" );
 
-                    currentPage_->onNewItemSelected( );
-                    currentPage_->reallocateMenuSpritePoints( );
+                    currentPage_->onNewItemSelected();
+                    currentPage_->reallocateMenuSpritePoints(); // update playlist menu
 
                     state = RETROFE_LOAD_ART;
                 }
@@ -589,7 +589,7 @@ bool RetroFE::run( )
         case RETROFE_PLAYLIST_LOAD_ART:
             if (currentPage_->isIdle( ))
             {
-                currentPage_->reallocateMenuSpritePoints( );
+                currentPage_->reallocateMenuSpritePoints(); // update playlist menu
                 currentPage_->playlistEnter();
                 state = RETROFE_PLAYLIST_ENTER;
             }
@@ -633,7 +633,7 @@ bool RetroFE::run( )
         case RETROFE_MENUJUMP_LOAD_ART:
             if (currentPage_->isIdle( ))
             {
-                currentPage_->reallocateMenuSpritePoints( );
+                currentPage_->reallocateMenuSpritePoints(false); // skip updating playlist menu
                 currentPage_->menuJumpEnter( );
                 state = RETROFE_MENUJUMP_ENTER;
             }
@@ -752,8 +752,8 @@ bool RetroFE::run( )
                     }
                 }
 
-                currentPage_->onNewItemSelected( );
-                currentPage_->reallocateMenuSpritePoints( );
+                currentPage_->onNewItemSelected();
+                currentPage_->reallocateMenuSpritePoints(); // update playlist menu
 
                 state = RETROFE_NEXT_PAGE_MENU_LOAD_ART;
 
@@ -1298,8 +1298,8 @@ bool RetroFE::run( )
                     }
                 }
 
-                currentPage_->onNewItemSelected( );
-                currentPage_->reallocateMenuSpritePoints( );
+                currentPage_->onNewItemSelected();
+                currentPage_->reallocateMenuSpritePoints(); // update playlist menu
                 state = RETROFE_BACK_MENU_LOAD_ART;
             }
             break;
@@ -1350,8 +1350,8 @@ bool RetroFE::run( )
                 config_.setProperty( "currentCollection", "menu" );
                 CollectionInfo *info = getMenuCollection( "menu" );
                 currentPage_->pushCollection(info);
-                currentPage_->onNewItemSelected( );
-                currentPage_->reallocateMenuSpritePoints( );
+                currentPage_->onNewItemSelected();
+                currentPage_->reallocateMenuSpritePoints(); // update playlist menu
                 state = RETROFE_MENUMODE_START_LOAD_ART;
             }
             break;
