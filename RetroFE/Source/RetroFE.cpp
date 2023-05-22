@@ -557,12 +557,6 @@ bool RetroFE::run( )
                     input_.update(e);
                 input_.resetStates( );
             }
-            if (currentPage_->fromPreviousPlaylist) {
-                currentPage_->playlistPrevExit();
-            }
-            else {
-                currentPage_->playlistNextExit();
-            }
             currentPage_->playlistExit( );
             currentPage_->setScrolling(Page::ScrollDirectionIdle);
             state = RETROFE_PLAYLIST_EXIT;
@@ -572,6 +566,12 @@ bool RetroFE::run( )
         case RETROFE_PLAYLIST_EXIT:
             if (currentPage_->isIdle( ))
             {
+                if (currentPage_->fromPreviousPlaylist) {
+                    currentPage_->playlistPrevExit();
+                }
+                else {
+                    currentPage_->playlistNextExit();
+                }
                 bool rememberMenu = false;
                 config_.getProperty("rememberMenu", rememberMenu);
                 if (rememberMenu) {

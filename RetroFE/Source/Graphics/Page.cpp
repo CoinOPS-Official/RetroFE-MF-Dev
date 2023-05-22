@@ -570,6 +570,7 @@ void Page::playlistNextEnter()
 
 void Page::playlistNextExit()
 {
+    fromPreviousPlaylist = false;
     triggerEventOnAllMenus("playlistNextExit");
 }
 
@@ -581,6 +582,7 @@ void Page::playlistPrevEnter()
 
 void Page::playlistPrevExit()
 {
+    fromPreviousPlaylist = true;
     triggerEventOnAllMenus("playlistPrevExit");
 }
 
