@@ -204,7 +204,7 @@ bool ImportConfiguration(Configuration* c)
         return false;
     }
 
-    bool collectionSettingsImported = false;
+    bool settingsImported;
     while ((dirp = readdir(dp)) != NULL)
     {
         std::string collection = (dirp->d_name);
@@ -215,17 +215,16 @@ bool ImportConfiguration(Configuration* c)
             std::string infoFile = Utils::combinePath(collectionsPath, collection, "info.conf");
             c->import(collection, prefix, infoFile, false);
 
-
+            settingsImported = false;
             std::string settingsPath = Utils::combinePath(collectionsPath, collection, "settings");
             for (int i = 9; i > 0; i--)
-                collectionSettingsImported |= c->import(collection, prefix, settingsPath + std::to_string(i) + ".conf", false);
-            collectionSettingsImported |= c->import(collection, prefix, settingsPath + ".conf", false);
+                settingsImported |= c->import(collection, prefix, settingsPath + std::to_string(i) + ".conf", false);
+            settingsImported |= c->import(collection, prefix, settingsPath + ".conf", false);
 
-            if (!collectionSettingsImported)
+            if (!settingsImported)
             {
-                Logger::write(Logger::ZONE_INFO, "RetroFE", "Could not import any collection settings for " + collection);
+                Logger::write(Logger::ZONE_ERROR, "RetroFE", "Could not import any collection settings for " + collection);
             }
-
         }
     }
 
