@@ -142,7 +142,7 @@ bool SDL::initialize( Configuration &config )
             #if defined(__linux)
 			else if ( hString == "%X_RES%" )
 			{
-				hString = std::getenv("X_RES");
+				hString = Utils::getEnvVar(std::getenv("X_RES"));
 			}
 			#endif
 			else if ( hString != "stretch" && (i != 0 || !config.getProperty( "horizontal", windowWidth_[i] )) && !config.getProperty( "horizontal" + std::to_string(i), windowWidth_[i] ))
@@ -165,7 +165,7 @@ bool SDL::initialize( Configuration &config )
             #if defined(__linux)
 			else if ( vString == "%Y_RES%" )
 			{
-				vString = std::getenv("Y_RES");
+				vString = Utils::getEnvVar(std::getenv("Y_RES"));
 			}
 			#endif
 			else if ( vString != "stretch" && (i != 0 || !config.getProperty( "vertical", windowHeight_[i] )) && !config.getProperty( "vertical" + std::to_string(i), windowHeight_[i] ) )
