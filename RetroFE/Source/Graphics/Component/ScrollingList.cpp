@@ -1074,6 +1074,17 @@ void ScrollingList::updateScrollPeriod(  )
     if ( scrollPeriod_ < minScrollTime_ )
     {
         scrollPeriod_ = minScrollTime_;
+
+        if (!menuFastScrollEntered_) {
+            menuFastScrollEntered_ = true;
+            triggerEventOnAll("menuFastScrollEnter", 0);
+        }
+    }
+    else {
+        if (menuFastScrollEntered_) {
+            menuFastScrollEntered_ = false;
+            triggerEventOnAll("menuFastScrollExit", 0);
+        }
     }
 }
 
@@ -1090,6 +1101,17 @@ void ScrollingList::scroll( bool forward )
     if ( scrollPeriod_ < minScrollTime_ )
     {
         scrollPeriod_ = minScrollTime_;
+
+        if (!menuFastScrollEntered_) {
+            menuFastScrollEntered_ = true;
+            triggerEventOnAll("menuFastScrollEnter", 0);
+        }
+    }
+    else {
+        if (menuFastScrollEntered_) {
+            menuFastScrollEntered_ = false;
+            triggerEventOnAll("menuFastScrollExit", 0);
+        }
     }
 
     // Replace the item that's scrolled out

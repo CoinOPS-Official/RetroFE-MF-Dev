@@ -108,6 +108,8 @@ public:
     void  setMinShowTime(float value);
     float getMinShowTime();
     void  menuScroll();
+    void menuFastScrollEnter();
+    void menuFastScrollExit();
     void  highlightEnter();
     void  highlightExit();
     void  playlistEnter();

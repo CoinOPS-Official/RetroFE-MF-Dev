@@ -119,6 +119,7 @@ private:
     bool commonMode_;
     bool playlistType_;
     bool selectedImage_;
+    bool menuFastScrollEntered_ = false;
 
     std::vector<Component *> *spriteList_;
     std::vector<ViewInfo *> *scrollPoints_;
