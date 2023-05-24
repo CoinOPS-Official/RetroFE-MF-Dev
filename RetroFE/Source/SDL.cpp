@@ -142,12 +142,12 @@ bool SDL::initialize( Configuration &config )
 			else if ( hString == "%X_RES%" )
 			{
 				hString = Utils::getEnvVar("X_RES_" + screenIndex);
-                if (hString == "") {
-                    hString = "stretch";
+                if (hString == "" || !Utils::convertInt(hString)) {
                     Logger::write(Logger::ZONE_WARNING, "Configuration", "Invalid property value for \"horizontal\"" + screenIndex + " defaulted to 'stretch'");
                 }
                 else {
                     Logger::write(Logger::ZONE_WARNING, "Configuration", "X_RES_" + screenIndex + " for  \"horizontal\" set to " + hString);
+                    windowWidth_[i] = Utils::convertInt(hString);
                 }
 			}
 			else if ( hString != "stretch" && (i != 0 || !config.getProperty( "horizontal", windowWidth_[i] )) && !config.getProperty( "horizontal" + screenIndex, windowWidth_[i] ))
@@ -170,12 +170,13 @@ bool SDL::initialize( Configuration &config )
 			else if ( vString == "%Y_RES%")
 			{
 				vString = Utils::getEnvVar("Y_RES_" + screenIndex);
-                if (vString == "") {
-                    vString = "stretch";
+                if (vString == "" || !Utils::convertInt(vString)) {
                     Logger::write(Logger::ZONE_WARNING, "Configuration", "Invalid property value for \"vertical\"" + screenIndex + " defaulted to 'stretch'");
                 }
                 else {
                     Logger::write(Logger::ZONE_WARNING, "Configuration", "Y_RES_" + screenIndex + " for  \"vertical\" set to " + vString);
+                    windowHeight_[i] = Utils::convertInt(vString);
+
                 }
 			}
 			else if ( vString != "stretch" && (i != 0 || !config.getProperty( "vertical", windowHeight_[i] )) && !config.getProperty( "vertical" + screenIndex, windowHeight_[i] ) )
