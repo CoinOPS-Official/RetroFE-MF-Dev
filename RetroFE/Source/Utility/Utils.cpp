@@ -224,7 +224,7 @@ std::string Utils::getParentDirectory(std::string directory)
 
 std::string Utils::getEnvVar(std::string const& key)
 {
-    char const* val = getenv(key.c_str());
+    char const* val = std::getenv(key.c_str());
 
     return val == NULL ? std::string() : std::string(val);
 }
