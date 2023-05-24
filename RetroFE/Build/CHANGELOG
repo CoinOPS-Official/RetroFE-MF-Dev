@@ -35,3 +35,4 @@ v0.10.34.1
 	- fixed showing playlist menu upon item fav toggle and letter jump/random (don't trigger on playlist enter events) (monkofthefunk)
 	- added Utils::getEnvVar (monkofthefunk)
 	- added env X_RES_0,X_RES_1, X_RES_2, etc. for horizontal0=%X_RES% and vertical0=%Y_RES% in settings.conf (monkofthefunk)
+	- fixed some log errors to warnings (monkofthefunk)
