@@ -105,9 +105,9 @@ void Configuration::clearProperties( )
 }
 
 
-bool Configuration::import(std::string keyPrefix, std::string file)
+bool Configuration::import(std::string keyPrefix, std::string file, bool mustExist)
 {
-    return import("", keyPrefix, file);
+    return import("", keyPrefix, file, mustExist);
 }
 
 bool Configuration::import(std::string collection, std::string keyPrefix, std::string file, bool mustExist)
@@ -128,7 +128,7 @@ bool Configuration::import(std::string collection, std::string keyPrefix, std::s
         }
         else
         {
-            Logger::write(Logger::ZONE_INFO, "Configuration", "Could not open " + file + "\"");
+            Logger::write(Logger::ZONE_WARNING, "Configuration", "Could not open " + file + "\"");
         }
 
         return false;
