@@ -1501,10 +1501,7 @@ void Page::updateScrollPeriod()
             menu->updateScrollPeriod();
             if (!scrollFastActive_ && menu->isMenuScrollingFast()) {
                 scrollFastActive_ = true;
-                for (std::vector<Component*>::iterator it = LayerComponents.begin(); it != LayerComponents.end(); ++it)
-                {
-                    (*it)->triggerEvent("menuFastScroll", menuDepth_ - 1);
-                }
+                triggerEventOnAllMenus("menuFastScroll");
             }
         }
     }
