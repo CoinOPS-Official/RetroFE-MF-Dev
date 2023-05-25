@@ -36,3 +36,4 @@ v0.10.34.1
 	- added Utils::getEnvVar (monkofthefunk)
 	- added env X_RES_0,X_RES_1, X_RES_2, etc. for horizontal0=%X_RES% and vertical0=%Y_RES% in settings.conf (monkofthefunk)
 	- fixed some log errors to warnings (monkofthefunk)
+	- fixed changed X_RES_# to H_RES_# and Y_RES_# to V_RES_# and horizontal0/verical0=envvar (monkofthefunk)

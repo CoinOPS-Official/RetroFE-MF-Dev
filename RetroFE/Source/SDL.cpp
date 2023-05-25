@@ -140,14 +140,14 @@ bool SDL::initialize( Configuration &config )
                 Logger::write( Logger::ZONE_ERROR, "Configuration", "Missing property \"horizontal\"" + screenIndex );
                 return false;
             }
-			else if ( hString == "%X_RES%" )
+			else if ( hString == "envvar" ) // from environment variable
 			{
-				hString = Utils::getEnvVar("X_RES_" + screenIndex);
+				hString = Utils::getEnvVar("H_RES_" + screenIndex);
                 if (hString == "" || !Utils::convertInt(hString)) {
                     Logger::write(Logger::ZONE_WARNING, "Configuration", "Invalid property value for \"horizontal\"" + screenIndex + " defaulted to 'stretch'");
                 }
                 else {
-                    Logger::write(Logger::ZONE_WARNING, "Configuration", "X_RES_" + screenIndex + " for  \"horizontal\" set to " + hString);
+                    Logger::write(Logger::ZONE_WARNING, "Configuration", "H_RES_" + screenIndex + " for  \"horizontal\" set to " + hString);
                     windowWidth_[i] = Utils::convertInt(hString);
                 }
 			}
@@ -168,14 +168,14 @@ bool SDL::initialize( Configuration &config )
                 Logger::write( Logger::ZONE_ERROR, "Configuration", "Missing property \"vertical\"" + screenIndex );
                 return false;
             }
-			else if ( vString == "%Y_RES%")
+			else if ( vString == "envvar") // from environment variable
 			{
-				vString = Utils::getEnvVar("Y_RES_" + screenIndex);
+				vString = Utils::getEnvVar("V_RES_" + screenIndex);
                 if (vString == "" || !Utils::convertInt(vString)) {
                     Logger::write(Logger::ZONE_WARNING, "Configuration", "Invalid property value for \"vertical\"" + screenIndex + " defaulted to 'stretch'");
                 }
                 else {
-                    Logger::write(Logger::ZONE_WARNING, "Configuration", "Y_RES_" + screenIndex + " for  \"vertical\" set to " + vString);
+                    Logger::write(Logger::ZONE_WARNING, "Configuration", "V_RES_" + screenIndex + " for  \"vertical\" set to " + vString);
                     windowHeight_[i] = Utils::convertInt(vString);
 
                 }
