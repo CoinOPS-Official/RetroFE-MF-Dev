@@ -877,8 +877,6 @@ AnimationEvents *PageBuilder::createTweenInstance(xml_node<> *componentXml)
     buildTweenSet(tweens, componentXml, "onIdle",           "idle");
     buildTweenSet(tweens, componentXml, "onMenuIdle",       "menuIdle");
     buildTweenSet(tweens, componentXml, "onMenuScroll",     "menuScroll");
-    buildTweenSet(tweens, componentXml, "onMenuFastScrollEnter", "menuFastScrollEnter");
-    buildTweenSet(tweens, componentXml, "onMenuFastScrollExit", "menuFastScrollExit");
     buildTweenSet(tweens, componentXml, "onHighlightEnter", "highlightEnter");
     buildTweenSet(tweens, componentXml, "onHighlightExit",  "highlightExit");
     buildTweenSet(tweens, componentXml, "onMenuEnter",      "menuEnter");
@@ -898,6 +896,7 @@ AnimationEvents *PageBuilder::createTweenInstance(xml_node<> *componentXml)
     buildTweenSet(tweens, componentXml, "onAttractExit",    "attractExit");
     buildTweenSet(tweens, componentXml, "onJukeboxJump",    "jukeboxJump");
 
+    buildTweenSet(tweens, componentXml, "onMenuFastScroll", "menuFastScroll");
     buildTweenSet(tweens, componentXml, "onMenuActionInputEnter",  "menuActionInputEnter");
     buildTweenSet(tweens, componentXml, "onMenuActionInputExit",   "menuActionInputExit");
     buildTweenSet(tweens, componentXml, "onMenuActionSelectEnter", "menuActionSelectEnter");

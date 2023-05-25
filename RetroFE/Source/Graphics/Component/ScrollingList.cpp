@@ -1074,19 +1074,16 @@ void ScrollingList::updateScrollPeriod(  )
     if ( scrollPeriod_ < minScrollTime_ )
     {
         scrollPeriod_ = minScrollTime_;
-        if (scrollPeriod_ != 0) {
-            if (!menuFastScrollEntered_) {
-                menuFastScrollEntered_ = true;
-                triggerEventOnAll("menuFastScrollEnter", 0);
-            }
-        }
+        menuFastScroll_ = true;
     }
     else {
-        if (menuFastScrollEntered_) {
-            menuFastScrollEntered_ = false;
-            triggerEventOnAll("menuFastScrollExit", 0);
-        }
+        menuFastScroll_ = false;
     }
+}
+
+bool ScrollingList::isMenuScrollingFast()
+{
+    return menuFastScroll_;
 }
 
 

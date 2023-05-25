@@ -108,8 +108,6 @@ public:
     void  setMinShowTime(float value);
     float getMinShowTime();
     void  menuScroll();
-    void menuFastScrollEnter();
-    void menuFastScrollExit();
     void  highlightEnter();
     void  highlightExit();
     void  playlistEnter();
@@ -132,6 +130,7 @@ public:
     void  togglePlaylist();
     void  reallocateMenuSpritePoints(bool updatePlaylistMenu = true);
     bool  isMenuScrolling();
+    bool isMenuScrollingFast();
     bool  isPlaying();
     void  resetScrollPeriod();
     void  updateScrollPeriod();
@@ -191,6 +190,7 @@ private:
     std::map<std::string, unsigned int> lastPlaylistOffsets_;
 
     bool scrollActive_;
+    bool scrollFastActive_;
 
     Item *selectedItem_;
     Text *textStatusComponent_;

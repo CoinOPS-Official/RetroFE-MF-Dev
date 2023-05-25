@@ -107,6 +107,7 @@ public:
     void allocateSpritePoints( );
     void resetScrollPeriod( );
     void updateScrollPeriod( );
+    bool isMenuScrollingFast();
     void scroll( bool forward );
     bool isPlaylist();
 private:
@@ -119,7 +120,7 @@ private:
     bool commonMode_;
     bool playlistType_;
     bool selectedImage_;
-    bool menuFastScrollEntered_ = false;
+    bool menuFastScroll_ = false;
 
     std::vector<Component *> *spriteList_;
     std::vector<ViewInfo *> *scrollPoints_;

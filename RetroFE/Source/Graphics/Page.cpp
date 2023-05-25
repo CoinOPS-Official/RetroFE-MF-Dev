@@ -45,6 +45,7 @@ Page::Page(Configuration &config, int layoutWidth, int layoutHeight)
     , anActiveMenu_(NULL)
     , fromPreviousPlaylist (false)
     , fromPlaylistNav(false)
+    , scrollFastActive_(false)
 {
     for (int i = 0; i < SDL::getNumScreens(); i++)
     {
@@ -326,6 +327,9 @@ bool Page::isMenuIdle()
             }
         }
     }
+    if (idle) {
+        scrollFastActive_ = false;
+    }
     return idle;
 }
 
@@ -603,7 +607,6 @@ void Page::menuJumpExit()
     triggerEventOnAllMenus("menuJumpExit");
 }
 
-
 void Page::attractEnter()
 {
     triggerEventOnAllMenus("attractEnter");
@@ -618,7 +621,6 @@ void Page::attractExit()
 {
     triggerEventOnAllMenus("attractExit");
 }
-
 
 void Page::jukeboxJump()
 {
@@ -1447,6 +1449,22 @@ bool Page::isMenuScrolling()
     return scrollActive_;
 }
 
+bool Page::isMenuScrollingFast()
+{
+    bool retVal = false;
+
+    for (std::vector<ScrollingList*>::iterator it = activeMenu_.begin(); it != activeMenu_.end(); it++)
+    {
+        ScrollingList* menu = *it;
+        // if menu exists and is not a playlist or playlist menu is allowed to be updated
+        if (menu)
+        {
+            retVal |= menu->isMenuScrollingFast();
+        }
+    }
+
+    return retVal;
+}
 
 bool Page::isPlaying()
 {
@@ -1479,8 +1497,18 @@ void Page::updateScrollPeriod()
     for(std::vector<ScrollingList *>::iterator it = activeMenu_.begin(); it != activeMenu_.end(); it++)
     {
         ScrollingList *menu = *it;
-        if(menu) menu->updateScrollPeriod();
+        if (menu) {
+            menu->updateScrollPeriod();
+            if (!scrollFastActive_ && menu->isMenuScrollingFast()) {
+                scrollFastActive_ = true;
+                for (std::vector<Component*>::iterator it = LayerComponents.begin(); it != LayerComponents.end(); ++it)
+                {
+                    (*it)->triggerEvent("menuFastScroll", menuDepth_ - 1);
+                }
+            }
+        }
     }
+
     return;
 }
 
