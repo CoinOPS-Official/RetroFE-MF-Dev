@@ -327,9 +327,8 @@ bool Page::isMenuIdle()
             }
         }
     }
-    if (idle) {
-        scrollFastActive_ = false;
-    }
+    scrollFastActive_ = !idle;
+
     return idle;
 }
 
@@ -1443,7 +1442,6 @@ void Page::reallocateMenuSpritePoints(bool updatePlaylistMenu)
     }
 }
 
-
 bool Page::isMenuScrolling()
 {
     return scrollActive_;
@@ -1456,7 +1454,6 @@ bool Page::isMenuScrollingFast()
     for (std::vector<ScrollingList*>::iterator it = activeMenu_.begin(); it != activeMenu_.end(); it++)
     {
         ScrollingList* menu = *it;
-        // if menu exists and is not a playlist or playlist menu is allowed to be updated
         if (menu)
         {
             retVal |= menu->isMenuScrollingFast();
