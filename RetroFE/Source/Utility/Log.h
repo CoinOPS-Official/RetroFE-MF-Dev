@@ -36,6 +36,8 @@ public:
     };
     static bool initialize(std::string file, Configuration* config);
     static void write(Zone zone, std::string component, std::string message);
+    static void start();
+    static void end(std::string label);
     static void deInitialize();
 private:
 
@@ -43,4 +45,6 @@ private:
     static std::streambuf* coutStream_;
     static std::ofstream writeFileStream_;
     static Configuration* config_;
+    static time_t start_;
+    static time_t end_;
 };
