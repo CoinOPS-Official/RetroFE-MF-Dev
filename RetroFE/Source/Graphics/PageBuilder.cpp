@@ -1317,6 +1317,8 @@ void PageBuilder::buildViewInfo(xml_node<> *componentXml, ViewInfo &info, xml_no
     xml_attribute<> *containerHeight    = findAttribute(componentXml, "containerHeight", defaultXml);
     xml_attribute<> *monitor            = findAttribute(componentXml, "monitor", defaultXml);
     xml_attribute<> *volume             = findAttribute(componentXml, "volume", defaultXml);
+    xml_attribute<>* blur               = findAttribute(componentXml, "blur", defaultXml);
+
 
     info.X = getHorizontalAlignment(x, 0);
     info.Y = getVerticalAlignment(y, 0);
@@ -1359,6 +1361,7 @@ void PageBuilder::buildViewInfo(xml_node<> *componentXml, ViewInfo &info, xml_no
     info.ContainerHeight    = containerHeight    ? Utils::convertFloat(containerHeight->value())   : -1.f;
     info.Monitor            = monitor            ? Utils::convertInt(monitor->value())             : 0;
     info.Volume             = volume             ? Utils::convertFloat(volume->value())            : 1.f;
+    info.Blur               = blur               ? Utils::convertInt(blur->value())                : 0;
 
     if(fontColor)
     {
