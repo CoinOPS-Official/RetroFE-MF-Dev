@@ -33,6 +33,8 @@ static bool StartLogging(Configuration* c);
 
 int main(int argc, char** argv)
 {
+    Logger::start();
+
     // check to see if version or help was requested
     if (argc > 1)
     {
@@ -88,9 +90,14 @@ int main(int argc, char** argv)
 
         return 0;
     }
+    
+    Logger::end("MAIN Init");
+
     try {
         while (true)
         {
+            Logger::start();
+
             if (!ImportConfiguration(&config))
             {
                 // Exit with a heads up...
@@ -98,6 +105,9 @@ int main(int argc, char** argv)
                 fprintf(stderr, "RetroFE has failed to start due to configuration error.\nCheck log for details: %s\n", logFile.c_str());
                 return -1;
             }
+
+            Logger::end("Import Config");
+
             RetroFE p(config);
             if (p.run()) // Check if we need to reboot after running
                 config.clearProperties();

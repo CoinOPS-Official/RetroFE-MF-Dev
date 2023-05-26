@@ -306,6 +306,7 @@ bool RetroFE::deInitialize( )
 // Run RetroFE
 bool RetroFE::run( )
 {
+    Logger::start();
 
     // Initialize SDL
     if(! SDL::initialize( config_ ) ) return false;
@@ -392,8 +393,11 @@ bool RetroFE::run( )
     preloadTime = static_cast<float>( SDL_GetTicks( ) ) / 1000;
     l.LEDBlinky( 1 );
 
+    Logger::end("RETROFE RUN Init");
+
     while ( running )
     {
+        Logger::start();
 
         float lastTime = 0;
         float deltaTime = 0;
@@ -423,12 +427,16 @@ bool RetroFE::run( )
             }
         }
 
+        Logger::end("splashMode SDL_PollEvent");
+
         if ( !currentPage_ )
         {
             Logger::write( Logger::ZONE_WARNING, "RetroFE", "Could not load page"  );
             running = false;
             break;
         }
+
+        Logger::start();
 
         switch(state)
         {
@@ -1395,6 +1403,10 @@ bool RetroFE::run( )
             break;
         }
 		
+        Logger::end("State: "+state);
+
+        Logger::start();
+
         // Handle screen updates and attract mode
         if ( running )
         {
@@ -1510,6 +1522,8 @@ bool RetroFE::run( )
 
             render( );
         }
+       
+        Logger::end("Attract Mode");
     }
     return reboot_;
 }

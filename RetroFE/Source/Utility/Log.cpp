@@ -24,6 +24,8 @@ std::ofstream Logger::writeFileStream_;
 std::streambuf* Logger::cerrStream_ = NULL;
 std::streambuf* Logger::coutStream_ = NULL;
 Configuration* Logger::config_ = NULL;
+time_t Logger::start_ = 0;
+time_t Logger::end_ = 0;
 
 bool Logger::initialize(std::string file, Configuration* config)
 {
@@ -90,4 +92,20 @@ void Logger::write(Zone zone, std::string component, std::string message)
     ss << "[" << timeStr << "] [" << zoneStr << "] [" << component << "] " << message << std::endl;
     std::cout << ss.str();
     std::cout.flush();
+}
+
+void Logger::start()
+{
+    time(&start_);
+}
+
+void Logger::end(std::string label)
+{
+    if (start_) {
+        time(&end_);
+        double duration = double(end_ - start_);
+        if (duration) {
+            Logger::write(ZONE_DEBUG, label, " Duration: " + std::to_string(duration));
+        }
+    }
 }
