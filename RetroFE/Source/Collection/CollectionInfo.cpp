@@ -193,10 +193,7 @@ bool CollectionInfo::itemIsLess(Item *lhs, Item *rhs)
     if(!lhs->collectionInfo->menusort && !lhs->leaf && !rhs->leaf)
         return false;
     // sort by another attribute
-    std::string sortType = lhs->collectionInfo->sortType;
-    Logger::write(Logger::ZONE_DEBUG, "CollectionInfo", sortType + "sortType." + lhs->sortByAttribute(sortType) + " " + rhs->sortByAttribute(sortType));
-    Logger::write(Logger::ZONE_DEBUG, "CollectionInfo", lhs->collectionInfo->name + " " + lhs->year + " " + lhs->genre + " " + lhs->fullTitle);
-
+    std::string sortType = lhs->collectionInfo->sortType != "" ? lhs->collectionInfo->sortType : rhs->collectionInfo->sortType;
     if (sortType != "" && lhs->sortByAttribute(sortType) != rhs->sortByAttribute(sortType))
         return lhs->sortByAttribute(sortType) < rhs->sortByAttribute(sortType);
     // default sort by name
