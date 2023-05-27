@@ -2043,9 +2043,10 @@ CollectionInfo *RetroFE::getCollection(std::string collectionName)
     bool menuSort = true;
     config_.getProperty( "collections." + collectionName + ".list.menuSort", menuSort );
 
-    if (menuSort)
-        collection->sortItems( );
-
+    if (menuSort) {
+        config_.getProperty("collections." + collectionName + ".list.sortType", collection->sortType);
+        collection->sortItems();
+    }
     MenuParser mp;
     mp.buildMenuItems( collection, menuSort);
 

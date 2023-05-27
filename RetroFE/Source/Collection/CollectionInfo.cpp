@@ -187,10 +187,19 @@ bool CollectionInfo::itemIsLess(Item *lhs, Item *rhs)
 {
     if(lhs->leaf && !rhs->leaf) return true;
     if(!lhs->leaf && rhs->leaf) return false;
+    // sort by collections first
     if(lhs->collectionInfo->subsSplit && lhs->collectionInfo != rhs->collectionInfo)
         return lhs->collectionInfo->lowercaseName() < rhs->collectionInfo->lowercaseName();
     if(!lhs->collectionInfo->menusort && !lhs->leaf && !rhs->leaf)
         return false;
+    // sort by another attribute
+    std::string sortType = lhs->collectionInfo->sortType;
+    Logger::write(Logger::ZONE_DEBUG, "CollectionInfo", sortType + "sortType." + lhs->sortByAttribute(sortType) + " " + rhs->sortByAttribute(sortType));
+    Logger::write(Logger::ZONE_DEBUG, "CollectionInfo", lhs->collectionInfo->name + " " + lhs->year + " " + lhs->genre + " " + lhs->fullTitle);
+
+    if (sortType != "" && lhs->sortByAttribute(sortType) != rhs->sortByAttribute(sortType))
+        return lhs->sortByAttribute(sortType) < rhs->sortByAttribute(sortType);
+    // default sort by name
     return lhs->lowercaseFullTitle() < rhs->lowercaseFullTitle();
 }
 

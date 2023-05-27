@@ -44,7 +44,7 @@ public:
 
     typedef std::map<std::string, std::vector <Item *> *> Playlists_T;
     Playlists_T playlists;
-
+    std::string sortType;
     bool menusort;
     bool subsSplit;
     bool hasSubs;
@@ -53,5 +53,4 @@ private:
     std::string metadataPath_;
     std::string extensions_;
     static bool itemIsLess(Item *lhs, Item *rhs);
-
 };

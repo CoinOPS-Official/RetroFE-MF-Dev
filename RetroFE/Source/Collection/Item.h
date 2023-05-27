@@ -27,6 +27,7 @@ public:
     std::string filename();
     std::string lowercaseTitle() ;
     std::string lowercaseFullTitle();
+    std::string sortByAttribute(std::string attribute);
     std::string name;
     std::string filepath;
     std::string file;

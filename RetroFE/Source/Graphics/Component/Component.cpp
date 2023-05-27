@@ -153,8 +153,7 @@ void Component::setTweens(AnimationEvents *set)
 void Component::update(float dt)
 {
     elapsedTweenTime_ += dt;
-    if (animationRequested_) {
-        if (animationRequestedType_ != "")
+        if (animationRequested_ && animationRequestedType_ != "")
         {
             Animation* newTweens;
             // Check if this component is part of an active scrolling list
@@ -199,7 +198,6 @@ void Component::update(float dt)
             currentTweenComplete_ = false;
             animationRequested_ = false;
         }
-    }
 
     currentTweenComplete_ = animate();
     if ( currentTweenComplete_ )

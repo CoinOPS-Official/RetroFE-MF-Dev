@@ -38,8 +38,6 @@ std::string Item::filename()
     return Utils::getFileName(filepath);
 }
 
-
-
 std::string Item::lowercaseTitle()
 {
     std::string lcstr = title;
@@ -54,6 +52,24 @@ std::string Item::lowercaseFullTitle()
     return lcstr;
 }
 
+std::string Item::sortByAttribute(std::string attribute)
+{
+    std::string value = "";
+    if (attribute == "year") value = year;
+    if (attribute == "manufacturer") value = manufacturer;
+    if (attribute == "developer") value = developer;
+    if (attribute == "genre") value = genre;
+    if (attribute == "numberPlayers") value = numberPlayers;
+    if (attribute == "numberButtons") value = numberButtons;
+    if (attribute == "ctrlType") value = ctrlType;
+    if (attribute == "joyWays") value = joyWays;
+    if (attribute == "rating") value = rating;
+    if (attribute == "score") value = score;
+
+    std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+
+    return value;
+}
 
 void Item::setInfo( std::string key, std::string value )
 {
