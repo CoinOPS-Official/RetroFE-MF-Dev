@@ -187,11 +187,13 @@ bool CollectionInfo::itemIsLess(Item *lhs, Item *rhs)
 {
     if(lhs->leaf && !rhs->leaf) return true;
     if(!lhs->leaf && rhs->leaf) return false;
+
     // sort by collections first
     if(lhs->collectionInfo->subsSplit && lhs->collectionInfo != rhs->collectionInfo)
         return lhs->collectionInfo->lowercaseName() < rhs->collectionInfo->lowercaseName();
     if(!lhs->collectionInfo->menusort && !lhs->leaf && !rhs->leaf)
         return false;
+
     // sort by another attribute
     std::string sortType = lhs->collectionInfo->sortType != "" ? lhs->collectionInfo->sortType : rhs->collectionInfo->sortType;
     if (sortType != "" && lhs->sortByAttribute(sortType) != rhs->sortByAttribute(sortType))

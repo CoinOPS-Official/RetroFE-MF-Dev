@@ -44,6 +44,7 @@ public:
     std::string joyWays;
     std::string rating;
     std::string score;
+    std::string playlist;
     bool        isFavorite;
     CollectionInfo *collectionInfo;
     bool leaf;
@@ -54,4 +55,5 @@ public:
     void setInfo( std::string key, std::string value );
     bool getInfo( std::string key, std::string &value );
     void loadInfo( std::string path );
+    bool static validSortType(std::string attribute);
 };
