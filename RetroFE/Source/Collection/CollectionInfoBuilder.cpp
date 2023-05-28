@@ -585,12 +585,6 @@ void CollectionInfoBuilder::loadPlaylistItems(CollectionInfo* info, std::map<std
                     delete it->second;
                     playlistFilter.erase(it->first);
                 }
-
-                // if playlist is a special name related to an item's metadata
-                if (Item::validSortType(basename)) {
-                    Logger::write(Logger::ZONE_INFO, "RetroFE", "Sorting playlist by " + basename);
-                    std::sort(info->playlists[basename]->begin(), info->playlists[basename]->end(), CollectionInfo::itemIsLess);
-                }
             }
         }
     }

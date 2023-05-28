@@ -218,22 +218,7 @@ void CollectionInfo::sortPlaylists()
     {
         if ( itP->second != allItems )
         {
-            toSortItems.clear();
-            for(std::vector <Item *>::iterator itSort = itP->second->begin(); itSort != itP->second->end(); itSort++)
-            {
-                toSortItems.push_back((*itSort));
-            }
-            itP->second->clear();
-            for(std::vector <Item *>::iterator itAll = allItems->begin(); itAll != allItems->end(); itAll++)
-            {
-                for(std::vector <Item *>::iterator itSort = toSortItems.begin(); itSort != toSortItems.end(); itSort++)
-                {
-                    if ((*itAll) == (*itSort))
-                    {
-                        itP->second->push_back((*itAll));
-                    }
-                }
-            }
+            std::sort(itP->second->begin(), itP->second->end(), itemIsLess);
         }
     }
 }
