@@ -547,6 +547,7 @@ void CollectionInfoBuilder::loadPlaylistItems(CollectionInfo* info, std::map<std
                 playlistItem->leaf = false;
                 playlistItem->collectionInfo = info;
                 playlistItems->insert({ basename, playlistItem });
+                std::string sortType = Item::validSortType(basename) ? basename : "";
 
                 // add the playlist list 
                 for (std::map<std::string, Item*>::iterator it = playlistFilter.begin(); it != playlistFilter.end(); it++)
@@ -564,14 +565,11 @@ void CollectionInfoBuilder::loadPlaylistItems(CollectionInfo* info, std::map<std
                         }
                     }
 
-                    std::string sortType = Item::validSortType(basename) ? basename : "";
                     // go through all items and assign them to the playlist to be shown
                     for (std::vector<Item*>::iterator it = info->items.begin(); it != info->items.end(); it++)
                     {
                         if (((*it)->name == itemName || itemName == "*") && (*it)->collectionInfo->name == collectionName)
                         {
-                            // use to guide which sort to use if applies
-                            (*it)->sortType = sortType;
                             info->playlists[basename]->push_back((*it));
                             if (basename == "favorites")
                                 (*it)->isFavorite = true;

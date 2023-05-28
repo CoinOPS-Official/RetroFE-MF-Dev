@@ -45,7 +45,6 @@ public:
     std::string rating;
     std::string score;
     std::string playlist;
-    std::string sortType;
     bool        isFavorite;
     CollectionInfo *collectionInfo;
     bool leaf;

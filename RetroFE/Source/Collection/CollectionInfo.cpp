@@ -195,7 +195,7 @@ bool CollectionInfo::itemIsLess(Item *lhs, Item *rhs)
         return false;
 
     // sort by another attribute
-    std::string sortType = lhs->sortType != "" ? lhs->sortType : rhs->sortType;
+    std::string sortType = lhs->collectionInfo->sortType != "" ? lhs->collectionInfo->sortType : rhs->collectionInfo->sortType;
     if (sortType != "" && lhs->sortByAttribute(sortType) != rhs->sortByAttribute(sortType))
         return lhs->sortByAttribute(sortType) < rhs->sortByAttribute(sortType);
     // default sort by name
@@ -218,7 +218,10 @@ void CollectionInfo::sortPlaylists()
     {
         if ( itP->second != allItems )
         {
+            // temporarily set collection info's sortType so search has access to it
+            sortType = Item::validSortType(itP->first) ? itP->first : "";
             std::sort(itP->second->begin(), itP->second->end(), itemIsLess);
         }
     }
+    sortType = "";
 }
