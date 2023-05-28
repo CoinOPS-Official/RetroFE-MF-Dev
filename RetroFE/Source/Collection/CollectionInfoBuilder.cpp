@@ -570,7 +570,6 @@ void CollectionInfoBuilder::loadPlaylistItems(CollectionInfo* info, std::map<std
                         if (((*it)->name == itemName || itemName == "*") && (*it)->collectionInfo->name == collectionName)
                         {
                             // use to guide which sort to use if applies
-                            (*it)->collectionInfo->menusort = true;
                             (*it)->collectionInfo->sortType = basename;
                             info->playlists[basename]->push_back((*it));
                             if (basename == "favorites")
