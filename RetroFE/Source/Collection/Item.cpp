@@ -73,6 +73,8 @@ bool Item::validSortType(std::string attribute)
 
 std::string Item::getMetaAttribute(std::string attribute)
 {
+    std::transform(attribute.begin(), attribute.end(), attribute.begin(), ::tolower);
+
     std::string value = "";
     if (attribute == "year") value = year;
     else if (attribute == "manufacturer") value = manufacturer;
