@@ -195,7 +195,7 @@ bool CollectionInfo::itemIsLess(Item *lhs, Item *rhs)
         return false;
 
     // sort by another attribute
-    std::string sortType = lhs->collectionInfo->sortType != "" ? lhs->collectionInfo->sortType : rhs->collectionInfo->sortType;
+    std::string sortType = lhs->sortType != "" ? lhs->sortType : rhs->sortType;
     if (sortType != "" && lhs->sortByAttribute(sortType) != rhs->sortByAttribute(sortType))
         return lhs->sortByAttribute(sortType) < rhs->sortByAttribute(sortType);
     // default sort by name

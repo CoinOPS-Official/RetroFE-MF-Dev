@@ -564,13 +564,14 @@ void CollectionInfoBuilder::loadPlaylistItems(CollectionInfo* info, std::map<std
                         }
                     }
 
+                    std::string sortType = Item::validSortType(basename) ? basename : "";
                     // go through all items and assign them to the playlist to be shown
                     for (std::vector<Item*>::iterator it = info->items.begin(); it != info->items.end(); it++)
                     {
                         if (((*it)->name == itemName || itemName == "*") && (*it)->collectionInfo->name == collectionName)
                         {
                             // use to guide which sort to use if applies
-                            (*it)->collectionInfo->sortType = basename;
+                            (*it)->sortType = sortType;
                             info->playlists[basename]->push_back((*it));
                             if (basename == "favorites")
                                 (*it)->isFavorite = true;
