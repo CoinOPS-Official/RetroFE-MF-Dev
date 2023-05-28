@@ -54,6 +54,8 @@ std::string Item::lowercaseFullTitle()
 
 bool Item::validSortType(std::string attribute)
 {
+    std::transform(attribute.begin(), attribute.end(), attribute.begin(), ::tolower);
+
     bool valid = false;
     if (attribute == "year") valid = true;
     else if (attribute == "manufacturer") valid = true;
@@ -69,7 +71,7 @@ bool Item::validSortType(std::string attribute)
     return valid;
 }
 
-std::string Item::sortByAttribute(std::string attribute)
+std::string Item::getMetaAttribute(std::string attribute)
 {
     std::string value = "";
     if (attribute == "year") value = year;
