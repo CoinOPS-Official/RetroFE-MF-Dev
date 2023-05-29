@@ -50,3 +50,4 @@ v0.10.34.1
 	- added menu jump for meta sorted playlists (monkofthefunk)
 	- added to only perform layout action if on playlist="" might support coma seperated list (monkofthefunk)
 	- fixed jump item meta miss match with previous item (monkofthefunk)
+	- remove acceleration from attract mode scroll (monkofthefunk)

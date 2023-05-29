@@ -100,7 +100,7 @@ int AttractMode::update(float dt, Page &page)
         if (page.isMenuIdle())
         {
             page.scroll(true);
-            page.updateScrollPeriod();
+            //page.updateScrollPeriod(); // disable acceleration of scrolling
         }
 
         if(elapsedTime_ > activeTime_)
