@@ -623,7 +623,6 @@ bool RetroFE::run( )
         case RETROFE_MENUJUMP_EXIT:
             if (currentPage_->isIdle( ))
             {
-                currentPage_->onNewItemSelected( );
                 state = RETROFE_MENUJUMP_LOAD_ART;
             }
             break;
@@ -632,6 +631,7 @@ bool RetroFE::run( )
         case RETROFE_MENUJUMP_LOAD_ART:
             if (currentPage_->isIdle( ))
             {
+                currentPage_->onNewItemSelected();
                 currentPage_->reallocateMenuSpritePoints(false); // skip updating playlist menu
                 currentPage_->menuJumpEnter( );
                 state = RETROFE_MENUJUMP_ENTER;
