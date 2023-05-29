@@ -344,6 +344,7 @@ bool RetroFE::run( )
         return false;
     }
 
+    bool attractModeFast = false;
     int attractModeTime           = 0;
     int attractModeNextTime       = 0;
     int attractModePlaylistTime   = 0;
@@ -361,6 +362,7 @@ bool RetroFE::run( )
     config_.getProperty( "attractModeMinTime", attractModeMinTime );
     config_.getProperty( "attractModeMaxTime", attractModeMaxTime );
     config_.getProperty( "firstCollection", firstCollection );
+    config_.getProperty("attractModeFast", attractModeFast);
 
     attract_.idleTime           = static_cast<float>(attractModeTime);
     attract_.idleNextTime       = static_cast<float>(attractModeNextTime);
@@ -368,6 +370,7 @@ bool RetroFE::run( )
     attract_.idleCollectionTime = static_cast<float>(attractModeCollectionTime);
     attract_.minTime            = attractModeMinTime;
     attract_.maxTime            = attractModeMaxTime;
+    attract_.isFast = attractModeFast;
 
     int fps     = 60;
     int fpsIdle = 60;
