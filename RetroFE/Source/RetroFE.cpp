@@ -835,7 +835,10 @@ bool RetroFE::run( )
                         currentPage_->nextPlaylist( );
                       
                         if (isInAttractModeSkipPlaylist(currentPage_->getPlaylistName()))
+                        {
+                            //todo find next playlist that isn't in skip list
                             currentPage_->nextPlaylist();
+                        }
 
                         state = RETROFE_PLAYLIST_REQUEST;
                     }
@@ -903,8 +906,11 @@ bool RetroFE::run( )
                         attractModePlaylistCollectionNumber_ = 0;
                         currentPage_->nextPlaylist( );
 
-                        if(isInAttractModeSkipPlaylist(currentPage_->getPlaylistName()))
+                        if (isInAttractModeSkipPlaylist(currentPage_->getPlaylistName())) 
+                        {
+                            //todo find next playlist that isn't in skip list
                             currentPage_->nextPlaylist();
+                        }
 
                         state = RETROFE_PLAYLIST_REQUEST;
                     }
@@ -1187,7 +1193,9 @@ bool RetroFE::run( )
 
                 if (!isInAttractModeSkipPlaylist(currentPage_->getPlaylistName()) &&
                     nextPageItem_->collectionInfo->name != lastPlayedSkipCollection)
-                    cib.updateLastPlayedPlaylist( currentPage_->getCollection(), nextPageItem_, size ); // Update last played playlist if not currently in the skip playlist (e.g. settings)
+                {
+                    cib.updateLastPlayedPlaylist(currentPage_->getCollection(), nextPageItem_, size); // Update last played playlist if not currently in the skip playlist (e.g. settings)
+                }
 
                 l.LEDBlinky( 3, nextPageItem_->collectionInfo->name, nextPageItem_ );
                 if (l.run(nextPageItem_->collectionInfo->name, nextPageItem_)) // Run and check if we need to reboot
@@ -1434,6 +1442,7 @@ bool RetroFE::run( )
 
                         if (isInAttractModeSkipPlaylist(currentPage_->getPlaylistName()))
                         {
+                            // todo find next playlist that is not in list
                             if ( cyclePlaylist )
                                 currentPage_->nextCyclePlaylist( cycleVector );
                             else
@@ -1874,8 +1883,10 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
                     config_.getProperty("lastplayedCollectionSize", size);
 
                     if (!isInAttractModeSkipPlaylist(currentPage_->getPlaylistName()) &&
-                        nextPageItem_->collectionInfo->name != lastPlayedSkipCollection)
-                        cib.updateLastPlayedPlaylist( currentPage_->getCollection(), nextPageItem_, size ); // Update last played playlist if not currently in the skip playlist (e.g. settings)
+                        nextPageItem_->collectionInfo->name != lastPlayedSkipCollection) 
+                    {
+                        cib.updateLastPlayedPlaylist(currentPage_->getCollection(), nextPageItem_, size); // Update last played playlist if not currently in the skip playlist (e.g. settings)
+                    }
                     state = RETROFE_NEXT_PAGE_REQUEST;
                 }
             }
