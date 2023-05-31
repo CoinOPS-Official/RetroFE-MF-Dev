@@ -1523,18 +1523,19 @@ bool RetroFE::isInAttractModeSkipPlaylist(std::string playlist)
             config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
         }
 
-        // see if any of the comma seperated match current playlist
-        std::stringstream ss(attractModeSkipPlaylist);
-        std::string playlist = "";
-        std::string playlistName = currentPage_->getPlaylistName();
-        while (ss.good())
-        {
-            getline(ss, playlist, ',');
-            lkupAttractModeSkipPlaylist_.insert(make_pair(playlist, true));
+        if (attractModeSkipPlaylist != "") {
+            // see if any of the comma seperated match current playlist
+            std::stringstream ss(attractModeSkipPlaylist);
+            std::string playlist = "";
+            while (ss.good())
+            {
+                getline(ss, playlist, ',');
+                lkupAttractModeSkipPlaylist_.insert(make_pair(playlist, true));
+            }
         }
     }
 
-    return lkupAttractModeSkipPlaylist_.find(playlist) != lkupAttractModeSkipPlaylist_.end();
+    return !lkupAttractModeSkipPlaylist_.empty() && lkupAttractModeSkipPlaylist_.find(playlist) != lkupAttractModeSkipPlaylist_.end();
 }
 
 // Process the user input
