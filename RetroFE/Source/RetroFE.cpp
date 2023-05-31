@@ -843,8 +843,19 @@ bool RetroFE::run( )
                             config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
                         }
 
-                        if (currentPage_->getPlaylistName( ) == attractModeSkipPlaylist)
-                            currentPage_->nextPlaylist( );
+                        // see if any of the comma seperated match current playlist
+                        std::stringstream ss(attractModeSkipPlaylist);
+                        std::string playlist = "";
+                        std::string playlistName = currentPage_->getPlaylistName();
+                        while (ss.good())
+                        {
+                            getline(ss, playlist, ',');
+                            if (playlistName == playlist) {
+                                currentPage_->nextPlaylist();
+                                break;
+                            }
+                        }
+
                         state = RETROFE_PLAYLIST_REQUEST;
                     }
                 }
@@ -920,8 +931,19 @@ bool RetroFE::run( )
                             config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
                         }
 
-                        if (currentPage_->getPlaylistName( ) == attractModeSkipPlaylist)
-                            currentPage_->nextPlaylist( );
+                        // see if any of the comma seperated match current playlist
+                        std::stringstream ss(attractModeSkipPlaylist);
+                        std::string playlist = "";
+                        std::string playlistName = currentPage_->getPlaylistName();
+                        while (ss.good())
+                        {
+                            getline(ss, playlist, ',');
+                            if (playlistName == playlist) {
+                                currentPage_->nextPlaylist();
+                                break;
+                            }
+                        }
+
                         state = RETROFE_PLAYLIST_REQUEST;
                     }
                 }
@@ -1210,7 +1232,21 @@ bool RetroFE::run( )
                     config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
                 }
 
-                if (currentPage_->getPlaylistName( )    != attractModeSkipPlaylist &&
+                // see if any of the comma seperated match current playlist
+                std::stringstream ss(attractModeSkipPlaylist);
+                std::string playlist = "";
+                std::string playlistName = currentPage_->getPlaylistName();
+                bool foundPlaylist = false;
+                while (ss.good())
+                {
+                    getline(ss, playlist, ',');
+                    if (playlistName == playlist) {
+                        foundPlaylist = true;
+                        break;
+                    }
+                }
+
+                if (!foundPlaylist &&
                     nextPageItem_->collectionInfo->name != lastPlayedSkipCollection)
                     cib.updateLastPlayedPlaylist( currentPage_->getCollection(), nextPageItem_, size ); // Update last played playlist if not currently in the skip playlist (e.g. settings)
 
@@ -1466,7 +1502,21 @@ bool RetroFE::run( )
                             config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
                         }
 
-                        if (currentPage_->getPlaylistName( ) == attractModeSkipPlaylist)
+                        // see if any of the comma seperated match current playlist
+                        std::stringstream ss(attractModeSkipPlaylist);
+                        std::string playlist = "";
+                        std::string playlistName = currentPage_->getPlaylistName();
+                        bool foundPlaylist = false;
+                        while (ss.good())
+                        {
+                            getline(ss, playlist, ',');
+                            if (playlistName == playlist) {
+                                foundPlaylist = true;
+                                break;
+                            }
+                        }
+
+                        if (foundPlaylist)
                         {
                             if ( cyclePlaylist )
                                 currentPage_->nextCyclePlaylist( cycleVector );
@@ -1888,8 +1938,22 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
                     else {
                         config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
                     }
-    
-                    if (currentPage_->getPlaylistName( )    != attractModeSkipPlaylist &&
+
+                    // see if any of the comma seperated match current playlist
+                    std::stringstream ss(attractModeSkipPlaylist);
+                    std::string playlist = "";
+                    std::string playlistName = currentPage_->getPlaylistName();
+                    bool foundPlaylist = false;
+                    while (ss.good())
+                    {
+                        getline(ss, playlist, ',');
+                        if (playlistName == playlist) {
+                            foundPlaylist = true;
+                            break;
+                        }
+                    }
+
+                    if (!foundPlaylist &&
                         nextPageItem_->collectionInfo->name != lastPlayedSkipCollection)
                         cib.updateLastPlayedPlaylist( currentPage_->getCollection(), nextPageItem_, size ); // Update last played playlist if not currently in the skip playlist (e.g. settings)
                     state = RETROFE_NEXT_PAGE_REQUEST;
