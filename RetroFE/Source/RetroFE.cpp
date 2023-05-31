@@ -833,28 +833,9 @@ bool RetroFE::run( )
                     {
                         attractModePlaylistCollectionNumber_ = 0;
                         currentPage_->nextPlaylist( );
-                        std::string attractModeSkipPlaylist = "";
-                        std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
-                        // check if collection has different setting
-                        if (config_.propertyExists(settingPrefix + "attractModeSkipPlaylist")) {
-                            config_.getProperty(settingPrefix + "attractModeSkipPlaylist", attractModeSkipPlaylist);
-                        }
-                        else {
-                            config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
-                        }
-
-                        // see if any of the comma seperated match current playlist
-                        std::stringstream ss(attractModeSkipPlaylist);
-                        std::string playlist = "";
-                        std::string playlistName = currentPage_->getPlaylistName();
-                        while (ss.good())
-                        {
-                            getline(ss, playlist, ',');
-                            if (playlistName == playlist) {
-                                currentPage_->nextPlaylist();
-                                break;
-                            }
-                        }
+                      
+                        if (isInAttractModeSkipPlaylist(currentPage_->getPlaylistName()))
+                            currentPage_->nextPlaylist();
 
                         state = RETROFE_PLAYLIST_REQUEST;
                     }
@@ -921,28 +902,9 @@ bool RetroFE::run( )
                     {
                         attractModePlaylistCollectionNumber_ = 0;
                         currentPage_->nextPlaylist( );
-                        std::string attractModeSkipPlaylist = "";
-                        std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
-                        // check if collection has different setting
-                        if (config_.propertyExists(settingPrefix + "attractModeSkipPlaylist")) {
-                            config_.getProperty(settingPrefix + "attractModeSkipPlaylist", attractModeSkipPlaylist);
-                        }
-                        else {
-                            config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
-                        }
 
-                        // see if any of the comma seperated match current playlist
-                        std::stringstream ss(attractModeSkipPlaylist);
-                        std::string playlist = "";
-                        std::string playlistName = currentPage_->getPlaylistName();
-                        while (ss.good())
-                        {
-                            getline(ss, playlist, ',');
-                            if (playlistName == playlist) {
-                                currentPage_->nextPlaylist();
-                                break;
-                            }
-                        }
+                        if(isInAttractModeSkipPlaylist(currentPage_->getPlaylistName()))
+                            currentPage_->nextPlaylist();
 
                         state = RETROFE_PLAYLIST_REQUEST;
                     }
@@ -1218,35 +1180,12 @@ bool RetroFE::run( )
                 nextPageItem_ = currentPage_->getSelectedItem( );
                 launchEnter( );
                 CollectionInfoBuilder cib(config_, *metadb_);
-                std::string attractModeSkipPlaylist  = "";
                 std::string lastPlayedSkipCollection = "";
                 int         size = 0;
                 config_.getProperty( "lastPlayedSkipCollection", lastPlayedSkipCollection );
                 config_.getProperty( "lastplayedSize", size );
-                std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
-                // check if collection has different setting
-                if (config_.propertyExists(settingPrefix + "attractModeSkipPlaylist")) {
-                    config_.getProperty(settingPrefix + "attractModeSkipPlaylist", attractModeSkipPlaylist);
-                }
-                else {
-                    config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
-                }
 
-                // see if any of the comma seperated match current playlist
-                std::stringstream ss(attractModeSkipPlaylist);
-                std::string playlist = "";
-                std::string playlistName = currentPage_->getPlaylistName();
-                bool foundPlaylist = false;
-                while (ss.good())
-                {
-                    getline(ss, playlist, ',');
-                    if (playlistName == playlist) {
-                        foundPlaylist = true;
-                        break;
-                    }
-                }
-
-                if (!foundPlaylist &&
+                if (!isInAttractModeSkipPlaylist(currentPage_->getPlaylistName()) &&
                     nextPageItem_->collectionInfo->name != lastPlayedSkipCollection)
                     cib.updateLastPlayedPlaylist( currentPage_->getCollection(), nextPageItem_, size ); // Update last played playlist if not currently in the skip playlist (e.g. settings)
 
@@ -1493,30 +1432,7 @@ bool RetroFE::run( )
                         else
                             currentPage_->nextPlaylist( );
 
-                        std::string attractModeSkipPlaylist = "";
-                        // check if collection has different setting
-                        if (config_.propertyExists(settingPrefix + "attractModeSkipPlaylist")) {
-                            config_.getProperty(settingPrefix + "attractModeSkipPlaylist", attractModeSkipPlaylist);
-                        }
-                        else {
-                            config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
-                        }
-
-                        // see if any of the comma seperated match current playlist
-                        std::stringstream ss(attractModeSkipPlaylist);
-                        std::string playlist = "";
-                        std::string playlistName = currentPage_->getPlaylistName();
-                        bool foundPlaylist = false;
-                        while (ss.good())
-                        {
-                            getline(ss, playlist, ',');
-                            if (playlistName == playlist) {
-                                foundPlaylist = true;
-                                break;
-                            }
-                        }
-
-                        if (foundPlaylist)
+                        if (isInAttractModeSkipPlaylist(currentPage_->getPlaylistName()))
                         {
                             if ( cyclePlaylist )
                                 currentPage_->nextCyclePlaylist( cycleVector );
@@ -1592,6 +1508,33 @@ bool RetroFE::isStandalonePlaylist(std::string playlist)
 {
     return playlist == "street fighter and capcom fighters" ||
         playlist == "street fighter";
+}
+
+bool RetroFE::isInAttractModeSkipPlaylist(std::string playlist)
+{
+    if (lkupAttractModeSkipPlaylist_.empty()) {
+        std::string attractModeSkipPlaylist = "";
+        std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
+        // check if collection has different setting
+        if (config_.propertyExists(settingPrefix + "attractModeSkipPlaylist")) {
+            config_.getProperty(settingPrefix + "attractModeSkipPlaylist", attractModeSkipPlaylist);
+        }
+        else {
+            config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
+        }
+
+        // see if any of the comma seperated match current playlist
+        std::stringstream ss(attractModeSkipPlaylist);
+        std::string playlist = "";
+        std::string playlistName = currentPage_->getPlaylistName();
+        while (ss.good())
+        {
+            getline(ss, playlist, ',');
+            lkupAttractModeSkipPlaylist_.insert(make_pair(playlist, true));
+        }
+    }
+
+    return lkupAttractModeSkipPlaylist_.find(playlist) != lkupAttractModeSkipPlaylist_.end();
 }
 
 // Process the user input
@@ -1924,36 +1867,12 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
                 else
                 {
                     CollectionInfoBuilder cib(config_, *metadb_);
-                    std::string attractModeSkipPlaylist  = "";
                     std::string lastPlayedSkipCollection = "";
                     int         size = 0;
                     config_.getProperty( "lastPlayedSkipCollection", lastPlayedSkipCollection );
                     config_.getProperty("lastplayedCollectionSize", size);
 
-                    std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
-                    // check if collection has different setting
-                    if (config_.propertyExists(settingPrefix + "attractModeSkipPlaylist")) {
-                        config_.getProperty(settingPrefix + "attractModeSkipPlaylist", attractModeSkipPlaylist);
-                    }
-                    else {
-                        config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
-                    }
-
-                    // see if any of the comma seperated match current playlist
-                    std::stringstream ss(attractModeSkipPlaylist);
-                    std::string playlist = "";
-                    std::string playlistName = currentPage_->getPlaylistName();
-                    bool foundPlaylist = false;
-                    while (ss.good())
-                    {
-                        getline(ss, playlist, ',');
-                        if (playlistName == playlist) {
-                            foundPlaylist = true;
-                            break;
-                        }
-                    }
-
-                    if (!foundPlaylist &&
+                    if (!isInAttractModeSkipPlaylist(currentPage_->getPlaylistName()) &&
                         nextPageItem_->collectionInfo->name != lastPlayedSkipCollection)
                         cib.updateLastPlayedPlaylist( currentPage_->getCollection(), nextPageItem_, size ); // Update last played playlist if not currently in the skip playlist (e.g. settings)
                     state = RETROFE_NEXT_PAGE_REQUEST;
