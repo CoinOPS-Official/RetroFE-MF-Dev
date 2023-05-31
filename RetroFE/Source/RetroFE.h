@@ -112,6 +112,7 @@ private:
     bool            back( bool &exit );
     bool isStandalonePlaylist(std::string playlist);
     bool isInAttractModeSkipPlaylist(std::string playlist);
+    void goToNextAttractModePlaylistByCycle(std::vector<std::string> cycleVector);
     void            quit( );
     Page           *loadPage( );
     Page           *loadSplashPage( );

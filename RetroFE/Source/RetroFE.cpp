@@ -1433,20 +1433,24 @@ bool RetroFE::run( )
                             config_.getProperty("cyclePlaylist", cycleString);
                         }
 
+                        // go to next playlist in cycle or from all found playlists
                         std::vector<std::string> cycleVector;
-                        Utils::listToVector(cycleString, cycleVector, ',' );
-                        if ( cyclePlaylist )
-                            currentPage_->nextCyclePlaylist( cycleVector );
+                        Utils::listToVector(cycleString, cycleVector, ',');
+                        if (cyclePlaylist)
+                            currentPage_->nextCyclePlaylist(cycleVector);
                         else
-                            currentPage_->nextPlaylist( );
+                            currentPage_->nextPlaylist();
 
+                        // if that next playlist is one to skip for attract, then find one that isn't
                         if (isInAttractModeSkipPlaylist(currentPage_->getPlaylistName()))
                         {
-                            // todo find next playlist that is not in list
-                            if ( cyclePlaylist )
-                                currentPage_->nextCyclePlaylist( cycleVector );
-                            else
-                                currentPage_->nextPlaylist( );
+                            if (cyclePlaylist) {
+                                goToNextAttractModePlaylistByCycle(cycleVector);
+                            }
+                            else {
+                                // todo perform smarter playlist skipping
+                                currentPage_->nextPlaylist();
+                            }
                         }
                         state = RETROFE_PLAYLIST_REQUEST;
                     }
@@ -1545,6 +1549,26 @@ bool RetroFE::isInAttractModeSkipPlaylist(std::string playlist)
     }
 
     return !lkupAttractModeSkipPlaylist_.empty() && lkupAttractModeSkipPlaylist_.find(playlist) != lkupAttractModeSkipPlaylist_.end();
+}
+
+void RetroFE::goToNextAttractModePlaylistByCycle(std::vector<std::string> cycleVector)
+{
+    // find current position
+    std::vector<std::string>::iterator it = cycleVector.begin();
+    while (it != cycleVector.end() && *it != currentPage_->getPlaylistName())
+        ++it;
+    // find next playlist that is not in list 
+    while (it != cycleVector.end()) {
+        ++it;
+        if (it == cycleVector.end())
+            it = cycleVector.begin();
+        else if (!isInAttractModeSkipPlaylist(*it)) {
+            break;
+        }
+    }
+    currentPage_->nextCyclePlaylist(cycleVector);
+    if (currentPage_->playlistExists(*it)) {
+        currentPage_->selectPlaylist(*it);                            }
 }
 
 // Process the user input
