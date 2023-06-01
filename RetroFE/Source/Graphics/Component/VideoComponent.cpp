@@ -49,17 +49,27 @@ void VideoComponent::update(float dt)
     if (videoInst_)
     {
         isPlaying_ = ((GStreamerVideo *)(videoInst_))->isPlaying();
-    }
-    if(isPlaying_)
-    {
-        videoInst_->setVolume(baseViewInfo.Volume);
-        videoInst_->update(dt);
-
-        // video needs to run a frame to start getting size info
-        if(baseViewInfo.ImageHeight == 0 && baseViewInfo.ImageWidth == 0)
+   
+        if(isPlaying_)
         {
-            baseViewInfo.ImageHeight = static_cast<float>(videoInst_->getHeight());
-            baseViewInfo.ImageWidth = static_cast<float>(videoInst_->getWidth());
+            videoInst_->setVolume(baseViewInfo.Volume);
+            videoInst_->update(dt);
+
+            // video needs to run a frame to start getting size info
+            if(baseViewInfo.ImageHeight == 0 && baseViewInfo.ImageWidth == 0)
+            {
+                baseViewInfo.ImageHeight = static_cast<float>(videoInst_->getHeight());
+                baseViewInfo.ImageWidth = static_cast<float>(videoInst_->getWidth());
+            }
+        }
+
+        // restart and stop if alpha 0 then start playing if >0
+        if (baseViewInfo.Alpha == 0) {
+            restart();
+            stop();
+        }
+        else if (!isPlaying_) {
+            play();
         }
     }
 
@@ -70,17 +80,11 @@ void VideoComponent::update(float dt)
 void VideoComponent::allocateGraphicsMemory()
 {
     Component::allocateGraphicsMemory();
-
-    if(!isPlaying_)
-    {
-        isPlaying_ = videoInst_->play(videoFile_);
-    }
 }
 
 void VideoComponent::freeGraphicsMemory()
 {
-    videoInst_->stop();
-    isPlaying_ = false;
+    stop();
 
     Component::freeGraphicsMemory();
 }
@@ -101,6 +105,22 @@ void VideoComponent::draw()
     if(texture)
     {
         SDL::renderCopy(texture, baseViewInfo.Alpha, NULL, &rect, baseViewInfo, page.getLayoutWidth(baseViewInfo.Monitor), page.getLayoutHeight(baseViewInfo.Monitor));
+    }
+}
+
+void VideoComponent::stop()
+{
+    if (videoInst_ && isPlaying_)
+    {
+        isPlaying_ = !videoInst_->stop();
+    }
+}
+
+void VideoComponent::play()
+{
+    if (videoInst_ && !isPlaying_)
+    {
+        isPlaying_ = videoInst_->play(videoFile_);
     }
 }
 

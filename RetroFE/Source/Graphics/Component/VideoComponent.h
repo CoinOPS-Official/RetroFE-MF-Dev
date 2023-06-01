@@ -29,6 +29,8 @@ public:
     virtual ~VideoComponent();
     void update(float dt);
     void draw();
+    void stop();
+    void play();
     void freeGraphicsMemory();
     void allocateGraphicsMemory();
     virtual bool isPlaying();
