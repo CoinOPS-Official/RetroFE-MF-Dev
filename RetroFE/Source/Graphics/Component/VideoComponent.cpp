@@ -27,6 +27,7 @@ VideoComponent::VideoComponent(IVideo *videoInst, Page &p, std::string videoFile
     , videoFile_(videoFile)
     , videoInst_(videoInst)
     , isPlaying_(false)
+    , forceStop_(false)
 {
 //   AllocateGraphicsMemory();
 }
@@ -64,11 +65,11 @@ void VideoComponent::update(float dt)
         }
 
         // restart and stop if alpha 0 then start playing if >0
-        if (baseViewInfo.Alpha == 0) {
-            restart();
-            stop();
+        if (isPlaying_ && baseViewInfo.Alpha == 0) {
+            pause();
+            isPlaying_ = false;
         }
-        else if (!isPlaying_) {
+        else if (!forceStop_ && !isPlaying_ && baseViewInfo.Alpha > 0) {
             play();
         }
     }
@@ -80,6 +81,7 @@ void VideoComponent::update(float dt)
 void VideoComponent::allocateGraphicsMemory()
 {
     Component::allocateGraphicsMemory();
+    play();
 }
 
 void VideoComponent::freeGraphicsMemory()
@@ -110,9 +112,10 @@ void VideoComponent::draw()
 
 void VideoComponent::stop()
 {
-    if (videoInst_ && isPlaying_)
+    if (videoInst_)
     {
         isPlaying_ = !videoInst_->stop();
+        forceStop_ = true;
     }
 }
 
@@ -160,7 +163,7 @@ void VideoComponent::skipBackwardp( )
 
 void VideoComponent::pause( )
 {
-    if ( videoInst_ )
+    if ( videoInst_ && isPlaying_)
         videoInst_->pause( );
 }
 

@@ -49,4 +49,5 @@ private:
     std::string name_;
     IVideo *videoInst_;
     bool isPlaying_;
+    bool forceStop_;
 };
