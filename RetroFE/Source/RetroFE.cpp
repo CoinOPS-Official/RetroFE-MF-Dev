@@ -1567,7 +1567,8 @@ void RetroFE::goToNextAttractModePlaylistByCycle(std::vector<std::string> cycleV
             it = cycleVector.begin();
     }
     if (currentPage_->playlistExists(*it)) {
-        currentPage_->selectPlaylist(*it);                            }
+        currentPage_->selectPlaylist(*it);                            
+    }
 }
 
 // Process the user input
