@@ -1558,15 +1558,14 @@ void RetroFE::goToNextAttractModePlaylistByCycle(std::vector<std::string> cycleV
     while (it != cycleVector.end() && *it != currentPage_->getPlaylistName())
         ++it;
     // find next playlist that is not in list 
-    while (it != cycleVector.end()) {
+    for (;;) {
+        if (!isInAttractModeSkipPlaylist(*it)) {
+            break;
+        }
         ++it;
         if (it == cycleVector.end())
             it = cycleVector.begin();
-        else if (!isInAttractModeSkipPlaylist(*it)) {
-            break;
-        }
     }
-    currentPage_->nextCyclePlaylist(cycleVector);
     if (currentPage_->playlistExists(*it)) {
         currentPage_->selectPlaylist(*it);                            }
 }
