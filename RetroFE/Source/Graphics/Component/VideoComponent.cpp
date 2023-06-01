@@ -68,8 +68,9 @@ void VideoComponent::update(float dt)
             pause();
             isPlaying_ = false;
         }
-        else if (isPaused() && baseViewInfo.Alpha > 0) {
-            play();
+        else if (!isPlaying_ && baseViewInfo.Alpha > 0) {
+            pause();
+            isPlaying_ = true;
         }
     }
 
