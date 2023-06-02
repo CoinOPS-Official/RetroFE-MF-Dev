@@ -421,6 +421,11 @@ bool Component::animate()
 
             case TWEEN_PROPERTY_NOP:
                 break;
+            case TWEEN_PROPERTY_RESTART:
+                if (currentDone) {
+                    baseViewInfo.Restart = true;
+                }
+                break;
             }
         }
 
