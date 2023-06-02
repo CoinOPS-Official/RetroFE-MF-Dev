@@ -1430,7 +1430,7 @@ void PageBuilder::getAnimationEvents(xml_node<> *node, TweenSet &tweens)
             {
                 Logger::write(Logger::ZONE_ERROR, "Layout", "Animate tag missing \"type\" attribute");
             }
-            else if(!to && animateType != "nop")
+            else if(!to && (animateType != "nop" || animateType != "restart"))
             {
                 Logger::write(Logger::ZONE_ERROR, "Layout", "Animate tag missing \"to\" attribute");
             }
@@ -1467,7 +1467,7 @@ void PageBuilder::getAnimationEvents(xml_node<> *node, TweenSet &tweens)
 
                 }
 
-                if(Tween::getTweenProperty(type->value(), property))
+                if(Tween::getTweenProperty(animateType, property))
                 {
                     switch(property)
                     {
