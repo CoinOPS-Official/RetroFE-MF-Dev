@@ -341,14 +341,15 @@ void ReloadableMedia::reloadTexture()
         else if (typeLC == "position")
         {
             if (!selectedItem->collectionInfo->items.empty()) {
-                if (page.getSelectedIndex() <= 1) {
+                int position = page.getSelectedIndex() + 1;
+                if (position == 1) {
                     basename = '1';
                 }
-                else if (page.getSelectedIndex()+1 == page.getCollectionSize()) {
+                else if (position == page.getCollectionSize()) {
                     basename = std::to_string(numberOfImages_);
                 }
                 else {
-                    basename = std::to_string(int(round(float(page.getSelectedIndex()+1) / float(page.getCollectionSize()) * float(numberOfImages_))));
+                    basename = std::to_string(int(ceil(float(position) / float(page.getCollectionSize()) * float(numberOfImages_))));
                 }
                 defined = true;
             }
