@@ -1509,9 +1509,6 @@ void PageBuilder::getAnimationEvents(xml_node<> *node, TweenSet &tweens)
                         fromValue = getVerticalAlignment(from, FLT_MAX);
                         toValue   = getVerticalAlignment(to,   FLT_MAX);
                         break;
-                    case TWEEN_PROPERTY_RESTART:
-                        toValue = 1;
-                        break;
                     default:
                         break;
                     }
