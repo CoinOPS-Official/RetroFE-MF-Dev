@@ -264,6 +264,7 @@ bool CollectionInfoBuilder::ImportBasicList(CollectionInfo *info, std::string fi
                 i->name = line;
                 i->title = line;
                 i->collectionInfo = info;
+                // todo parse play count and last played time
 
                 list.push_back(i);
             }
@@ -635,6 +636,8 @@ void CollectionInfoBuilder::updateLastPlayedPlaylist(CollectionInfo *info, Item 
                  itemName       = itemName.erase(0, position+1);
              }
         }
+        
+        // todo update the curren't item's play count and last played time to be used for meta info/sorting and writing back to list
 
         for(std::vector<Item *>::iterator it = info->items.begin(); it != info->items.end(); it++)
         {
@@ -644,6 +647,8 @@ void CollectionInfoBuilder::updateLastPlayedPlaylist(CollectionInfo *info, Item 
             }
         }
     }
+
+    // todo sort last played by play time with empty values last
 
     // Write new lastplayed playlist
     std::string dir  = Utils::combinePath(Configuration::absolutePath, "collections", playlistCollectionName, "playlists");
@@ -684,10 +689,12 @@ void CollectionInfoBuilder::updateLastPlayedPlaylist(CollectionInfo *info, Item 
             return;
         }
 
+        // write playlist file
         filestream.open(file.c_str());
         std::vector<Item *> *saveitems = info->playlists["lastplayed"];
         for(std::vector<Item *>::iterator it = saveitems->begin(); it != saveitems->end(); it++)
-        {
+        { 
+            // todo append play count and last played time
             if ((*it)->collectionInfo->name == playlistCollectionName)
             {
                 filestream << (*it)->name << std::endl;
