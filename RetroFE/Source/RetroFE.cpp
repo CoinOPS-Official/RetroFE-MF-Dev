@@ -342,11 +342,13 @@ bool RetroFE::run( )
     if(! SDL::initialize( config_ ) ) return false;
     fontcache_.initialize( );
 
+#ifdef WIN32
     bool highPriority = false;
     config_.getProperty("highPriority", highPriority);
     if (highPriority) {
         SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
     }
+#endif
 
     // Define control configuration
     std::string controlsConfPath = Utils::combinePath( Configuration::absolutePath, "controls" );
@@ -1231,8 +1233,7 @@ bool RetroFE::run( )
                 config_.getProperty( "lastPlayedSkipCollection", lastPlayedSkipCollection );
                 config_.getProperty( "lastplayedSize", size );
 
-                if (!isInAttractModeSkipPlaylist(currentPage_->getPlaylistName()) &&
-                    nextPageItem_->collectionInfo->name != lastPlayedSkipCollection)
+                if (nextPageItem_->collectionInfo->name != lastPlayedSkipCollection)
                 {
                     cib.updateLastPlayedPlaylist(currentPage_->getCollection(), nextPageItem_, size); // Update last played playlist if not currently in the skip playlist (e.g. settings)
                     // with new sort by last played return to first
