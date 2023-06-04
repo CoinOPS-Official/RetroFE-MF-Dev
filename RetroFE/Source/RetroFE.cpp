@@ -342,6 +342,12 @@ bool RetroFE::run( )
     if(! SDL::initialize( config_ ) ) return false;
     fontcache_.initialize( );
 
+    bool highPriority = false;
+    config_.getProperty("highPriority", highPriority);
+    if (highPriority) {
+        SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
+    }
+
     // Define control configuration
     std::string controlsConfPath = Utils::combinePath( Configuration::absolutePath, "controls" );
     for (int i = 9; i > 0; i--)
