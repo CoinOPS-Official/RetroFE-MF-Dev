@@ -58,3 +58,5 @@ v0.10.34.1
 	- fixed start and end position (monkofthefunk)
 	- added reloadable type playCount and text lastPlayed that shows date; stores values in lastplayed; sorts last played list by last played (monkofthefunk)
 	- fixed reloadable media on playlist change (monkofthefunk)
+	- added postMessage on start and quit to alert other programs about its current state (inigomontoya)
+	- added property <item selected="true" restart="true"> to restart video upon scroll (monkofthefunk)
