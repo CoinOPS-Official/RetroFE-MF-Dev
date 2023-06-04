@@ -53,6 +53,12 @@
 #include <Windows.h>
 #include <SDL2/SDL_syswm.h>
 #include <SDL2/SDL_thread.h>
+
+int RetroFE::initializeHwndThreadFunction(void* data) {
+    RetroFE* self = reinterpret_cast<RetroFE*>(data);
+    self->initializeHwnd();
+    return 0;
+}
 #endif
 
 
@@ -77,7 +83,7 @@ RetroFE::RetroFE( Configuration &c )
     attractModePlaylistCollectionNumber_ = 0;
     firstPlaylist_                       = "all"; // todo
 #ifdef WIN32
-    initializeHwnd();
+    initializeThread = SDL_CreateThread(initializeHwndThreadFunction, "InitializeHWNDThread", this);
 #endif
 }
 
@@ -92,6 +98,7 @@ void RetroFE::initializeHwnd( ) {
             break;
         }
         attempt++;
+
         SDL_Delay(sleepDuration);
     }
 }
@@ -334,6 +341,12 @@ bool RetroFE::run( )
     // Initialize SDL
     if(! SDL::initialize( config_ ) ) return false;
     fontcache_.initialize( );
+
+    bool highPriority = false;
+    config_.getProperty("highPriority", highPriority);
+    if (highPriority) {
+        SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
+    }
 
     // Define control configuration
     std::string controlsConfPath = Utils::combinePath( Configuration::absolutePath, "controls" );
