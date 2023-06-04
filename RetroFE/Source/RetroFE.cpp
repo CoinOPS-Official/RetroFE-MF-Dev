@@ -76,6 +76,9 @@ RetroFE::RetroFE( Configuration &c )
     attractMode_                         = false;
     attractModePlaylistCollectionNumber_ = 0;
     firstPlaylist_                       = "all"; // todo
+#ifdef WIN32
+    initializeHwnd();
+#endif
 }
 
 #ifdef WIN32
@@ -84,7 +87,7 @@ void RetroFE::initializeHwnd( ) {
     const int sleepDuration = 500; // In milliseconds
     int attempt = 0;
     while (attempt < maxAttempts) {
-        hwnd = FindWindow(NULL, "MediaPlayerHiddenWindow"); // This never exists and yet we wait for 5 seconds
+        hwnd = FindWindow(NULL, "MediaPlayerHiddenWindow");
         if (hwnd != NULL) {
             break;
         }
