@@ -71,6 +71,10 @@ public:
         KeyCodeSkipBackwardp,
         KeyCodePause,
         KeyCodeRestart,
+        KeyCodeLeftMax,
+        KeyCodeRightMax,
+        KeyCodeUpMax,
+        KeyCodeDownMax,
         KeyCodeMax
     };
 

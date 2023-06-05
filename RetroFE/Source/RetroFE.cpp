@@ -1635,43 +1635,43 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             break;
         }
     }
-
+    bool inputMax = false;
     // Handle next/previous game inputs
     if ( page->isHorizontalScroll( ) )
     {
-        if (input_.keystate(UserInput::KeyCodeRight))
+        if (input_.keystate(UserInput::KeyCodeRight) || (inputMax = input_.keystate(UserInput::KeyCodeRightMax)))
         {
             attract_.reset( );
             page->setScrolling(Page::ScrollDirectionForward);
             page->scroll(true);
-            page->updateScrollPeriod( );
+            page->updateScrollPeriod(inputMax);
             return state;
         }
-        else if (input_.keystate(UserInput::KeyCodeLeft))
+        else if (input_.keystate(UserInput::KeyCodeLeft) || (inputMax = input_.keystate(UserInput::KeyCodeLeftMax)))
         {
             attract_.reset( );
             page->setScrolling(Page::ScrollDirectionBack);
             page->scroll(false);
-            page->updateScrollPeriod( );
+            page->updateScrollPeriod(inputMax);
             return state;
         }
     }
     else
     {
-        if (input_.keystate(UserInput::KeyCodeDown))
+        if (input_.keystate(UserInput::KeyCodeDown) || (inputMax = input_.keystate(UserInput::KeyCodeDownMax)))
         {
             attract_.reset( );
             page->setScrolling(Page::ScrollDirectionForward);
             page->scroll(true);
-            page->updateScrollPeriod( );
+            page->updateScrollPeriod(inputMax);
             return state;
         }
-        else if (input_.keystate(UserInput::KeyCodeUp))
+        else if (input_.keystate(UserInput::KeyCodeUp) || (inputMax = input_.keystate(UserInput::KeyCodeUpMax)))
         {
             attract_.reset( );
             page->setScrolling(Page::ScrollDirectionBack);
             page->scroll(false);
-            page->updateScrollPeriod( );
+            page->updateScrollPeriod(inputMax);
             return state;
         }
     }
@@ -2008,9 +2008,13 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
 
     // Check if we're done scrolling
     if ( !input_.keystate(UserInput::KeyCodeUp) &&
+         !input_.keystate(UserInput::KeyCodeUpMax) &&
          !input_.keystate(UserInput::KeyCodeLeft) &&
+         !input_.keystate(UserInput::KeyCodeLeftMax) &&
          !input_.keystate(UserInput::KeyCodeDown) &&
+         !input_.keystate(UserInput::KeyCodeDownMax) &&
          !input_.keystate(UserInput::KeyCodeRight) &&
+         !input_.keystate(UserInput::KeyCodeRightMax) &&
          !input_.keystate(UserInput::KeyCodePlaylistUp) &&
          !input_.keystate(UserInput::KeyCodePlaylistLeft) &&
          !input_.keystate(UserInput::KeyCodePlaylistDown) &&

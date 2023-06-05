@@ -1131,12 +1131,17 @@ void ScrollingList::resetScrollPeriod(  )
 }
 
 
-void ScrollingList::updateScrollPeriod(  )
+void ScrollingList::updateScrollPeriod(bool fast)
 {
-    scrollPeriod_ -= scrollAcceleration_;
-    if ( scrollPeriod_ < minScrollTime_ )
-    {
+    if (fast) {
         scrollPeriod_ = minScrollTime_;
+    }
+    else {
+        scrollPeriod_ -= scrollAcceleration_;
+        if (scrollPeriod_ < minScrollTime_)
+        {
+            scrollPeriod_ = minScrollTime_;
+        }
     }
 }
 

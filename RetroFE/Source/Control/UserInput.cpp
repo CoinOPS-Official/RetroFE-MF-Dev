@@ -84,6 +84,10 @@ bool UserInput::initialize()
     MapKey("jbFastRewind5p", KeyCodeSkipBackwardp, false);
     MapKey("jbPause", KeyCodePause, false);
     MapKey("jbRestart", KeyCodeRestart, false);
+    MapKey("leftMax", KeyCodeLeftMax, false);
+    MapKey("rightMax", KeyCodeRightMax, false);
+    MapKey("upMax", KeyCodeUpMax, false);
+    MapKey("downMax", KeyCodeDownMax, false);
 
     bool retVal = true;
 

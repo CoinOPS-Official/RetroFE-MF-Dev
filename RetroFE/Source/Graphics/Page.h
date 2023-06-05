@@ -132,7 +132,7 @@ public:
     bool  isMenuScrolling();
     bool  isPlaying();
     void  resetScrollPeriod();
-    void  updateScrollPeriod();
+    void  updateScrollPeriod(bool fast = false);
     void  scroll(bool forward);
     bool  hasSubs();
     int   getLayoutWidth(int monitor);

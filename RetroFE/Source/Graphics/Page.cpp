@@ -1480,12 +1480,12 @@ void Page::resetScrollPeriod()
 }
 
 
-void Page::updateScrollPeriod()
+void Page::updateScrollPeriod(bool fast)
 {
     for(std::vector<ScrollingList *>::iterator it = activeMenu_.begin(); it != activeMenu_.end(); it++)
     {
         ScrollingList *menu = *it;
-        if(menu) menu->updateScrollPeriod();
+        if(menu) menu->updateScrollPeriod(fast);
     }
     return;
 }

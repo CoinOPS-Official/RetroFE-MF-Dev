@@ -107,7 +107,7 @@ public:
     void deallocateSpritePoints( );
     void allocateSpritePoints( );
     void resetScrollPeriod( );
-    void updateScrollPeriod( );
+    void updateScrollPeriod(bool fast = false);
     void scroll( bool forward );
     bool isPlaylist();
 private:
