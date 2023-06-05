@@ -745,7 +745,7 @@ void ScrollingList::resetTweens( Component *c, AnimationEvents *sets, ViewInfo *
     set->push(new Tween(TWEEN_PROPERTY_MONITOR, LINEAR, currentViewInfo->Monitor, nextViewInfo->Monitor, scrollTime ) );
 
     if (currentViewInfo->Restart)
-        set->push(new Tween(TWEEN_PROPERTY_RESTART, LINEAR, currentViewInfo->Restart, nextViewInfo->Restart, scrollTime));
+        set->push(new Tween(TWEEN_PROPERTY_RESTART, LINEAR, currentViewInfo->Restart, nextViewInfo->Restart, 0));
 
     scrollTween->Push( set );
 }
