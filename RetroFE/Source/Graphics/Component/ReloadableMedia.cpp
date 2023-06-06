@@ -67,7 +67,7 @@ void ReloadableMedia::update(float dt)
 {
     if (newItemSelected ||
        (newScrollItemSelected && getMenuScrollReload()) ||
-        type_ == "isPaused" || type_ == "playCount")
+        type_ == "isPaused" || type_ == "playCount" || imageType_ == "playCount")
     {
 
         reloadTexture();
@@ -330,6 +330,7 @@ void ReloadableMedia::reloadTexture()
         }
         else if (typeLC == "playcount")
         {
+            type = Utils::toLower(type);
             basename = std::to_string(selectedItem->playCount);
             defined = true;
         }
