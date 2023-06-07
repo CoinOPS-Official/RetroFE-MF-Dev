@@ -202,8 +202,7 @@ bool CollectionInfoBuilder::ImportBasicList(CollectionInfo *info, std::string fi
     {
         return false;
     }
-    std::string playCountFile = Utils::combinePath(Configuration::absolutePath, "collections", "playCount.txt");
-    std::map<std::string, Item*> curretPlayCountList = ImportPlayCount(playCountFile);
+
     std::string line; 
     Item* i;
     while(std::getline(includeStream, line))
@@ -212,16 +211,7 @@ bool CollectionInfoBuilder::ImportBasicList(CollectionInfo *info, std::string fi
         
         if (!line.empty() && list.find(line) == list.end())
         {
-            if (curretPlayCountList[line]) {
-                i = curretPlayCountList[line];
-            }
-            else if (curretPlayCountList["_"+info->name+":"+line]) {
-                i = curretPlayCountList["_" + info->name + ":" + line];
-            }
-            else {
-                i = new Item();
-            }
-
+            i = new Item();
             line.erase( std::remove(line.begin(), line.end(), '\r'), line.end() );
 
             i->fullTitle = line;
@@ -244,8 +234,7 @@ bool CollectionInfoBuilder::ImportBasicList(CollectionInfo *info, std::string fi
     {
         return false;
     }
-    std::string playCountFile = Utils::combinePath(Configuration::absolutePath, "collections", "playCount.txt");
-    std::map<std::string, Item*> curretPlayCountList = ImportPlayCount(playCountFile);
+
     std::string line; 
     Item* i;
     while(std::getline(includeStream, line))
@@ -266,17 +255,9 @@ bool CollectionInfoBuilder::ImportBasicList(CollectionInfo *info, std::string fi
 
             if (!found)
             {
-                if (curretPlayCountList[line]) {
-                    i = curretPlayCountList[line];
-                }
-                else if (curretPlayCountList["_" + info->name + ":" + line]) {
-                    i = curretPlayCountList["_" + info->name + ":" + line];
-                }
-                else {
-                    i = new Item();
-                }
-
+                i = new Item();
                 line.erase( std::remove(line.begin(), line.end(), '\r'), line.end() );
+
                 i->fullTitle = line;
                 i->name = line;
                 i->title = line;
@@ -360,6 +341,31 @@ bool CollectionInfoBuilder::ImportDirectory(CollectionInfo *info, std::string me
         } while (path != "");
     }
 
+    // apply playCount data
+    std::string playCountFile = Utils::combinePath(Configuration::absolutePath, "collections", "playCount.txt");
+    std::map<std::string, Item*> curretPlayCountList = ImportPlayCount(playCountFile);
+    std::string lookup;
+    Item* i = NULL;
+
+    if (!curretPlayCountList.empty()) {
+        for (std::vector<Item*>::iterator it = info->items.begin(); it != info->items.end(); ++it)
+        {   
+            lookup = "_" + info->name + ":" + (*it)->name;
+            if (curretPlayCountList[lookup]) {
+                i = curretPlayCountList[lookup];
+            }
+            else if (curretPlayCountList[(*it)->name]) {
+                i = curretPlayCountList[(*it)->name];
+            }
+            if (i != NULL) {
+                (*it)->playCount = i->playCount;
+                (*it)->lastPlayed = i->lastPlayed;
+            }
+            i = NULL;
+        }
+    }
+
+    // cleanup lists
     while(includeFilter.size() > 0)
     {
         std::map<std::string, Item *>::iterator it = includeFilter.begin();
@@ -635,7 +641,11 @@ void CollectionInfoBuilder::updateLastPlayedPlaylist(CollectionInfo *info, Item 
         return;
     // update the curren't items play count and last played time to be used for meta info/sorting and writing back to list
     item->playCount++;
+#ifdef _WIN32
     item->lastPlayed = std::to_string(std::time(0));
+#else
+    item->lastPlayed = std::to_string(time(0));
+#endif
 
     // Put the new item at the front of the list.
     info->playlists["lastplayed"]->push_back(item);
