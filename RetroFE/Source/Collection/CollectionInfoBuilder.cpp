@@ -340,13 +340,12 @@ bool CollectionInfoBuilder::ImportDirectory(CollectionInfo *info, std::string me
              ImportRomDirectory(rompath, info, includeFilter, excludeFilter, romHierarchy, emuarc);
         } while (path != "");
     }
-    Logger::write(Logger::ZONE_NOTICE, "playCount", "start");
+
     // apply playCount data
     std::string playCountFile = Utils::combinePath(Configuration::absolutePath, "collections", "playCount.txt");
     std::map<std::string, Item*> curretPlayCountList = ImportPlayCount(playCountFile);
     std::string lookup;
     Item* i = NULL;
-    Logger::write(Logger::ZONE_NOTICE, "playCount", "loop");
 
     if (!curretPlayCountList.empty()) {
         for (std::vector<Item*>::iterator it = info->items.begin(); it != info->items.end(); ++it)
@@ -365,8 +364,6 @@ bool CollectionInfoBuilder::ImportDirectory(CollectionInfo *info, std::string me
             i = NULL;
         }
     }
-    Logger::write(Logger::ZONE_NOTICE, "playCount", "done");
-
 
     // cleanup lists
     while(includeFilter.size() > 0)
