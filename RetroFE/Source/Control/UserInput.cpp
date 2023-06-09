@@ -113,28 +113,6 @@ bool UserInput::initialize()
     return retVal;
 }
 
-void UserInput::RemapNavKeys()
-{
-    Logger::write(Logger::ZONE_INFO, "Input", "Start remap nav key");
-    MapKey("playlistUp", KeyCodePlaylistUp, false);
-    MapKey("playlistDown", KeyCodePlaylistDown, false);
-    MapKey("playlistLeft", KeyCodePlaylistLeft, false);
-    MapKey("playlistRight", KeyCodePlaylistRight, false);
-    MapKey("collectionUp", KeyCodeCollectionUp, false);
-    MapKey("collectionDown", KeyCodeCollectionDown, false);
-    MapKey("collectionLeft", KeyCodeCollectionLeft, false);
-    MapKey("collectionRight", KeyCodeCollectionRight, false);
-    MapKey("pageDown", KeyCodePageDown, false);
-    MapKey("pageUp", KeyCodePageUp, false);
-    MapKey("nextCyclePlaylist", KeyCodeNextCyclePlaylist, false);
-    MapKey("prevCyclePlaylist", KeyCodePrevCyclePlaylist, false);
-    MapKey("up", KeyCodeUp, false);
-    MapKey("down", KeyCodeDown, false);
-    MapKey("left", KeyCodeLeft, false);
-    MapKey("right", KeyCodeRight, false);
-    Logger::write(Logger::ZONE_INFO, "Input", "End remap nav key");
-}
-
 bool UserInput::MapKey(std::string keyDescription, KeyCode_E key)
 {
     return MapKey(keyDescription, key, true);

@@ -734,7 +734,7 @@ bool RetroFE::run( )
                     if ( page )
                     {
                         if (page->controlsChanged()) {
-                            input_.RemapNavKeys();
+                            input_.reconfigure();
                         }
                         currentPage_->freeGraphicsMemory( );
                         pages_.push( currentPage_ );
@@ -1356,7 +1356,7 @@ bool RetroFE::run( )
                 if ( page )
                 {
                     if (page->controlsChanged()) {
-                        input_.RemapNavKeys();
+                        input_.reconfigure();
                     }
                     currentPage_->freeGraphicsMemory( );
                     pages_.push( currentPage_ );
@@ -2044,7 +2044,7 @@ Page* RetroFE::loadPage()
     }
     else {
         if (page->controlsChanged()) {
-            input_.RemapNavKeys();
+            input_.reconfigure();
         }
     }
 
