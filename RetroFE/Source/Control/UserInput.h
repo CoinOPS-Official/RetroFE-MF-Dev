@@ -77,6 +77,7 @@ public:
     UserInput(Configuration &c);
     virtual ~UserInput();
     bool initialize();
+    void RemapNavKeys();
     void resetStates();
     bool update(SDL_Event &e);
     bool keystate(KeyCode_E);

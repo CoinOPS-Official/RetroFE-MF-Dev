@@ -45,6 +45,7 @@ Page::Page(Configuration &config, int layoutWidth, int layoutHeight)
     , anActiveMenu_(NULL)
     , fromPreviousPlaylist (false)
     , fromPlaylistNav(false)
+    , controlsChanged_(false)
 {
     for (int i = 0; i < SDL::getNumScreens(); i++)
     {
@@ -510,6 +511,15 @@ float Page::getMinShowTime()
     return minShowTime_;
 }
 
+bool Page::controlsChanged()
+{
+    return controlsChanged_;
+}
+
+void Page::setControlsChanged(bool changed)
+{
+    controlsChanged_ = changed;
+}
 
 void Page::playlistChange()
 {

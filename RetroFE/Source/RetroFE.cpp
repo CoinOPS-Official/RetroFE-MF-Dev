@@ -733,6 +733,9 @@ bool RetroFE::run( )
                     Page *page = pb.buildPage( nextPageItem_->name );
                     if ( page )
                     {
+                        if (page->controlsChanged()) {
+                            input_.RemapNavKeys();
+                        }
                         currentPage_->freeGraphicsMemory( );
                         pages_.push( currentPage_ );
                         currentPage_ = page;
@@ -1352,6 +1355,9 @@ bool RetroFE::run( )
                 Page *page = pb.buildPage( );
                 if ( page )
                 {
+                    if (page->controlsChanged()) {
+                        input_.RemapNavKeys();
+                    }
                     currentPage_->freeGraphicsMemory( );
                     pages_.push( currentPage_ );
                     currentPage_ = page;
@@ -2023,18 +2029,23 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
 
 
 // Load a page
-Page *RetroFE::loadPage( )
+Page* RetroFE::loadPage()
 {
     std::string layoutName;
 
-    config_.getProperty( "layout", layoutName );
+    config_.getProperty("layout", layoutName);
 
-    PageBuilder pb( layoutName, getLayoutFileName(), config_, &fontcache_ );
-    Page *page = pb.buildPage( );
+    PageBuilder pb(layoutName, getLayoutFileName(), config_, &fontcache_);
+    Page* page = pb.buildPage();
 
-    if ( !page )
+    if (!page)
     {
-        Logger::write( Logger::ZONE_ERROR, "RetroFE", "Could not create page" );
+        Logger::write(Logger::ZONE_ERROR, "RetroFE", "Could not create page");
+    }
+    else {
+        if (page->controlsChanged()) {
+            input_.RemapNavKeys();
+        }
     }
 
     return page;

@@ -154,12 +154,6 @@ Page *PageBuilder::buildPage( std::string collectionName )
                 xml_attribute<> *minShowTimeXml = root->first_attribute("minShowTime");
                 xml_attribute<>* controls = root->first_attribute("controls");
 
-                // add additional controls to replace others based on theme/layout
-                if (controls->value() != "") {
-                    std::string controlsConfPath = Utils::combinePath(Configuration::absolutePath, "controls");
-                    config_.import("controls", controlsConfPath + " - " + controls->value() + ".conf");
-                }
-
                 if(!layoutWidthXml || !layoutHeightXml)
                 {
                     Logger::write(Logger::ZONE_ERROR, "Layout", "<layout> tag must specify a width and height");
@@ -215,6 +209,12 @@ Page *PageBuilder::buildPage( std::string collectionName )
                 if(minShowTimeXml) 
                 {
                     page->setMinShowTime(Utils::convertFloat(minShowTimeXml->value()));
+                }
+
+                // add additional controls to replace others based on theme/layout
+                if (controls && controls->value() != "") {
+                    std::string controlsConfPath = Utils::combinePath(Configuration::absolutePath, "controls");
+                    page->setControlsChanged(config_.import("controls", controlsConfPath + " - " + controls->value() + ".conf"));
                 }
 
                 // load sounds
