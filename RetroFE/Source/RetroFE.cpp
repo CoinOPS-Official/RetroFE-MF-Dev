@@ -71,6 +71,7 @@ RetroFE::RetroFE( Configuration &c )
     , keyLastTime_(0)
     , keyDelayTime_(.3f)
     , reboot_(false)
+    , paused_(false)
 {
     menuMode_                            = false;
     attractMode_                         = false;
@@ -1440,7 +1441,7 @@ bool RetroFE::run( )
 		
             if ( currentPage_ )
             {
-                if (!splashMode)
+                if (!splashMode && !paused_)
                 {
                     int attractReturn = attract_.update( deltaTime, *currentPage_ );
                     if (attractReturn == 1) // Change playlist
@@ -1499,7 +1500,7 @@ bool RetroFE::run( )
                 currentPage_->update( deltaTime );
                 SDL_PumpEvents( );
                 input_.updateKeystate( );
-                if (!splashMode)
+                if (!splashMode && !paused_)
                 {
                     if ( currentPage_->isAttractIdle( ) )
                     {
@@ -1892,10 +1893,14 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
 
         else if ( input_.keystate(UserInput::KeyCodePause) )
         {
-            attract_.reset( );
             page->pause( );
             page->jukeboxJump( );
             keyLastTime_ = currentTime_;
+            paused_ = !paused_;
+            if (!paused_) {
+                // trigger attract on unpause
+                attract_.activate();
+            }
         }
 
         else if ( input_.keystate(UserInput::KeyCodeRestart) )

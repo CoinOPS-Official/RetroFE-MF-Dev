@@ -152,6 +152,7 @@ private:
     bool               attractMode_;
 	int                attractModePlaylistCollectionNumber_;
 	bool               reboot_;
+    bool               paused_;
 	std::string        firstPlaylist_;
     std::map<std::string, bool> lkupAttractModeSkipPlaylist_;
     std::map<std::string, unsigned int> lastMenuOffsets_;
