@@ -82,7 +82,7 @@ public:
     bool keystate(KeyCode_E);
     bool newKeyPressed(KeyCode_E code);
     void clearJoysticks( );
-    void reconfigure( );
+    void reconfigure();
 	void updateKeystate( );
 
 private:

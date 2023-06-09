@@ -733,8 +733,8 @@ bool RetroFE::run( )
                     Page *page = pb.buildPage( nextPageItem_->name );
                     if ( page )
                     {
-                        if (page->controlsChanged()) {
-                            input_.reconfigure();
+                        if (page->controlsType() != "") {
+                            updatePageControls(page->controlsType());
                         }
                         currentPage_->freeGraphicsMemory( );
                         pages_.push( currentPage_ );
@@ -1355,8 +1355,8 @@ bool RetroFE::run( )
                 Page *page = pb.buildPage( );
                 if ( page )
                 {
-                    if (page->controlsChanged()) {
-                        input_.reconfigure();
+                    if (page->controlsType() != "") {
+                        updatePageControls(page->controlsType());
                     }
                     currentPage_->freeGraphicsMemory( );
                     pages_.push( currentPage_ );
@@ -2043,8 +2043,8 @@ Page* RetroFE::loadPage()
         Logger::write(Logger::ZONE_ERROR, "RetroFE", "Could not create page");
     }
     else {
-        if (page->controlsChanged()) {
-            input_.reconfigure();
+        if (page->controlsType() != "") {
+            updatePageControls(page->controlsType());
         }
     }
 
@@ -2195,6 +2195,13 @@ CollectionInfo *RetroFE::getCollection(std::string collectionName)
     return collection;
 }
 
+void RetroFE::updatePageControls(std::string type)
+{
+    std::string controlsConfPath = Utils::combinePath(Configuration::absolutePath, "controls");
+    if (config_.import("controls", controlsConfPath + " - " + type + ".conf")) {
+        input_.reconfigure();
+    }
+}
 
 // Load a menu
 CollectionInfo *RetroFE::getMenuCollection( std::string collectionName )

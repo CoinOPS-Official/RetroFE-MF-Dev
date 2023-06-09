@@ -108,8 +108,8 @@ public:
     CollectionInfo *getCollection();
     void  setMinShowTime(float value);
     float getMinShowTime();
-    bool controlsChanged();
-    void setControlsChanged(bool changed);
+    std::string controlsType();
+    void setControlsType(std::string type);
     void  menuScroll();
     void  highlightEnter();
     void  highlightExit();
@@ -165,7 +165,7 @@ private:
     void playlistChange();
     std::string collectionName_;
     Configuration &config_;
-    bool controlsChanged_;
+    std::string controlsType_;
     struct MenuInfo_S
     {
         CollectionInfo *collection;

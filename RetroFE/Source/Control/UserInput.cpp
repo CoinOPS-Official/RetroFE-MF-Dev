@@ -378,7 +378,7 @@ void UserInput::clearJoysticks( )
 }
 
 
-void UserInput::reconfigure( )
+void UserInput::reconfigure()
 {
     Logger::write(Logger::ZONE_INFO, "Input", "Reconfigure Inputs");
 
