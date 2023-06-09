@@ -212,6 +212,7 @@ Page *PageBuilder::buildPage( std::string collectionName )
                 }
 
                 // add additional controls to replace others based on theme/layout
+                page->setControlsChanged(false);
                 if (controls && controls->value() != "") {
                     std::string controlsConfPath = Utils::combinePath(Configuration::absolutePath, "controls");
                     page->setControlsChanged(config_.import("controls", controlsConfPath + " - " + controls->value() + ".conf"));

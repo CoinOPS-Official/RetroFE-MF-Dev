@@ -380,6 +380,8 @@ void UserInput::clearJoysticks( )
 
 void UserInput::reconfigure( )
 {
+    Logger::write(Logger::ZONE_INFO, "Input", "Reconfigure Inputs");
+
     for (unsigned int i = 0; i < keyHandlers_.size(); ++i)
     {
         if (keyHandlers_[i].first)
