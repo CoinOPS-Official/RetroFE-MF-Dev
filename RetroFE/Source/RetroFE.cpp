@@ -329,9 +329,9 @@ bool RetroFE::run( )
 
     // Define control configuration
     std::string controlsConfPath = Utils::combinePath( Configuration::absolutePath, "controls" );
-    for (int i = 9; i > 0; i--)
-        config_.import("controls", controlsConfPath + std::to_string(i) + ".conf", false);
     config_.import("controls", controlsConfPath + ".conf");
+    for (int i = 1; i < 10; i++)
+        config_.import("controls", controlsConfPath + std::to_string(i) + ".conf", false);
 
     if (config_.propertiesEmpty())
     {
