@@ -75,4 +75,5 @@ v0.10.34.1
 	- fixed playCount import (monkofthefunk)
 	- fixed playlist menu flash after playing a lastplayed game (monkofthefunk)
 	- disabled name jump for lastplayed (monkofthefunk)
-	- add setting to randomly choose a layout, for those who can't decide. randomLayout=layoutARCADES,layoutCASCADING,layoutSPIN (monkofthefunk)
+	- added setting to randomly choose a layout, for those who can't decide. randomLayout=layoutARCADES,layoutCASCADING,layoutSPIN (monkofthefunk)
+	- added controls*.conf to be applied based on theme layout, useful for horizontal and vertical (monkofthefunk)

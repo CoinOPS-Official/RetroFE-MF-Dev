@@ -152,6 +152,13 @@ Page *PageBuilder::buildPage( std::string collectionName )
                 xml_attribute<> *fontColorXml = root->first_attribute("fontColor");
                 xml_attribute<> *fontSizeXml = root->first_attribute("loadFontSize");
                 xml_attribute<> *minShowTimeXml = root->first_attribute("minShowTime");
+                xml_attribute<>* controls = root->first_attribute("controls");
+
+                // add additional controls to replace others based on theme/layout
+                if (controls->value() != "") {
+                    std::string controlsConfPath = Utils::combinePath(Configuration::absolutePath, "controls");
+                    config_.import("controls", controlsConfPath + " - " + controls->value() + ".conf");
+                }
 
                 if(!layoutWidthXml || !layoutHeightXml)
                 {
