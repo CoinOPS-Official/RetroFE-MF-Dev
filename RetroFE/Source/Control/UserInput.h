@@ -71,7 +71,8 @@ public:
         KeyCodeSkipBackwardp,
         KeyCodePause,
         KeyCodeRestart,
-        KeyCodeMax
+        KeyCodeKisok,
+        KeyCodeMax,
     };
 
     UserInput(Configuration &c);
