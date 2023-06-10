@@ -28,7 +28,7 @@ class ReloadableMedia : public Component
 {
 public:
     ReloadableMedia(Configuration &config, bool systemMode, bool layoutMode, bool commonMode, bool menuMode, std::string type, std::string imageType, Page &page, 
-        int displayOffset, bool isVideo, Font *font, bool jukebox, int jukeboxNumLoops, int randomLimit);
+        int displayOffset, bool isVideo, Font *font, bool jukebox, int jukeboxNumLoops, int randomSelect);
     virtual ~ReloadableMedia();
     void update(float dt);
     void draw();
@@ -56,7 +56,7 @@ private:
     bool layoutMode_;
     bool commonMode_;
     bool menuMode_;
-    bool randomLimit_;
+    int randomSelect_;
     Component *loadedComponent_;
     IVideo *videoInst_;
     bool isVideo_;

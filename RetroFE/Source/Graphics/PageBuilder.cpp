@@ -562,7 +562,7 @@ void PageBuilder::loadReloadableImages(xml_node<> *layout, std::string tagName, 
         xml_attribute<> *endTimeXml        = componentXml->first_attribute("endTime");
         xml_attribute<> *alignmentXml      = componentXml->first_attribute("alignment");
         xml_attribute<> *idXml             = componentXml->first_attribute("id");
-        xml_attribute<>* randomLimitXml = componentXml->first_attribute("randomLimit");
+        xml_attribute<>* randomSelectXml = componentXml->first_attribute("randomSelect");
 
         bool systemMode = false;
         bool layoutMode = false;
@@ -764,7 +764,6 @@ void PageBuilder::loadReloadableImages(xml_node<> *layout, std::string tagName, 
                 jukeboxNumLoops = numLoopsXml ? Utils::convertInt(numLoopsXml->value()) : 1;
             }
             Font *font = addFont(componentXml, NULL);
-            int randomLimitInt = randomLimitXml ? Utils::convertInt(randomLimitXml->value()) : 0;
 
             std::string typeString      = "video";
             std::string imageTypeString = "";
@@ -772,8 +771,11 @@ void PageBuilder::loadReloadableImages(xml_node<> *layout, std::string tagName, 
                 typeString = type->value();
             if ( imageType )
                 imageTypeString = imageType->value();
+
+            int randomSelectInt = randomSelectXml ? Utils::convertInt(randomSelectXml->value()) : 0;
+
             c = new ReloadableMedia(config_, systemMode, layoutMode, commonMode, menuMode, typeString, imageTypeString, *page, 
-                selectedOffset, (tagName == "reloadableVideo") || (tagName == "reloadableAudio"), font, jukebox, jukeboxNumLoops, randomLimitInt);
+                selectedOffset, (tagName == "reloadableVideo") || (tagName == "reloadableAudio"), font, jukebox, jukeboxNumLoops, randomSelectInt);
             c->setId( id );
 
             xml_attribute<> *menuScrollReload = componentXml->first_attribute("menuScrollReload");
