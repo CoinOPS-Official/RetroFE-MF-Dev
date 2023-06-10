@@ -171,6 +171,17 @@ void ReloadableMedia::reloadTexture()
             names.push_back("no");
         }
     }
+    if (typeLC == "isLocked")
+    {
+        if (page.isLocked())
+        {
+            names.push_back("yes");
+        }
+        else
+        {
+            names.push_back("no");
+        }
+    }
 
     names.push_back("default");
 

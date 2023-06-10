@@ -1658,6 +1658,7 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
     // lock or unlock playlist/collection/menu nav and fav toggle
     if (input_.keystate(UserInput::KeyCodeKisok)) {
         kioskLock_ = !kioskLock_;
+        page->setLocked(kioskLock_);
     }
 
     // Ignore other keys while the menu is scrolling

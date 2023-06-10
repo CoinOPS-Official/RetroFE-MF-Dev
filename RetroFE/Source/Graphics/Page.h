@@ -152,6 +152,8 @@ public:
     unsigned long long getCurrent( );
     unsigned long long getDuration( );
     bool  isPaused( );
+    void setLocked(bool locked);
+    bool isLocked();
     ScrollingList* getPlaylistMenu();
     void setPlaylistMenu(ScrollingList*);
     bool playlistExists(std::string);
@@ -163,6 +165,7 @@ private:
     void playlistChange();
     std::string collectionName_;
     Configuration &config_;
+    bool locked_;
 
     struct MenuInfo_S
     {

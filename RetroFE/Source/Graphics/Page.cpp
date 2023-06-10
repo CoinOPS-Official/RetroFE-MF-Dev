@@ -45,6 +45,7 @@ Page::Page(Configuration &config, int layoutWidth, int layoutHeight)
     , anActiveMenu_(NULL)
     , fromPreviousPlaylist (false)
     , fromPlaylistNav(false)
+    , locked_(false)
 {
     for (int i = 0; i < SDL::getNumScreens(); i++)
     {
@@ -1669,6 +1670,16 @@ bool Page::isPaused( )
         ret |= (*it)->isPaused( );
     }
     return ret;
+}
+
+void Page::setLocked(bool locked)
+{
+    locked_ = locked;
+}
+
+bool Page::isLocked()
+{
+    return locked_;
 }
 
 ScrollingList* Page::getPlaylistMenu()
