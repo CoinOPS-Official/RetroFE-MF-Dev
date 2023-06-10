@@ -28,7 +28,8 @@
 #include <vector>
 #include <iostream>
 
-ReloadableMedia::ReloadableMedia(Configuration &config, bool systemMode, bool layoutMode, bool commonMode, bool menuMode, std::string type, std::string imageType, Page &p, int displayOffset, bool isVideo, Font *font, bool jukebox, int jukeboxNumLoops)
+ReloadableMedia::ReloadableMedia(Configuration &config, bool systemMode, bool layoutMode, bool commonMode, bool menuMode, std::string type, std::string imageType, 
+    Page &p, int displayOffset, bool isVideo, Font *font, bool jukebox, int jukeboxNumLoops, int reloadLimit)
     : Component(p)
     , config_(config)
     , systemMode_(systemMode)
@@ -46,6 +47,7 @@ ReloadableMedia::ReloadableMedia(Configuration &config, bool systemMode, bool la
     , jukebox_(jukebox)
     , jukeboxNumLoops_(jukeboxNumLoops)
     , numberOfImages_(27)
+    , randomLimit_(reloadLimit)
 {
     allocateGraphicsMemory();
 }
@@ -380,6 +382,11 @@ void ReloadableMedia::reloadTexture()
         }
 
         Utils::replaceSlashesWithUnderscores(basename);
+
+        // ability to randomly select image/video
+        if (randomLimit_) {
+            basename = basename + " - " + std::to_string(rand() % randomLimit_);
+        }
 
         if(systemMode_)
         {
