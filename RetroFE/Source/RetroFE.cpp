@@ -411,6 +411,7 @@ bool RetroFE::run( )
     Menu     m( config_, input_ );
     preloadTime = static_cast<float>( SDL_GetTicks( ) ) / 1000;
     l.LEDBlinky( 1 );
+    config_.getProperty("kiosk", kioskLock_);
 
     while ( running )
     {
@@ -1438,7 +1439,7 @@ bool RetroFE::run( )
                 if (!splashMode)
                 {
                     int attractReturn = attract_.update( deltaTime, *currentPage_ );
-                    if (attractReturn == 1) // Change playlist
+                    if (!kioskLock_ && attractReturn == 1) // Change playlist
                     {
                         attract_.reset( attract_.isSet( ) );
                         std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
@@ -1481,7 +1482,7 @@ bool RetroFE::run( )
                         }
                         state = RETROFE_PLAYLIST_REQUEST;
                     }
-                    if (attractReturn == 2) // Change collection
+                    if (!kioskLock_ && attractReturn == 2) // Change collection
                     {
                         attract_.reset( attract_.isSet( ) );
                         state = RETROFE_COLLECTION_DOWN_REQUEST;
@@ -1963,7 +1964,7 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             }
         }
 
-        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeQuit))
+        else if (input_.keystate(UserInput::KeyCodeQuit)) // !kioskLock_ && 
         {
             attract_.reset( );
 #ifdef WIN32
@@ -1972,7 +1973,7 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             state = RETROFE_QUIT_REQUEST;
         }
 
-        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeReboot))
+        else if (input_.keystate(UserInput::KeyCodeReboot)) // !kioskLock_ && 
         {
             attract_.reset( );
             reboot_ = true;
