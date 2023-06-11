@@ -735,6 +735,7 @@ bool RetroFE::run( )
                     {
                         if (page->controlsType() != "") {
                             updatePageControls(page->controlsType());
+                            page->setControlsType("");
                         }
                         currentPage_->freeGraphicsMemory( );
                         pages_.push( currentPage_ );
@@ -1357,6 +1358,7 @@ bool RetroFE::run( )
                 {
                     if (page->controlsType() != "") {
                         updatePageControls(page->controlsType());
+                        page->setControlsType("");
                     }
                     currentPage_->freeGraphicsMemory( );
                     pages_.push( currentPage_ );
@@ -2045,6 +2047,7 @@ Page* RetroFE::loadPage()
     else {
         if (page->controlsType() != "") {
             updatePageControls(page->controlsType());
+            page->setControlsType("");
         }
     }
 
@@ -2197,6 +2200,7 @@ CollectionInfo *RetroFE::getCollection(std::string collectionName)
 
 void RetroFE::updatePageControls(std::string type)
 {
+    Logger::write(Logger::ZONE_INFO, "Layout", "Layout changed controls type " + type);
     std::string controlsConfPath = Utils::combinePath(Configuration::absolutePath, "controls");
     if (config_.import("controls", controlsConfPath + " - " + type + ".conf")) {
         input_.reconfigure();

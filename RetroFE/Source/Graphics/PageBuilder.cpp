@@ -212,9 +212,10 @@ Page *PageBuilder::buildPage( std::string collectionName )
                 }
 
                 // add additional controls to replace others based on theme/layout
-                page->setControlsType("");
                 if (controls && controls->value() != "") {
-                    page->setControlsType(controls->value());
+                    std::string controlLayout = controls->value();
+                    Logger::write(Logger::ZONE_INFO, "Layout", "Layout set custom control type " + controlLayout);
+                    page->setControlsType(controlLayout);
                 }
 
                 // load sounds
