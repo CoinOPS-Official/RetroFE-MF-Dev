@@ -152,6 +152,7 @@ Page *PageBuilder::buildPage( std::string collectionName )
                 xml_attribute<> *fontColorXml = root->first_attribute("fontColor");
                 xml_attribute<> *fontSizeXml = root->first_attribute("loadFontSize");
                 xml_attribute<> *minShowTimeXml = root->first_attribute("minShowTime");
+                xml_attribute<>* controls = root->first_attribute("controls");
 
                 if(!layoutWidthXml || !layoutHeightXml)
                 {
@@ -208,6 +209,13 @@ Page *PageBuilder::buildPage( std::string collectionName )
                 if(minShowTimeXml) 
                 {
                     page->setMinShowTime(Utils::convertFloat(minShowTimeXml->value()));
+                }
+
+                // add additional controls to replace others based on theme/layout
+                if (controls && controls->value() != "") {
+                    std::string controlLayout = controls->value();
+                    Logger::write(Logger::ZONE_INFO, "Layout", "Layout set custom control type " + controlLayout);
+                    page->setControlsType(controlLayout);
                 }
 
                 // load sounds

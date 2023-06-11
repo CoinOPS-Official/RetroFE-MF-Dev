@@ -128,6 +128,7 @@ private:
     RETROFE_STATE   processUserInput( Page *page );
     void            update( float dt, bool scrollActive );
     CollectionInfo *getCollection( std::string collectionName );
+    void updatePageControls(std::string type);
     CollectionInfo *getMenuCollection( std::string collectionName );
 	void            saveRetroFEState( );
     std::string getLayoutFileName();

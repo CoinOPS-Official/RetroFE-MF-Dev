@@ -330,9 +330,9 @@ bool RetroFE::run( )
 
     // Define control configuration
     std::string controlsConfPath = Utils::combinePath( Configuration::absolutePath, "controls" );
-    for (int i = 9; i > 0; i--)
-        config_.import("controls", controlsConfPath + std::to_string(i) + ".conf", false);
     config_.import("controls", controlsConfPath + ".conf");
+    for (int i = 1; i < 10; i++)
+        config_.import("controls", controlsConfPath + std::to_string(i) + ".conf", false);
 
     if (config_.propertiesEmpty())
     {
@@ -735,6 +735,10 @@ bool RetroFE::run( )
                     Page *page = pb.buildPage( nextPageItem_->name );
                     if ( page )
                     {
+                        if (page->controlsType() != "") {
+                            updatePageControls(page->controlsType());
+                            page->setControlsType("");
+                        }
                         currentPage_->freeGraphicsMemory( );
                         pages_.push( currentPage_ );
                         currentPage_ = page;
@@ -1354,6 +1358,10 @@ bool RetroFE::run( )
                 Page *page = pb.buildPage( );
                 if ( page )
                 {
+                    if (page->controlsType() != "") {
+                        updatePageControls(page->controlsType());
+                        page->setControlsType("");
+                    }
                     currentPage_->freeGraphicsMemory( );
                     pages_.push( currentPage_ );
                     currentPage_ = page;
@@ -2031,18 +2039,24 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
 
 
 // Load a page
-Page *RetroFE::loadPage( )
+Page* RetroFE::loadPage()
 {
     std::string layoutName;
 
-    config_.getProperty( "layout", layoutName );
+    config_.getProperty("layout", layoutName);
 
-    PageBuilder pb( layoutName, getLayoutFileName(), config_, &fontcache_ );
-    Page *page = pb.buildPage( );
+    PageBuilder pb(layoutName, getLayoutFileName(), config_, &fontcache_);
+    Page* page = pb.buildPage();
 
-    if ( !page )
+    if (!page)
     {
-        Logger::write( Logger::ZONE_ERROR, "RetroFE", "Could not create page" );
+        Logger::write(Logger::ZONE_ERROR, "RetroFE", "Could not create page");
+    }
+    else {
+        if (page->controlsType() != "") {
+            updatePageControls(page->controlsType());
+            page->setControlsType("");
+        }
     }
 
     return page;
@@ -2192,6 +2206,14 @@ CollectionInfo *RetroFE::getCollection(std::string collectionName)
     return collection;
 }
 
+void RetroFE::updatePageControls(std::string type)
+{
+    Logger::write(Logger::ZONE_INFO, "Layout", "Layout changed controls type " + type);
+    std::string controlsConfPath = Utils::combinePath(Configuration::absolutePath, "controls");
+    if (config_.import("controls", controlsConfPath + " - " + type + ".conf")) {
+        input_.reconfigure();
+    }
+}
 
 // Load a menu
 CollectionInfo *RetroFE::getMenuCollection( std::string collectionName )
