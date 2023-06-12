@@ -55,8 +55,6 @@ public:
 #ifdef WIN32	
 	void RetroFE::postMessage(LPCTSTR windowTitle, UINT Msg, WPARAM wParam, LPARAM lParam );
 #endif	
-    void            render();
-
 
 private:
 #ifdef WIN32	
@@ -119,6 +117,7 @@ private:
         RETROFE_QUIT,
     };
 
+    void            render();
     bool            back( bool &exit );
     bool isStandalonePlaylist(std::string playlist);
     bool isInAttractModeSkipPlaylist(std::string playlist);
