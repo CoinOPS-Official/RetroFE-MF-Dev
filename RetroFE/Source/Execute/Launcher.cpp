@@ -259,21 +259,25 @@ bool Launcher::execute(std::string executable, std::string args, std::string cur
 				while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 				{
                     if (currentPage != NULL) {
-                        //SDL_LockMutex(SDL::getMutex());
-                        /*for (int i = 0; i < SDL::getNumDisplays(); ++i)
+                        SDL_Delay(1000 / 60);
+
+
+                        SDL_LockMutex(SDL::getMutex());
+                        for (int i = 0; i < SDL::getNumDisplays(); ++i)
                         {
                             SDL_SetRenderDrawColor(SDL::getRenderer(i), 0x0, 0x0, 0x00, 0xFF);
                             SDL_RenderClear(SDL::getRenderer(i));
-                        }*/
+                        }
 
                         currentPage->draw();
 
-                        for (int i = 0; i < 2; ++i)
+                        for (int i = 0; i < SDL::getNumDisplays(); ++i)
                         {
                             SDL_RenderPresent(SDL::getRenderer(i));
-                        }
+                        }					
 
-                        //SDL_UnlockMutex(SDL::getMutex());
+
+                        SDL_UnlockMutex(SDL::getMutex());
                     }
 					DispatchMessage(&msg);
 				}

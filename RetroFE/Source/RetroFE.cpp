@@ -1209,7 +1209,7 @@ bool RetroFE::run( )
             if ( currentPage_->isIdle( ) && !currentPage_->isSelectPlaying( ) )
             {
                 nextPageItem_ = currentPage_->getSelectedItem( );
-                launchEnter( );
+                //launchEnter( );
                 CollectionInfoBuilder cib(config_, *metadb_);
                 std::string lastPlayedSkipCollection = "";
                 int         size = 0;
@@ -1237,7 +1237,7 @@ bool RetroFE::run( )
                 }
                 else
                 {
-                    launchExit( );
+                    //launchExit( );
                     l.LEDBlinky( 4 );
                     currentPage_->exitGame( );
                     
