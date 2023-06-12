@@ -1229,7 +1229,7 @@ bool RetroFE::run( )
                 }
 
                 l.LEDBlinky( 3, nextPageItem_->collectionInfo->name, nextPageItem_ );
-                if (l.run(nextPageItem_->collectionInfo->name, nextPageItem_, currentPage_)) // Run and check if we need to reboot
+                if (l.run(nextPageItem_->collectionInfo->name, nextPageItem_, this)) // Run and check if we need to reboot
                 {
                     attract_.reset( );
                     reboot_ = true;

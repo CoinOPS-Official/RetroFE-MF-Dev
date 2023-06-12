@@ -36,7 +36,7 @@ Launcher::Launcher(Configuration &c)
 {
 }
 
-bool Launcher::run(std::string collection, Item *collectionItem, Page *currentPage)
+bool Launcher::run(std::string collection, Item *collectionItem, RetroFE *currentPage)
 {
     std::string launcherName = collectionItem->collectionInfo->launcher;
     std::string executablePath;
@@ -209,7 +209,7 @@ std::string Launcher::replaceVariables(std::string str,
     return str;
 }
 
-bool Launcher::execute(std::string executable, std::string args, std::string currentDirectory, bool wait, Page* currentPage)
+bool Launcher::execute(std::string executable, std::string args, std::string currentDirectory, bool wait, RetroFE* currentPage)
 {
     bool retVal = false;
     std::string executionString = "\"" + executable + "\" " + args;
@@ -259,25 +259,10 @@ bool Launcher::execute(std::string executable, std::string args, std::string cur
 				while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 				{
                     if (currentPage != NULL) {
-                        SDL_Delay(1000 / 60);
+                        //SDL_Delay(1000 / 60);
 
 
-                        SDL_LockMutex(SDL::getMutex());
-                        for (int i = 0; i < SDL::getNumDisplays(); ++i)
-                        {
-                            SDL_SetRenderDrawColor(SDL::getRenderer(i), 0x0, 0x0, 0x00, 0xFF);
-                            SDL_RenderClear(SDL::getRenderer(i));
-                        }
-
-                        currentPage->draw();
-
-                        for (int i = 0; i < SDL::getNumDisplays(); ++i)
-                        {
-                            SDL_RenderPresent(SDL::getRenderer(i));
-                        }					
-
-
-                        SDL_UnlockMutex(SDL::getMutex());
+                        currentPage->render();
                     }
 					DispatchMessage(&msg);
 				}
