@@ -16,6 +16,7 @@
 #pragma once
 
 #include <string>
+#include "../Graphics/Page.h"
 
 class Configuration;
 class Item;
@@ -25,7 +26,7 @@ class Launcher
 {
 public:
     Launcher(Configuration &c);
-    bool run(std::string collection, Item *collectionItem);
+    bool run(std::string collection, Item *collectionItem, Page *currentPage = NULL);
 	void LEDBlinky( int command, std::string collection = "", Item *collectionItem = NULL);
 
 private:
@@ -39,7 +40,7 @@ private:
     bool launcherArgs(std::string &args, std::string launcherName);
     bool extensions(std::string &extensions, std::string launcherName);
     bool collectionDirectory(std::string &directory, std::string collection);
-    bool execute(std::string executable, std::string arguments, std::string currentDirectory, bool wait = true);
+    bool execute(std::string executable, std::string arguments, std::string currentDirectory, bool wait = true, Page *currentPage = NULL);
     bool findFile(std::string &foundFilePath, std::string &foundFilename, std::string directory, std::string filenameWithoutExtension, std::string extensions);
     std::string replaceVariables(std::string str,
                                  std::string itemFilePath,

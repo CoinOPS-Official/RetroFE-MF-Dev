@@ -166,7 +166,7 @@ void RetroFE::launchEnter( )
     SDL_SetWindowGrab(SDL::getWindow( 0 ), SDL_FALSE);
 
     // Free the textures, and optionally take down SDL
-    freeGraphicsMemory( );
+   // freeGraphicsMemory( );
 
     bool hideMouse = false;
     int  mouseX    = 5000;
@@ -184,7 +184,7 @@ void RetroFE::launchExit( )
 {
 
     // Optionally set up SDL, and load the textures
-    allocateGraphicsMemory( );
+    //allocateGraphicsMemory( );
 
     // Restore the SDL settings
     SDL_RestoreWindow( SDL::getWindow( 0 ) );
@@ -1229,7 +1229,7 @@ bool RetroFE::run( )
                 }
 
                 l.LEDBlinky( 3, nextPageItem_->collectionInfo->name, nextPageItem_ );
-                if (l.run(nextPageItem_->collectionInfo->name, nextPageItem_)) // Run and check if we need to reboot
+                if (l.run(nextPageItem_->collectionInfo->name, nextPageItem_, currentPage_)) // Run and check if we need to reboot
                 {
                     attract_.reset( );
                     reboot_ = true;
