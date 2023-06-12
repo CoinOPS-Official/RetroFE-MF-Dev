@@ -26,6 +26,8 @@
 #include <sstream>
 #include <fstream>
 #include "../Graphics/Page.h"
+#include <thread>
+#include <atomic>
 #ifdef WIN32
 #include <windows.h>
 #include <cstring>
@@ -250,6 +252,11 @@ bool Launcher::execute(std::string executable, std::string args, std::string cur
     else
     {
 #ifdef WIN32
+
+        std::atomic<bool> stop_thread=false;
+        std::thread proc_thread = std::thread([this, &stop_thread, &currentPage]() {
+            this->keepRendering(std::ref(stop_thread), *currentPage);
+            });
 		if ( wait )
 		{
 			while(WAIT_OBJECT_0 != MsgWaitForMultipleObjects(1, &processInfo.hProcess, FALSE, INFINITE, QS_ALLINPUT))
@@ -257,32 +264,13 @@ bool Launcher::execute(std::string executable, std::string args, std::string cur
 				MSG msg;
 				while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 				{
-                    TranslateMessage(&msg);
 					DispatchMessage(&msg);
-                    if (currentPage != NULL) {
-                        //SDL_Delay(1000 / 60);
-                       
-                        currentPage->update(float(0.001));
-                        SDL_LockMutex(SDL::getMutex());
-                        for (int i = 1; i < SDL::getNumDisplays(); ++i)
-                        {
-                            SDL_SetRenderDrawColor(SDL::getRenderer(i), 0x0, 0x0, 0x00, 0xFF);
-                            SDL_RenderClear(SDL::getRenderer(i));
-                        }
-
-                            currentPage->draw();
-
-
-                        for (int i = 1; i < SDL::getNumDisplays(); ++i)
-                        {
-                            SDL_RenderPresent(SDL::getRenderer(i));
-                        }
-                        SDL_UnlockMutex(SDL::getMutex());
-                    }
+                    
 				}
-                
 			}
         }
+        stop_thread = true;
+        proc_thread.join();
 
         // result = GetExitCodeProcess(processInfo.hProcess, &exitCode);
         CloseHandle(processInfo.hProcess);
@@ -293,6 +281,27 @@ bool Launcher::execute(std::string executable, std::string args, std::string cur
     Logger::write(Logger::ZONE_INFO, "Launcher", "Completed");
 
     return retVal;
+}
+
+void Launcher::keepRendering(std::atomic<bool> &stop_thread, Page &currentPage)
+{
+    while (!stop_thread) {
+        currentPage.update(float(0));
+        SDL_LockMutex(SDL::getMutex());
+        for (int i = 1; i < SDL::getNumDisplays(); ++i)
+        {
+            SDL_SetRenderDrawColor(SDL::getRenderer(i), 0x0, 0x0, 0x00, 0xFF);
+            SDL_RenderClear(SDL::getRenderer(i));
+        }
+
+        currentPage.draw();
+
+        for (int i = 1; i < SDL::getNumDisplays(); ++i)
+        {
+            SDL_RenderPresent(SDL::getRenderer(i));
+        }
+        SDL_UnlockMutex(SDL::getMutex());
+    }
 }
 
 bool Launcher::launcherName(std::string &launcherName, std::string collection)

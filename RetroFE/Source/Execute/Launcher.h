@@ -17,6 +17,7 @@
 
 #include <string>
 #include "../Graphics/Page.h"
+#include <atomic>
 
 class Configuration;
 class Item;
@@ -28,6 +29,7 @@ public:
     Launcher(Configuration &c);
     bool run(std::string collection, Item *collectionItem, Page *currentPage = NULL);
 	void LEDBlinky( int command, std::string collection = "", Item *collectionItem = NULL);
+    void keepRendering(std::atomic<bool>& stop_thread, Page& currentPage);
 
 private:
     std::string replaceString(
