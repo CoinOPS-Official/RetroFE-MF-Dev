@@ -36,7 +36,7 @@ Launcher::Launcher(Configuration &c)
 {
 }
 
-bool Launcher::run(std::string collection, Item *collectionItem, RetroFE *currentPage)
+bool Launcher::run(std::string collection, Item *collectionItem, Page *currentPage)
 {
     std::string launcherName = collectionItem->collectionInfo->launcher;
     std::string executablePath;
@@ -209,7 +209,7 @@ std::string Launcher::replaceVariables(std::string str,
     return str;
 }
 
-bool Launcher::execute(std::string executable, std::string args, std::string currentDirectory, bool wait, RetroFE* currentPage)
+bool Launcher::execute(std::string executable, std::string args, std::string currentDirectory, bool wait, Page* currentPage)
 {
     bool retVal = false;
     std::string executionString = "\"" + executable + "\" " + args;
@@ -254,18 +254,33 @@ bool Launcher::execute(std::string executable, std::string args, std::string cur
 		{
 			while(WAIT_OBJECT_0 != MsgWaitForMultipleObjects(1, &processInfo.hProcess, FALSE, INFINITE, QS_ALLINPUT))
 			{
-               
 				MSG msg;
 				while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 				{
+                    TranslateMessage(&msg);
+					DispatchMessage(&msg);
                     if (currentPage != NULL) {
                         //SDL_Delay(1000 / 60);
+                       
+                        currentPage->update(float(0.001));
+                        SDL_LockMutex(SDL::getMutex());
+                        for (int i = 1; i < SDL::getNumDisplays(); ++i)
+                        {
+                            SDL_SetRenderDrawColor(SDL::getRenderer(i), 0x0, 0x0, 0x00, 0xFF);
+                            SDL_RenderClear(SDL::getRenderer(i));
+                        }
+
+                            currentPage->draw();
 
 
-                        currentPage->render();
+                        for (int i = 1; i < SDL::getNumDisplays(); ++i)
+                        {
+                            SDL_RenderPresent(SDL::getRenderer(i));
+                        }
+                        SDL_UnlockMutex(SDL::getMutex());
                     }
-					DispatchMessage(&msg);
 				}
+                
 			}
         }
 
