@@ -153,6 +153,7 @@ private:
 	int                attractModePlaylistCollectionNumber_;
 	bool               reboot_;
     bool               kioskLock_;
+    bool               paused_;
 	std::string        firstPlaylist_;
     std::map<std::string, bool> lkupAttractModeSkipPlaylist_;
     std::map<std::string, unsigned int> lastMenuOffsets_;
