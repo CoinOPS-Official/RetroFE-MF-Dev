@@ -82,3 +82,4 @@ v0.10.34.1
 	- fixed kiosk image toggle (monkofthefunk)
 	- added jbPause to pause attract mode (monkofthefunk)
 	- added animated marquee during game (monkofthefunk)
+	- added controllerComboExit uses "start" and "back" (monkofthefunk)

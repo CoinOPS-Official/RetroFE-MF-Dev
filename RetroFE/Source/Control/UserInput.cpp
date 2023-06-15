@@ -85,6 +85,8 @@ bool UserInput::initialize()
     MapKey("jbPause", KeyCodePause, false);
     MapKey("jbRestart", KeyCodeRestart, false);
     MapKey("kiosk", KeyCodeKisok, false);
+    MapKey("quitCombo1", KeyCodeQuitCombo1, false);
+    MapKey("quitCombo2", KeyCodeQuitCombo2, false);
 
     bool retVal = true;
 
@@ -110,6 +112,22 @@ bool UserInput::initialize()
     retVal = MapKey("select", KeyCodeSelect) && retVal;
     retVal = MapKey("back",   KeyCodeBack) && retVal;
     retVal = MapKey("quit",   KeyCodeQuit) && retVal;
+
+    // set quit combo
+    std::string token;
+    SDL_Scancode scanCode;
+    std::map<KeyCode_E, std::string> quitCombo;
+    quitCombo.insert(std::pair<KeyCode_E, std::string>(KeyCodeQuitCombo1, "joyButton6"));
+    quitCombo.insert(std::pair<KeyCode_E, std::string>(KeyCodeQuitCombo2, "joyButton7"));
+    for (std::map<KeyCode_E, std::string>::iterator qcI = quitCombo.begin(); qcI != quitCombo.end(); qcI++) {
+        token = Configuration::trimEnds(qcI->second);
+        scanCode = SDL_GetScancodeFromName(token.c_str());
+        if (scanCode != SDL_SCANCODE_UNKNOWN)
+        {
+            keyHandlers_.push_back(std::pair<InputHandler*, KeyCode_E>(new KeyboardHandler(scanCode), qcI->first));
+            break;
+        }
+    }
 
     return retVal;
 }
