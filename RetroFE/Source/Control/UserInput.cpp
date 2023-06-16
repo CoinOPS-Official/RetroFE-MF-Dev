@@ -114,19 +114,15 @@ bool UserInput::initialize()
     retVal = MapKey("quit",   KeyCodeQuit) && retVal;
 
     // set quit combo
-    std::string token;
-    SDL_Scancode scanCode;
+    unsigned int button;
+    int joyNum = -1;
+
     std::map<KeyCode_E, std::string> quitCombo;
     quitCombo.insert(std::pair<KeyCode_E, std::string>(KeyCodeQuitCombo1, "joyButton6"));
     quitCombo.insert(std::pair<KeyCode_E, std::string>(KeyCodeQuitCombo2, "joyButton7"));
     for (std::map<KeyCode_E, std::string>::iterator qcI = quitCombo.begin(); qcI != quitCombo.end(); qcI++) {
-        token = Configuration::trimEnds(qcI->second);
-        scanCode = SDL_GetScancodeFromName(token.c_str());
-        if (scanCode != SDL_SCANCODE_UNKNOWN)
-        {
-            keyHandlers_.push_back(std::pair<InputHandler*, KeyCode_E>(new KeyboardHandler(scanCode), qcI->first));
-            break;
-        }
+        button = Utils::convertInt(Utils::replace(Utils::toLower(qcI->second), "joybutton", ""));
+        keyHandlers_.push_back(std::pair<InputHandler*, KeyCode_E>(new JoyButtonHandler(joyNum, button), qcI->first));
     }
 
     return retVal;
