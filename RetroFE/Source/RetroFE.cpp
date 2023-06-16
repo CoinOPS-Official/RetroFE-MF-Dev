@@ -100,7 +100,7 @@ void RetroFE::render( )
 {
 
     SDL_LockMutex( SDL::getMutex( ) );
-    for ( int i = 0; i < SDL::getNumDisplays( ); ++i )
+    for ( int i = 0; i < SDL::getScreenCount( ); ++i )
     {
         SDL_SetRenderDrawColor( SDL::getRenderer( i ), 0x0, 0x0, 0x00, 0xFF );
         SDL_RenderClear( SDL::getRenderer( i ) );
@@ -111,7 +111,7 @@ void RetroFE::render( )
         currentPage_->draw( );
     }
 
-    for ( int i = 0; i < SDL::getNumDisplays( ); ++i )
+    for ( int i = 0; i < SDL::getScreenCount( ); ++i )
     {
         SDL_RenderPresent( SDL::getRenderer( i ) );
     }
@@ -165,6 +165,8 @@ void RetroFE::launchEnter( )
 
     // Disable window focus
     SDL_SetWindowGrab(SDL::getWindow( 0 ), SDL_FALSE);
+    // Free the textures, and optionally take down SDL
+    freeGraphicsMemory();
 
     bool hideMouse = false;
     int  mouseX    = 5000;
@@ -180,6 +182,8 @@ void RetroFE::launchEnter( )
 // Return from the launch of a game/program
 void RetroFE::launchExit( )
 {
+    // Optionally set up SDL, and load the textures
+    allocateGraphicsMemory();
 
     // Restore the SDL settings
     SDL_RestoreWindow( SDL::getWindow( 0 ) );
