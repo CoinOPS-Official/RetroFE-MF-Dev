@@ -74,7 +74,7 @@ public:
     int          Monitor;
     float        Volume;
     bool         Restart;
-	bool         Additive;
+    bool         Additive;
 
 private:
     float AbsoluteHeight() const;
