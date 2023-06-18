@@ -731,7 +731,6 @@ void ScrollingList::resetTweens( Component *c, AnimationEvents *sets, ViewInfo *
     if (currentViewInfo->Restart && scrollPeriod_ > minScrollTime_)
         set->push(new Tween(TWEEN_PROPERTY_RESTART, LINEAR, currentViewInfo->Restart, nextViewInfo->Restart, 0));
 
-    set->push(new Tween(TWEEN_PROPERTY_ADDITIVE, LINEAR, currentViewInfo->Additive, nextViewInfo->Additive, 0));
     set->push(new Tween(TWEEN_PROPERTY_HEIGHT, LINEAR, currentViewInfo->Height, nextViewInfo->Height, scrollTime ) );
     set->push(new Tween(TWEEN_PROPERTY_WIDTH, LINEAR, currentViewInfo->Width, nextViewInfo->Width, scrollTime ) );
     set->push(new Tween(TWEEN_PROPERTY_ANGLE, LINEAR, currentViewInfo->Angle, nextViewInfo->Angle, scrollTime ) );

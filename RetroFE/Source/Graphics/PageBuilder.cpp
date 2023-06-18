@@ -1124,6 +1124,7 @@ void PageBuilder::buildCustomMenu(ScrollingList *menu, xml_node<> *menuXml, xml_
         ViewInfo *viewInfo = new ViewInfo();
         buildViewInfo(componentXml, *viewInfo, itemDefaults);
         viewInfo->Monitor = menu->baseViewInfo.Monitor;
+        viewInfo->Monitor = menu->baseViewInfo.Additive;
 
         points->push_back(viewInfo);
         tweenPoints->push_back(createTweenInstance(componentXml));
