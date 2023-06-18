@@ -69,7 +69,7 @@ void Image::allocateGraphicsMemory()
         {
             if (baseViewInfo.Additive)
         {
-				SDL_SetTextureBlendMode(texture_, SDL_BLENDMODE_ADD);
+                SDL_SetTextureBlendMode(texture_, SDL_BLENDMODE_ADD);
             }
         else
             {
