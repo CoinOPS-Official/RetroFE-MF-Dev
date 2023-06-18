@@ -67,7 +67,7 @@ void Image::allocateGraphicsMemory()
 
         if (texture_ != NULL)
         {
-            if (baseViewInfo.Additive)
+        if (baseViewInfo.Additive)
         {
                 SDL_SetTextureBlendMode(texture_, SDL_BLENDMODE_ADD);
             }
