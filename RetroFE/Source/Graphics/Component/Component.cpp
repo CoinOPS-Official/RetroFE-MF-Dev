@@ -270,7 +270,7 @@ bool Component::animate()
             else
                 elapsedTime = static_cast<float>(tween->duration);
 
-            switch(tween->property)
+            switch (tween->property)
             {
             case TWEEN_PROPERTY_X:
                 if (tween->startDefined)
@@ -423,6 +423,9 @@ bool Component::animate()
                 break;
             case TWEEN_PROPERTY_RESTART:
                 baseViewInfo.Restart = tween->duration && !elapsedTime;
+                break;
+            case TWEEN_PROPERTY_ADDITIVE:
+                baseViewInfo.Additive = !elapsedTime;
                 break;
             }
         }

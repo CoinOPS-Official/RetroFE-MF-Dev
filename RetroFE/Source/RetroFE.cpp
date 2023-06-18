@@ -166,7 +166,7 @@ void RetroFE::launchEnter( )
     // Disable window focus
     SDL_SetWindowGrab(SDL::getWindow( 0 ), SDL_FALSE);
     // Free the textures, and optionally take down SDL
-    //freeGraphicsMemory();
+    freeGraphicsMemory();
 
     bool hideMouse = false;
     int  mouseX    = 5000;
@@ -183,7 +183,7 @@ void RetroFE::launchEnter( )
 void RetroFE::launchExit( )
 {
     // Optionally set up SDL, and load the textures
-    //allocateGraphicsMemory();
+    allocateGraphicsMemory();
 
     // Restore the SDL settings
     SDL_RestoreWindow( SDL::getWindow( 0 ) );
@@ -1686,6 +1686,17 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
         }else if ( input_.keystate(UserInput::KeyCodeMenu) && !menuMode_)
         {
             state = RETROFE_MENUMODE_START_REQUEST;
+        }
+        else if (input_.keystate(UserInput::KeyCodeQuitCombo1) && input_.keystate(UserInput::KeyCodeQuitCombo2)) {
+            attract_.reset();
+            bool controllerComboExit = false;
+            config_.getProperty("controllerComboExit", controllerComboExit);
+            if (controllerComboExit) {
+#ifdef WIN32
+                postMessage("MediaplayerHiddenWindow", 0x8001, 51, 0);
+#endif              			
+                return RETROFE_QUIT_REQUEST;
+            }
         }
 
         // Handle Collection Up/Down keys
