@@ -1827,6 +1827,37 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             }
         }
 
+        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeCycleCollection))
+        {
+            if (!isStandalonePlaylist(currentPage_->getPlaylistName()))
+            {
+                attract_.reset();
+                std::string cycleString;
+                config_.getProperty("cycleCollection", cycleString);
+
+                std::vector<std::string> cycleVector;
+                Utils::listToVector(cycleString, cycleVector, ',');
+                nextPageItem_ = page->nextCycleCollectionItem(cycleVector);
+
+                if (nextPageItem_)
+                {
+                    CollectionInfoBuilder cib(config_, *metadb_);
+                    std::string lastPlayedSkipCollection = "";
+                    int         size = 0;
+                    config_.getProperty("lastPlayedSkipCollection", lastPlayedSkipCollection);
+                    config_.getProperty("lastplayedCollectionSize", size);
+
+                    if (!isInAttractModeSkipPlaylist(currentPage_->getPlaylistName()) &&
+                        nextPageItem_->collectionInfo->name != lastPlayedSkipCollection)
+                    {
+                        cib.updateLastPlayedPlaylist(currentPage_->getCollection(), nextPageItem_, size); // Update last played playlist if not currently in the skip playlist (e.g. settings)
+                        currentPage_->updateReloadables(0);
+                    }
+                    state = RETROFE_NEXT_PAGE_REQUEST;
+                }
+            }
+        }
+
         else if (!kioskLock_ && input_.keystate(UserInput::KeyCodePrevCyclePlaylist))
         {
             if (!isStandalonePlaylist(currentPage_->getPlaylistName()))
@@ -2047,8 +2078,6 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
          !input_.keystate(UserInput::KeyCodePageDown) &&
          !input_.keystate(UserInput::KeyCodeLetterUp) &&
          !input_.keystate(UserInput::KeyCodeLetterDown) &&
-         !input_.keystate(UserInput::KeyCodeCollectionUp) &&
-         !input_.keystate(UserInput::KeyCodeCollectionDown) &&
          !attract_.isActive( ) )
     {
         page->resetScrollPeriod( );

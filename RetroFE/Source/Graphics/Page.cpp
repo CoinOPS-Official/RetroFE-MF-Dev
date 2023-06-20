@@ -933,6 +933,80 @@ bool Page::popCollection()
 }
 
 
+Item* Page::nextCycleCollectionItem(std::vector<std::string> list)
+{
+    // Empty list
+    if (list.size() == 0)
+        return NULL;
+
+    ScrollingList* amenu = getAnActiveMenu();
+    if (!amenu) 
+        return NULL;
+
+    // Find the current collection in the list
+    std::string name = amenu->collectionName;
+    std::vector<std::string>::iterator it = list.begin();
+    while (it != list.end() && *it != name)
+        ++it;
+
+    int i = 0;
+    size_t collectionSize = collections_.size();
+    CollectionInfo* collectionInfo;
+    Item* item;
+    // If current collection not found, switch to the first found cycle collection in the collection list
+    if (it == list.end())
+    {
+        for (std::vector<std::string>::iterator it2 = list.begin(); it2 != list.end(); ++it2)
+        {
+            if (i >= int(collectionSize)) {
+                return NULL;
+            }
+            collectionInfo = getCollectionByName(*it);
+            if (collectionInfo != NULL) {
+                item = new Item();
+                item->collectionInfo = collectionInfo;
+
+                return item;
+            }
+            ++i;
+        }
+    }
+    // Current collection found; switch to the next found collection in the list
+    else
+    {
+        for (;;)
+        {
+            if (i >= int(collectionSize)) {
+                return NULL;
+            }
+            ++it;
+            if (it == list.end())
+                it = list.begin(); // wrap
+            collectionInfo = getCollectionByName(*it);
+            if (collectionInfo != NULL) {
+                item = new Item();
+                item->collectionInfo = collectionInfo;
+
+                return item;
+            }
+            ++i;
+        }
+    }
+
+    return NULL;
+}
+
+CollectionInfo* Page::getCollectionByName(std::string collection)
+{
+    for (CollectionVector_T::iterator it2 = collections_.begin(); it2 != collections_.end(); ++it2) {
+        if (it2->collection->name == collection) {
+            return it2->collection;
+        }
+    }
+    return NULL;
+}
+
+
 void Page::enterMenu()
 {
     triggerEventOnAllMenus("menuEnter");

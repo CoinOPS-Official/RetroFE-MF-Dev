@@ -51,6 +51,7 @@ public:
     void highlightLoadArt();
     bool pushCollection(CollectionInfo *collection);
     bool popCollection();
+    Item* nextCycleCollectionItem(std::vector<std::string> list);
     void enterMenu();
     void exitMenu();
     void enterGame();
@@ -180,6 +181,7 @@ private:
     typedef std::vector< std::vector<ScrollingList *> > MenuVector_T;
     typedef std::list<MenuInfo_S> CollectionVector_T;
     void setActiveMenuItemsFromPlaylist(MenuInfo_S info, ScrollingList* menu);
+    CollectionInfo* getCollectionByName(std::string collection);
 
     std::vector<ScrollingList *> activeMenu_;
     ScrollingList* anActiveMenu_;
