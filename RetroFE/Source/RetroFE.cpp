@@ -767,7 +767,9 @@ bool RetroFE::run( )
                 CollectionInfo *info;
                 if ( menuMode_ )
                     info = getMenuCollection( nextPageName );
-                else
+                else if (nextPageItem_->collectionInfo != NULL) {
+                    info = nextPageItem_->collectionInfo;
+                } else
                     info = getCollection( nextPageName );
 
                 currentPage_->pushCollection(info);
@@ -1850,21 +1852,10 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
                     collectionCycleIt_ = collectionCycle_.begin();
 
                 nextPageItem_ = new Item();
+                nextPageItem_->name = collectionCycleIt_->collection->name;
                 nextPageItem_->collectionInfo = collectionCycleIt_->collection;
-
-                CollectionInfoBuilder cib(config_, *metadb_);
-                std::string lastPlayedSkipCollection = "";
-                int         size = 0;
-                config_.getProperty("lastPlayedSkipCollection", lastPlayedSkipCollection);
-                config_.getProperty("lastplayedCollectionSize", size);
-
-                if (!isInAttractModeSkipPlaylist(currentPage_->getPlaylistName()) &&
-                    nextPageItem_->collectionInfo->name != lastPlayedSkipCollection)
-                {
-                    cib.updateLastPlayedPlaylist(currentPage_->getCollection(), nextPageItem_, size); // Update last played playlist if not currently in the skip playlist (e.g. settings)
-                    currentPage_->updateReloadables(0);
-                }
-                state = RETROFE_NEXT_PAGE_REQUEST;
+                menuMode_ = false;
+                state = RETROFE_NEXT_PAGE_MENU_EXIT;
             }
         }
 
