@@ -531,12 +531,26 @@ bool RetroFE::run( )
                 if ( currentPage_ )
                 {
                     currentPage_->setLocked(kioskLock_);
+                    CollectionInfo* info;
 
+                    // add collections to cycle
+                    std::string cycleString;
+                    config_.getProperty("cycleCollection", cycleString);
+                    std::vector<std::string> cycleVector;
+                    Utils::listToVector(cycleString, cycleVector, ',');
+                    for (std::vector<std::string>::iterator it = cycleVector.begin(); it != cycleVector.end(); ++it)
+                    {
+                        info = getCollection(*it);
+                        if (info != NULL) {
+                            pushCollectionCycle(info);
+                        }
+                    }
+                    
+                    // find first collection
                     std::string firstCollection = "Main";
-
                     config_.getProperty( "firstCollection", firstCollection );
                     config_.setProperty( "currentCollection", firstCollection );
-                    CollectionInfo *info = getCollection(firstCollection);
+                    info = getCollection(firstCollection);
 
                     if (info == NULL) {
                         state = RETROFE_QUIT_REQUEST;
@@ -1829,32 +1843,28 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
 
         else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeCycleCollection))
         {
-            if (!isStandalonePlaylist(currentPage_->getPlaylistName()))
-            {
-                attract_.reset();
-                std::string cycleString;
-                config_.getProperty("cycleCollection", cycleString);
+            attract_.reset();
+            if (collectionCycle_.size()) {
+                collectionCycleIt_++;
+                if (collectionCycleIt_ == collectionCycle_.end())
+                    collectionCycleIt_ = collectionCycle_.begin();
 
-                std::vector<std::string> cycleVector;
-                Utils::listToVector(cycleString, cycleVector, ',');
-                nextPageItem_ = page->nextCycleCollectionItem(cycleVector);
+                nextPageItem_ = new Item();
+                nextPageItem_->collectionInfo = collectionCycleIt_->collection;
 
-                if (nextPageItem_)
+                CollectionInfoBuilder cib(config_, *metadb_);
+                std::string lastPlayedSkipCollection = "";
+                int         size = 0;
+                config_.getProperty("lastPlayedSkipCollection", lastPlayedSkipCollection);
+                config_.getProperty("lastplayedCollectionSize", size);
+
+                if (!isInAttractModeSkipPlaylist(currentPage_->getPlaylistName()) &&
+                    nextPageItem_->collectionInfo->name != lastPlayedSkipCollection)
                 {
-                    CollectionInfoBuilder cib(config_, *metadb_);
-                    std::string lastPlayedSkipCollection = "";
-                    int         size = 0;
-                    config_.getProperty("lastPlayedSkipCollection", lastPlayedSkipCollection);
-                    config_.getProperty("lastplayedCollectionSize", size);
-
-                    if (!isInAttractModeSkipPlaylist(currentPage_->getPlaylistName()) &&
-                        nextPageItem_->collectionInfo->name != lastPlayedSkipCollection)
-                    {
-                        cib.updateLastPlayedPlaylist(currentPage_->getCollection(), nextPageItem_, size); // Update last played playlist if not currently in the skip playlist (e.g. settings)
-                        currentPage_->updateReloadables(0);
-                    }
-                    state = RETROFE_NEXT_PAGE_REQUEST;
+                    cib.updateLastPlayedPlaylist(currentPage_->getCollection(), nextPageItem_, size); // Update last played playlist if not currently in the skip playlist (e.g. settings)
+                    currentPage_->updateReloadables(0);
                 }
+                state = RETROFE_NEXT_PAGE_REQUEST;
             }
         }
 
@@ -2130,6 +2140,15 @@ Page *RetroFE::loadSplashPage( )
     return page;
 }
 
+void RetroFE::pushCollectionCycle(CollectionInfo* collection)
+{
+    Page::MenuInfo_S info;
+    info.collection = collection;
+    info.playlist = collection->playlists.begin();
+    info.queueDelete = false;
+    collectionCycle_.push_back(info);
+    collectionCycleIt_ = collectionCycle_.begin();
+}
 
 // Load a collection
 CollectionInfo *RetroFE::getCollection(std::string collectionName)

@@ -30,6 +30,7 @@
 #include <stack>
 #include <map>
 #include <string>
+#include "Graphics/Page.h"
 #ifdef WIN32
     #include <windows.h>
 #endif
@@ -125,6 +126,10 @@ private:
     void            quit( );
     Page           *loadPage( );
     Page           *loadSplashPage( );
+    void pushCollectionCycle(CollectionInfo* collection);
+    Page::CollectionVector_T collectionCycle_;
+    Page::CollectionVector_T::iterator collectionCycleIt_;
+
     RETROFE_STATE   processUserInput( Page *page );
     void            update( float dt, bool scrollActive );
     CollectionInfo *getCollection( std::string collectionName );

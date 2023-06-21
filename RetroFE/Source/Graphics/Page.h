@@ -163,6 +163,13 @@ public:
     void setSelectedItem();
     bool fromPreviousPlaylist = false;
     bool fromPlaylistNav = false;
+    struct MenuInfo_S
+    {
+        CollectionInfo* collection;
+        CollectionInfo::Playlists_T::iterator playlist;
+        bool queueDelete;
+    };
+    typedef std::list<MenuInfo_S> CollectionVector_T;
 
 private:
     void playlistChange();
@@ -171,17 +178,9 @@ private:
     std::string controlsType_;
     bool locked_;
 
-    struct MenuInfo_S
-    {
-        CollectionInfo *collection;
-        CollectionInfo::Playlists_T::iterator playlist; 
-        bool queueDelete;
-    };
-
+    
     typedef std::vector< std::vector<ScrollingList *> > MenuVector_T;
-    typedef std::list<MenuInfo_S> CollectionVector_T;
     void setActiveMenuItemsFromPlaylist(MenuInfo_S info, ScrollingList* menu);
-    CollectionInfo* getCollectionByName(std::string collection);
 
     std::vector<ScrollingList *> activeMenu_;
     ScrollingList* anActiveMenu_;
