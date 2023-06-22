@@ -153,6 +153,16 @@ Page *PageBuilder::buildPage( std::string collectionName )
                 xml_attribute<> *fontSizeXml = root->first_attribute("loadFontSize");
                 xml_attribute<> *minShowTimeXml = root->first_attribute("minShowTime");
                 xml_attribute<>* controls = root->first_attribute("controls");
+                xml_attribute<>* rotation = root->first_attribute("rotation");
+
+                // todo find out if a monitor exists that matches a rotation
+                // 1 - 90 degree rotation, 2 - 180, 3 - 270
+                if (rotation) {
+                    // use height and width
+                    int rotate = Utils::convertInt(rotation->value());
+                    config_.setProperty("rotation" + screenIndex, rotate);
+                    Logger::write(Logger::ZONE_INFO, "Configuration", "Setting rotation for screen " + screenIndex + " to " + std::to_string(rotate * 90) + " degrees.");
+                }
 
                 if(!layoutWidthXml || !layoutHeightXml)
                 {
