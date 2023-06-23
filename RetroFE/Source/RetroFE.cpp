@@ -525,7 +525,10 @@ bool RetroFE::run( )
                 currentPage_->deInitialize( );
                 delete currentPage_;
 
-                currentPage_ = loadPage( );
+                // find first collection
+                std::string firstCollection = "Main";
+                config_.getProperty("firstCollection", firstCollection);
+                currentPage_ = loadPage(firstCollection);
                 currentPage_->setLocked(kioskLock_);
                 splashMode = false;
                 if ( currentPage_ )
@@ -539,9 +542,6 @@ bool RetroFE::run( )
                     Utils::listToVector(cycleString, collectionCycle_, ',');
                     collectionCycleIt_ = collectionCycle_.begin();
 
-                    // find first collection
-                    std::string firstCollection = "Main";
-                    config_.getProperty( "firstCollection", firstCollection );
                     config_.setProperty( "currentCollection", firstCollection );
                     info = getCollection(firstCollection);
 
@@ -2090,15 +2090,17 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
 
 
 // Load a page
-Page* RetroFE::loadPage()
+Page* RetroFE::loadPage(std::string collectionName)
 {
     std::string layoutName;
 
     config_.getProperty("layout", layoutName);
 
     PageBuilder pb(layoutName, getLayoutFileName(), config_, &fontcache_);
-    Page* page = pb.buildPage();
-
+    Page* page = pb.buildPage(collectionName);
+    if (!page) {
+        page = pb.buildPage();
+    }
     if (!page)
     {
         Logger::write(Logger::ZONE_ERROR, "RetroFE", "Could not create page");

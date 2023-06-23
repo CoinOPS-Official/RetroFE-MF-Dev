@@ -124,7 +124,7 @@ private:
     bool isInAttractModeSkipPlaylist(std::string playlist);
     void goToNextAttractModePlaylistByCycle(std::vector<std::string> cycleVector);
     void            quit( );
-    Page           *loadPage( );
+    Page           *loadPage(std::string collectionName);
     Page           *loadSplashPage( );
     void pushCollectionCycle(CollectionInfo* collection);
     std::vector<std::string> collectionCycle_;
