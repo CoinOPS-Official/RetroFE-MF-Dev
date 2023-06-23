@@ -22,7 +22,7 @@
 class Image : public Component
 {
 public:
-    Image(std::string file, std::string altFile, Page &p, int monitor, bool addititve);
+    Image(std::string file, std::string altFile, Page &p, int monitor, bool additive);
     virtual ~Image();
     void freeGraphicsMemory();
     void allocateGraphicsMemory();

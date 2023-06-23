@@ -19,14 +19,14 @@
 #include "../../Utility/Log.h"
 #include <SDL2/SDL_image.h>
 
-Image::Image(std::string file, std::string altFile, Page &p, int monitor, bool addititve)
+Image::Image(std::string file, std::string altFile, Page &p, int monitor, bool additive)
     : Component(p)
     , texture_(NULL)
     , file_(file)
     , altFile_(altFile)
 {
     baseViewInfo.Monitor = monitor;
-    baseViewInfo.Additive = addititve;
+    baseViewInfo.Additive = additive;
 
     allocateGraphicsMemory();
 }
