@@ -127,8 +127,8 @@ private:
     Page           *loadPage( );
     Page           *loadSplashPage( );
     void pushCollectionCycle(CollectionInfo* collection);
-    Page::CollectionVector_T collectionCycle_;
-    Page::CollectionVector_T::iterator collectionCycleIt_;
+    std::vector<std::string> collectionCycle_;
+    std::vector<std::string>::iterator collectionCycleIt_;
 
     RETROFE_STATE   processUserInput( Page *page );
     void            update( float dt, bool scrollActive );

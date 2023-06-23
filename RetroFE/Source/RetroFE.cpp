@@ -536,16 +536,9 @@ bool RetroFE::run( )
                     // add collections to cycle
                     std::string cycleString;
                     config_.getProperty("cycleCollection", cycleString);
-                    std::vector<std::string> cycleVector;
-                    Utils::listToVector(cycleString, cycleVector, ',');
-                    for (std::vector<std::string>::iterator it = cycleVector.begin(); it != cycleVector.end(); ++it)
-                    {
-                        info = getCollection(*it);
-                        if (info != NULL) {
-                            pushCollectionCycle(info);
-                        }
-                    }
-                    
+                    Utils::listToVector(cycleString, collectionCycle_, ',');
+                    collectionCycleIt_ = collectionCycle_.begin();
+
                     // find first collection
                     std::string firstCollection = "Main";
                     config_.getProperty( "firstCollection", firstCollection );
@@ -767,9 +760,7 @@ bool RetroFE::run( )
                 CollectionInfo *info;
                 if ( menuMode_ )
                     info = getMenuCollection( nextPageName );
-                else if (nextPageItem_->collectionInfo != NULL) {
-                    info = nextPageItem_->collectionInfo;
-                } else
+                else
                     info = getCollection( nextPageName );
 
                 currentPage_->pushCollection(info);
@@ -1304,8 +1295,10 @@ bool RetroFE::run( )
                     delete currentPage_;
                     currentPage_ = pages_.top( );
                     pages_.pop( );
-                    currentPage_->allocateGraphicsMemory( );
-                    currentPage_->setLocked(kioskLock_);
+                    if (currentPage_->getSelectedItem() != NULL) {
+                        currentPage_->allocateGraphicsMemory();
+                        currentPage_->setLocked(kioskLock_);
+                    }
                 }
                 else
                 {
@@ -1848,14 +1841,17 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             attract_.reset();
             if (collectionCycle_.size()) {
                 collectionCycleIt_++;
-                if (collectionCycleIt_ == collectionCycle_.end())
+                if (collectionCycleIt_ == collectionCycle_.end()) {
                     collectionCycleIt_ = collectionCycle_.begin();
+                }
+                if (!pages_.empty() && pages_.size() > 1)
+                    pages_.pop();
 
                 nextPageItem_ = new Item();
-                nextPageItem_->name = collectionCycleIt_->collection->name;
-                nextPageItem_->collectionInfo = collectionCycleIt_->collection;
+                nextPageItem_->name = *collectionCycleIt_;
                 menuMode_ = false;
-                state = RETROFE_NEXT_PAGE_MENU_EXIT;
+
+                state = RETROFE_NEXT_PAGE_REQUEST;
             }
         }
 
@@ -2129,16 +2125,6 @@ Page *RetroFE::loadSplashPage( )
     page->start( );
 
     return page;
-}
-
-void RetroFE::pushCollectionCycle(CollectionInfo* collection)
-{
-    Page::MenuInfo_S info;
-    info.collection = collection;
-    info.playlist = collection->playlists.begin();
-    info.queueDelete = false;
-    collectionCycle_.push_back(info);
-    collectionCycleIt_ = collectionCycle_.begin();
 }
 
 // Load a collection
