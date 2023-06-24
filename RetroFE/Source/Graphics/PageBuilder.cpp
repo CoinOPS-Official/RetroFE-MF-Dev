@@ -206,12 +206,15 @@ Page *PageBuilder::buildPage( std::string collectionName )
                     int mon_height = 0;
                     int mon_width = 0;
                     int rotate = 0;
+                    rotate = Utils::convertInt(rotation->value());
+
                     for (size_t monitor = 0; monitor < monitors.size(); monitor++)
                     {
-                        rotate = Utils::convertInt(rotation->value());
-
                         mon_height = SDL::getWindowHeight(monitor);
                         mon_width = SDL::getWindowWidth(monitor);
+                        //screenWidth_/Utils::gcd( screenWidth_, screenHeight_ )
+                        //if (layoutWidth_
+
                         config_.setProperty("rotation" + std::to_string(monitor), std::to_string(rotate));
                         Logger::write(Logger::ZONE_INFO, "Configuration", "Setting rotation for screen " + std::to_string(monitor) + " to " + std::to_string(rotate * 90) + " degrees.");
 
