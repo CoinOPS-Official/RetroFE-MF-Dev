@@ -98,7 +98,8 @@ Page *PageBuilder::buildPage( std::string collectionName )
 
     std::vector<std::string> monitors;
     monitors.push_back(layoutPage);
-    for ( int i = 0; i < SDL::getNumScreens(); i++ )
+    // layout - 1.xml layer support
+    for ( int i = 0; i < 4; i++ )
         monitors.push_back("layout - " + std::to_string( i ) );
    
 
@@ -109,7 +110,10 @@ Page *PageBuilder::buildPage( std::string collectionName )
 		else
             monitor_ = monitor;
         layoutFile       = Utils::combinePath(layoutPath, monitors[monitor] + ".xml");
-        layoutFileAspect = Utils::combinePath(layoutPath, "layout " + std::to_string( screenWidth_/Utils::gcd( screenWidth_, screenHeight_ ) ) + "x" + std::to_string( screenHeight_/Utils::gcd( screenWidth_, screenHeight_ ) ) + monitors[monitor] + ".xml" );
+        layoutFileAspect = Utils::combinePath(layoutPath, "layout " + 
+            std::to_string( screenWidth_/Utils::gcd( screenWidth_, screenHeight_ ) ) + "x" + 
+            std::to_string( screenHeight_/Utils::gcd( screenWidth_, screenHeight_ ) ) + monitors[monitor] + 
+            ".xml" );
 
         Logger::write(Logger::ZONE_INFO, "Layout", "Initializing " + layoutFileAspect);
 
@@ -153,6 +157,7 @@ Page *PageBuilder::buildPage( std::string collectionName )
                 xml_attribute<> *fontSizeXml = root->first_attribute("loadFontSize");
                 xml_attribute<> *minShowTimeXml = root->first_attribute("minShowTime");
                 xml_attribute<>* controls = root->first_attribute("controls");
+                xml_attribute<>* rotation = root->first_attribute("rotation");
 
                 if(!layoutWidthXml || !layoutHeightXml)
                 {
@@ -192,6 +197,25 @@ Page *PageBuilder::buildPage( std::string collectionName )
                 {
                     Logger::write(Logger::ZONE_ERROR, "Layout", "Layout width and height cannot be set to 0");
                     return NULL;
+                }
+
+                // todo find out if a monitor exists that matches a rotation
+                // 1 - 90 degree rotation, 2 - 180, 3 - 270
+                if (rotation) {
+                    // use height and width
+                    int mon_height = 0;
+                    int mon_width = 0;
+                    int rotate = 0;
+                    for (size_t monitor = 0; monitor < monitors.size(); monitor++)
+                    {
+                        rotate = Utils::convertInt(rotation->value());
+
+                        mon_height = SDL::getWindowHeight(monitor);
+                        mon_width = SDL::getWindowWidth(monitor);
+                        config_.setProperty("rotation" + std::to_string(monitor), std::to_string(rotate));
+                        Logger::write(Logger::ZONE_INFO, "Configuration", "Setting rotation for screen " + std::to_string(monitor) + " to " + std::to_string(rotate * 90) + " degrees.");
+
+                    }
                 }
 
                 std::stringstream ss;
