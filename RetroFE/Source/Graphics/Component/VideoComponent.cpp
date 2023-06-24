@@ -57,7 +57,7 @@ void VideoComponent::update(float dt)
             restart();
             baseViewInfo.Restart = false;
         }
-        if (videoInst_->getTexture() && videoInst_->getCurrent()) {
+        if (videoInst_->getTexture()) {
             if (baseViewInfo.Alpha == 0.0 && !isPaused()) {
                 videoInst_->hide(true);
                 pause();
