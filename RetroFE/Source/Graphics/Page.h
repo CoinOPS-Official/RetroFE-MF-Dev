@@ -51,7 +51,6 @@ public:
     void highlightLoadArt();
     bool pushCollection(CollectionInfo *collection);
     bool popCollection();
-    Item* nextCycleCollectionItem(std::vector<std::string> list);
     void enterMenu();
     void exitMenu();
     void enterGame();
@@ -163,13 +162,6 @@ public:
     void setSelectedItem();
     bool fromPreviousPlaylist = false;
     bool fromPlaylistNav = false;
-    struct MenuInfo_S
-    {
-        CollectionInfo* collection;
-        CollectionInfo::Playlists_T::iterator playlist;
-        bool queueDelete;
-    };
-    typedef std::list<MenuInfo_S> CollectionVector_T;
 
 private:
     void playlistChange();
@@ -178,6 +170,13 @@ private:
     std::string controlsType_;
     bool locked_;
 
+    struct MenuInfo_S
+    {
+        CollectionInfo* collection;
+        CollectionInfo::Playlists_T::iterator playlist;
+        bool queueDelete;
+    };
+    typedef std::list<MenuInfo_S> CollectionVector_T;
     
     typedef std::vector< std::vector<ScrollingList *> > MenuVector_T;
     void setActiveMenuItemsFromPlaylist(MenuInfo_S info, ScrollingList* menu);
