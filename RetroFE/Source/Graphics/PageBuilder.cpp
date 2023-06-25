@@ -201,25 +201,28 @@ Page *PageBuilder::buildPage( std::string collectionName )
 
                 // todo find out if a monitor exists that matches a rotation
                 // 1 - 90 degree rotation, 2 - 180, 3 - 270
-                if (rotation) {
+                //if (rotation) {
                     // use height and width
                     int mon_height = 0;
                     int mon_width = 0;
                     int rotate = 0;
-                    rotate = Utils::convertInt(rotation->value());
+                  //  rotate = Utils::convertInt(rotation->value());
 
                     for (size_t monitor = 0; monitor < monitors.size(); monitor++)
                     {
                         mon_height = SDL::getWindowHeight(monitor);
                         mon_width = SDL::getWindowWidth(monitor);
                         //screenWidth_/Utils::gcd( screenWidth_, screenHeight_ )
-                        //if (layoutWidth_
+                        if (layoutWidth_ < layoutHeight_ && mon_width < mon_height) {
+                            layoutWidth_ = mon_width;
+                            layoutHeight_ = mon_height;
+                            rotate = 1;
+                            config_.setProperty("rotation" + std::to_string(monitor), std::to_string(rotate));
+                            Logger::write(Logger::ZONE_INFO, "Configuration", "Setting rotation for screen " + std::to_string(monitor) + " to " + std::to_string(rotate * 90) + " degrees.");
 
-                        config_.setProperty("rotation" + std::to_string(monitor), std::to_string(rotate));
-                        Logger::write(Logger::ZONE_INFO, "Configuration", "Setting rotation for screen " + std::to_string(monitor) + " to " + std::to_string(rotate * 90) + " degrees.");
-
+                        }
                     }
-                }
+                //}
 
                 std::stringstream ss;
                 ss << layoutWidth_ << "x" << layoutHeight_ << " (scale " << (float)screenWidth_ / (float)layoutWidth_ << "x" << (float)screenHeight_ / (float)layoutHeight_ << ")";
