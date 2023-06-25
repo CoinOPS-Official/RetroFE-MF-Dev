@@ -185,6 +185,7 @@ void Page::setActiveMenuItemsFromPlaylist(MenuInfo_S info, ScrollingList* menu)
     }
 }
 
+
 void Page::onNewItemSelected()
 {
     if(!getAnActiveMenu()) return;
@@ -1003,6 +1004,16 @@ void Page::nextPlaylist()
         setActiveMenuItemsFromPlaylist(info, *it);
     }
     playlistChange();
+}
+
+void Page::updateMenus()
+{
+    for (std::vector<ScrollingList*>::iterator it = activeMenu_.begin(); it != activeMenu_.end(); it++)
+    {
+        if (!(*it)->isPlaylist()) {
+            (*it)->setItems(playlist_->second);
+        }
+    }
 }
 
 

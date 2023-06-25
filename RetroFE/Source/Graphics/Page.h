@@ -58,6 +58,7 @@ public:
     std::string getPlaylistName();
     void favPlaylist();
     void nextPlaylist();
+    void updateMenus();
     void prevPlaylist();
     void selectPlaylist(std::string playlist);
     void nextCyclePlaylist(std::vector<std::string> list);
