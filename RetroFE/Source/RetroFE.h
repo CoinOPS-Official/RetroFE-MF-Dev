@@ -126,9 +126,6 @@ private:
     void            quit( );
     Page           *loadPage(std::string collectionName);
     Page           *loadSplashPage( );
-    void pushCollectionCycle(CollectionInfo* collection);
-    std::vector<std::string> collectionCycle_;
-    std::vector<std::string>::iterator collectionCycleIt_;
 
     RETROFE_STATE   processUserInput( Page *page );
     void            update( float dt, bool scrollActive );
