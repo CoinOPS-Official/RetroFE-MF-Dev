@@ -486,9 +486,8 @@ void Page::setScrollOffsetIndex(unsigned int i)
 
     for(std::vector<ScrollingList *>::iterator it = activeMenu_.begin(); it != activeMenu_.end(); it++)
     {
-        ScrollingList *menu = *it;
-        if (menu && !menu->isPlaylist())
-            menu->setScrollOffsetIndex(i);
+        if ((*it) && !(*it)->isPlaylist())
+            (*it)->setScrollOffsetIndex(i);
     }
 }
 
@@ -1005,17 +1004,6 @@ void Page::nextPlaylist()
     }
     playlistChange();
 }
-
-void Page::updateMenus()
-{
-    for (std::vector<ScrollingList*>::iterator it = activeMenu_.begin(); it != activeMenu_.end(); it++)
-    {
-        if (!(*it)->isPlaylist()) {
-            (*it)->setItems(playlist_->second);
-        }
-    }
-}
-
 
 void Page::prevPlaylist()
 {

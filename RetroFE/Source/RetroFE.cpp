@@ -1232,6 +1232,7 @@ bool RetroFE::run( )
                         currentPage_->updateMenus();
                         currentPage_->setScrollOffsetIndex(0);
                         currentPage_->highlightLoadArt();
+                        currentPage_->reallocateMenuSpritePoints();
                     }
                 }
 
