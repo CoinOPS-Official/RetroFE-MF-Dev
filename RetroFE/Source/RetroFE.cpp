@@ -1229,7 +1229,6 @@ bool RetroFE::run( )
                     // with new sort by last played return to first
                     if (currentPage_->getPlaylistName() == "lastplayed")
                     {
-                        currentPage_->updateMenus();
                         currentPage_->setScrollOffsetIndex(0);
                         currentPage_->highlightLoadArt();
                         currentPage_->reallocateMenuSpritePoints();
