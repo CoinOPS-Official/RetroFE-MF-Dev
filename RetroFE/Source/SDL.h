@@ -62,6 +62,10 @@ public:
     {
         rotation_[index] = rotation;
     }
+    static int getRotation(int index)
+    {
+        return rotation_[index];
+    }
 
 private:
     static std::vector<SDL_Window *>   window_;

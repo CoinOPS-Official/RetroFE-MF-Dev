@@ -203,13 +203,16 @@ Page *PageBuilder::buildPage( std::string collectionName )
                     // if layout width is narrow and height is tall then rotate, but if display can't handle it then don't rotate
                     rotate = 0;
                     if (layoutWidth_ < layoutHeight_) {
-                        rotate = 1;
                         if (SDL::getWindowWidth(display) < SDL::getWindowHeight(display)) {
-                            rotate = 0;
                             // if this vert display isn't main the swap with another
                             if (display != 0) {
                                 swapMonitors_ = true;
+                                // revert main monitor rotation if swaping
+                                SDL::setRotation(0, 0);
                             }
+                        }
+                        else {                            
+                            rotate = 1;
                         }
                     }
                     SDL::setRotation(display, rotate);
