@@ -96,23 +96,19 @@ Page *PageBuilder::buildPage( std::string collectionName )
         layoutPath = Utils::combinePath(layoutPath, "layout");
     }
 
-    std::vector<std::string> monitors;
-    monitors.push_back(layoutPage);
+    std::vector<std::string> layouts;
+    layouts.push_back(layoutPage);
     // layout - 1.xml layer support
     for ( int i = 0; i < 4; i++ )
-        monitors.push_back("layout - " + std::to_string( i ) );
+        layouts.push_back("layout - " + std::to_string( i ) );
    
 
-    for ( size_t monitor = 0; monitor < monitors.size(); monitor++ )
+    for ( size_t layout = 0; layout < layouts.size(); layout++ )
     {
-		if ( monitor > 0 )
-            monitor_ = monitor - 1;
-		else
-            monitor_ = monitor;
-        layoutFile       = Utils::combinePath(layoutPath, monitors[monitor] + ".xml");
+        layoutFile       = Utils::combinePath(layoutPath, layouts[layout] + ".xml");
         layoutFileAspect = Utils::combinePath(layoutPath, "layout " + 
             std::to_string( screenWidth_/Utils::gcd( screenWidth_, screenHeight_ ) ) + "x" + 
-            std::to_string( screenHeight_/Utils::gcd( screenWidth_, screenHeight_ ) ) + monitors[monitor] + 
+            std::to_string( screenHeight_/Utils::gcd( screenWidth_, screenHeight_ ) ) + layouts[layout] +
             ".xml" );
 
         Logger::write(Logger::ZONE_INFO, "Layout", "Initializing " + layoutFileAspect);
@@ -157,7 +153,6 @@ Page *PageBuilder::buildPage( std::string collectionName )
                 xml_attribute<> *fontSizeXml = root->first_attribute("loadFontSize");
                 xml_attribute<> *minShowTimeXml = root->first_attribute("minShowTime");
                 xml_attribute<>* controls = root->first_attribute("controls");
-                xml_attribute<>* rotation = root->first_attribute("rotation");
 
                 if(!layoutWidthXml || !layoutHeightXml)
                 {
@@ -201,28 +196,25 @@ Page *PageBuilder::buildPage( std::string collectionName )
 
                 // todo find out if a monitor exists that matches a rotation
                 // 1 - 90 degree rotation, 2 - 180, 3 - 270
-                //if (rotation) {
-                    // use height and width
-                    int mon_height = 0;
-                    int mon_width = 0;
-                    int rotate = 0;
-                  //  rotate = Utils::convertInt(rotation->value());
-
-                    for (size_t monitor = 0; monitor < monitors.size(); monitor++)
-                    {
-                        mon_height = SDL::getWindowHeight(monitor);
-                        mon_width = SDL::getWindowWidth(monitor);
-                        //screenWidth_/Utils::gcd( screenWidth_, screenHeight_ )
-                        if (layoutWidth_ < layoutHeight_ && mon_width < mon_height) {
-                            layoutWidth_ = mon_width;
-                            layoutHeight_ = mon_height;
-                            rotate = 1;
-                            config_.setProperty("rotation" + std::to_string(monitor), std::to_string(rotate));
-                            Logger::write(Logger::ZONE_INFO, "Configuration", "Setting rotation for screen " + std::to_string(monitor) + " to " + std::to_string(rotate * 90) + " degrees.");
-
+                int rotate = 0;
+                for (int display = 0; display < SDL::getNumDisplays(); display++)
+                {
+                    // if layout width is narrow and height is tall then rotate, but if display can't handle it then don't rotate
+                    rotate = 0;
+                    if (layoutWidth_ < layoutHeight_) {
+                        rotate = 1;
+                        if (SDL::getWindowWidth(display) < SDL::getWindowHeight(display)) {
+                            rotate = 0;
+                            // if this vert display isn't main the swap with another
+                            if (display != 0) {
+                                monitor_ = display;
+                            }
                         }
                     }
-                //}
+                    SDL::setRotation(display, rotate);
+                    config_.setProperty("rotation" + std::to_string(display), std::to_string(rotate));
+                    Logger::write(Logger::ZONE_INFO, "Configuration", "Layout rotated layout - " + std::to_string(layout) + " Setting rotation for screen " + std::to_string(display) + " to " + std::to_string(rotate * 90) + " degrees.");
+                }
 
                 std::stringstream ss;
                 ss << layoutWidth_ << "x" << layoutHeight_ << " (scale " << (float)screenWidth_ / (float)layoutWidth_ << "x" << (float)screenHeight_ / (float)layoutHeight_ << ")";
@@ -232,8 +224,8 @@ Page *PageBuilder::buildPage( std::string collectionName )
                     page = new Page(config_, layoutWidth_, layoutHeight_ );
                 else
                 {
-                    page->setLayoutWidth( monitor,  layoutWidth_ );
-                    page->setLayoutHeight( monitor, layoutHeight_ ); 
+                    page->setLayoutWidth(layout,  layoutWidth_);
+                    page->setLayoutHeight(layout, layoutHeight_);
                 }
 
                 if(minShowTimeXml) 
@@ -452,7 +444,14 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
             std::string altImagePath;
             altImagePath = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName, std::string(src->value()));
 
-            int monitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor_;
+            int monitor = monitor_;
+            if (monitorXml && (monitor = Utils::convertInt(monitorXml->value()))) {
+                // swap if this is the new "main screen"
+                if (monitor_ == monitor) {
+                    monitor = 0;
+                }
+            }
+
             bool additive = additiveXml ? bool(additiveXml->value()) : false;
             Image *c = new Image(imagePath, altImagePath, *page, monitor, additive);
             c->setId( id );
@@ -497,7 +496,13 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
             altVideoPath = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName, std::string(srcXml->value()));
             int numLoops = numLoopsXml ? Utils::convertInt(numLoopsXml->value()) : 1;
 
-            int monitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor_;
+            int monitor = monitor_;
+            if (monitorXml && (monitor = Utils::convertInt(monitorXml->value()))) {
+                // swap if this is the new "main screen"
+                if (monitor_ == monitor) {
+                    monitor = 0;
+                }
+            }
             Video *c = new Video(videoPath, altVideoPath, numLoops, *page, monitor);
             c->setId( id );
             xml_attribute<> *menuScrollReload = componentXml->first_attribute("menuScrollReload");
@@ -533,7 +538,13 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
         else
         {
             Font *font = addFont(componentXml, NULL);
-            int monitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor_;
+            int monitor = monitor_;
+            if (monitorXml && (monitor = Utils::convertInt(monitorXml->value()))) {
+                // swap if this is the new "main screen"
+                if (monitor_ == monitor) {
+                    monitor = 0;
+                }
+            }
             Text *c = new Text(value->value(), *page, font, monitor);
             c->setId( id );
             xml_attribute<> *menuScrollReload = componentXml->first_attribute("menuScrollReload");
@@ -553,7 +564,13 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
     {
         xml_attribute<> *monitorXml = componentXml->first_attribute("monitor");
         Font *font = addFont(componentXml, NULL);
-        int monitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor_;
+        int monitor = monitor_;
+        if (monitorXml && (monitor = Utils::convertInt(monitorXml->value()))) {
+            // swap if this is the new "main screen"
+            if (monitor_ == monitor) {
+                monitor = 0;
+            }
+        }
         Text *c = new Text("", *page, font, monitor);
         xml_attribute<> *menuScrollReload = componentXml->first_attribute("menuScrollReload");
         if (menuScrollReload &&
@@ -903,7 +920,13 @@ Font *PageBuilder::addFont(xml_node<> *component, xml_node<> *defaults)
         fontSize = Utils::convertInt(fontSizeXml->value());
     }
 
-    int monitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor_;
+    int monitor = monitor_;
+    if (monitorXml && (monitor = Utils::convertInt(monitorXml->value()))) {
+        // swap if this is the new "main screen"
+        if (monitor_ == monitor) {
+            monitor = 0;
+        }
+    }
     fontCache_->loadFont(fontName, fontSize, fontColor, monitor);
 
     return fontCache_->getFont(fontName, fontSize, fontColor);

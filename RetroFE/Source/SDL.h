@@ -58,6 +58,10 @@ public:
     {
         return numDisplays_;
     }
+    static void setRotation(int index, int rotation)
+    {
+        rotation_[index] = rotation;
+    }
 
 private:
     static std::vector<SDL_Window *>   window_;
