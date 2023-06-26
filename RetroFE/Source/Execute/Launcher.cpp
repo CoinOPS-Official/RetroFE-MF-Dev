@@ -254,7 +254,7 @@ bool Launcher::execute(std::string executable, std::string args, std::string cur
 #ifdef WIN32
         std::atomic<bool> stop_thread;
         std::thread proc_thread;
-        bool multiple_display = SDL::getNumDisplays() > 1;
+        bool multiple_display = SDL::getScreenCount() > 1;
         if (multiple_display) {
             stop_thread = false;
             proc_thread = std::thread([this, &stop_thread, &currentPage]() {
@@ -327,7 +327,7 @@ void Launcher::keepRendering(std::atomic<bool> &stop_thread, Page &currentPage)
 
         // start on secondary monitor
         // todo support future main screen swap
-        for (int i = 1; i < SDL::getNumDisplays(); ++i)
+        for (int i = 1; i < SDL::getScreenCount(); ++i)
         {
             SDL_SetRenderDrawColor(SDL::getRenderer(i), 0x0, 0x0, 0x00, 0xFF);
             SDL_RenderClear(SDL::getRenderer(i));
