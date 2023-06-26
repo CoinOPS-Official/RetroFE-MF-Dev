@@ -90,4 +90,6 @@ v0.10.34.1
 	- fixed adaptive feature affect on marquee menu videos (inigonmontoya, monkofthefunk)
 	- fixed pausing alpha=0 videos without black flicker during fast scroll (monkofthefunk)
 	- fixed fade in video due to stoping video update (monkofthefunk)
+	- added cycleCollection = ThemeConsoles,ThemeArcades / cycleCollection = W that will cycle through collections with different layouts (monkofthefunk)
+	- fixed second screen menu update upon last played game launch and order reshuffle (monkofthefun)
 	- fixed high GPU due to marquee rendering thread on game launch (monkofthefunk)
