@@ -60,6 +60,7 @@ PageBuilder::PageBuilder(std::string layoutKey, std::string layoutPage, Configur
     , fontSize_(24)
     , fontCache_(fc)
     , isMenu_(isMenu)
+    , swapMonitors_(false)
 {
     screenWidth_  = SDL::getWindowWidth(0);
     screenHeight_ = SDL::getWindowHeight(0);
@@ -207,7 +208,7 @@ Page *PageBuilder::buildPage( std::string collectionName )
                             rotate = 0;
                             // if this vert display isn't main the swap with another
                             if (display != 0) {
-                                monitor_ = display;
+                                swapMonitors_ = true;
                             }
                         }
                     }
@@ -1408,6 +1409,10 @@ void PageBuilder::buildViewInfo(xml_node<> *componentXml, ViewInfo &info, xml_no
     info.Volume             = volume             ? Utils::convertFloat(volume->value())            : 1.f;
     info.Restart = restart ? Utils::toLower(restart->value()) == "true" : false;
     info.Additive = additive ? Utils::toLower(additive->value()) == "true" : false;
+
+    if (swapMonitors_ && info.Monitor < 2) {
+        info.Monitor = info.Monitor == 0 ? 1 : 0;
+    }
 
     if(fontColor)
     {

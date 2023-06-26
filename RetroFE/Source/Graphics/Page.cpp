@@ -1479,6 +1479,7 @@ bool Page::isPlaying()
 
     for(std::vector<Component *>::iterator it = LayerComponents.begin(); it != LayerComponents.end(); ++it)
     {
+        // todo support monitor swap
         if ((*it)->baseViewInfo.Monitor == 0) {
             retVal |= (*it)->isPlaying();
         }
