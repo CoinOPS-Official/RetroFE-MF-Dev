@@ -100,7 +100,7 @@ void RetroFE::render( )
 {
 
     SDL_LockMutex( SDL::getMutex( ) );
-    for ( int i = 0; i < SDL::getNumDisplays( ); ++i )
+    for ( int i = 0; i < SDL::getScreenCount( ); ++i )
     {
         SDL_SetRenderDrawColor( SDL::getRenderer( i ), 0x0, 0x0, 0x00, 0xFF );
         SDL_RenderClear( SDL::getRenderer( i ) );
@@ -111,7 +111,7 @@ void RetroFE::render( )
         currentPage_->draw( );
     }
 
-    for ( int i = 0; i < SDL::getNumDisplays( ); ++i )
+    for ( int i = 0; i < SDL::getScreenCount( ); ++i )
     {
         SDL_RenderPresent( SDL::getRenderer( i ) );
     }
@@ -525,18 +525,25 @@ bool RetroFE::run( )
                 currentPage_->deInitialize( );
                 delete currentPage_;
 
-                currentPage_ = loadPage( );
+                // find first collection
+                std::string firstCollection = "Main";
+                config_.getProperty("firstCollection", firstCollection);
+                currentPage_ = loadPage(firstCollection);
                 currentPage_->setLocked(kioskLock_);
                 splashMode = false;
                 if ( currentPage_ )
                 {
                     currentPage_->setLocked(kioskLock_);
+                    CollectionInfo* info;
 
-                    std::string firstCollection = "Main";
+                    // add collections to cycle
+                    std::string cycleString;
+                    config_.getProperty("cycleCollection", cycleString);
+                    Utils::listToVector(cycleString, collectionCycle_, ',');
+                    collectionCycleIt_ = collectionCycle_.begin();
 
-                    config_.getProperty( "firstCollection", firstCollection );
                     config_.setProperty( "currentCollection", firstCollection );
-                    CollectionInfo *info = getCollection(firstCollection);
+                    info = getCollection(firstCollection);
 
                     if (info == NULL) {
                         state = RETROFE_QUIT_REQUEST;
@@ -1225,11 +1232,13 @@ bool RetroFE::run( )
                 {
                     cib.updateLastPlayedPlaylist(currentPage_->getCollection(), nextPageItem_, size); // Update last played playlist if not currently in the skip playlist (e.g. settings)
                     currentPage_->updateReloadables(0);
+                    
                     // with new sort by last played return to first
                     if (currentPage_->getPlaylistName() == "lastplayed")
                     {
                         currentPage_->setScrollOffsetIndex(0);
                         currentPage_->highlightLoadArt();
+                        currentPage_->reallocateMenuSpritePoints();
                     }
                 }
 
@@ -1288,8 +1297,10 @@ bool RetroFE::run( )
                     delete currentPage_;
                     currentPage_ = pages_.top( );
                     pages_.pop( );
-                    currentPage_->allocateGraphicsMemory( );
-                    currentPage_->setLocked(kioskLock_);
+                    if (currentPage_->getSelectedItem() != NULL) {
+                        currentPage_->allocateGraphicsMemory();
+                        currentPage_->setLocked(kioskLock_);
+                    }
                 }
                 else
                 {
@@ -1827,6 +1838,25 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             }
         }
 
+        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeCycleCollection))
+        {
+            attract_.reset();
+            if (collectionCycle_.size()) {
+                collectionCycleIt_++;
+                if (collectionCycleIt_ == collectionCycle_.end()) {
+                    collectionCycleIt_ = collectionCycle_.begin();
+                }
+                if (!pages_.empty() && pages_.size() > 1)
+                    pages_.pop();
+
+                nextPageItem_ = new Item();
+                nextPageItem_->name = *collectionCycleIt_;
+                menuMode_ = false;
+
+                state = RETROFE_NEXT_PAGE_REQUEST;
+            }
+        }
+
         else if (!kioskLock_ && input_.keystate(UserInput::KeyCodePrevCyclePlaylist))
         {
             if (!isStandalonePlaylist(currentPage_->getPlaylistName()))
@@ -2047,8 +2077,6 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
          !input_.keystate(UserInput::KeyCodePageDown) &&
          !input_.keystate(UserInput::KeyCodeLetterUp) &&
          !input_.keystate(UserInput::KeyCodeLetterDown) &&
-         !input_.keystate(UserInput::KeyCodeCollectionUp) &&
-         !input_.keystate(UserInput::KeyCodeCollectionDown) &&
          !attract_.isActive( ) )
     {
         page->resetScrollPeriod( );
@@ -2064,15 +2092,17 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
 
 
 // Load a page
-Page* RetroFE::loadPage()
+Page* RetroFE::loadPage(std::string collectionName)
 {
     std::string layoutName;
 
     config_.getProperty("layout", layoutName);
 
     PageBuilder pb(layoutName, getLayoutFileName(), config_, &fontcache_);
-    Page* page = pb.buildPage();
-
+    Page* page = pb.buildPage(collectionName);
+    if (!page) {
+        page = pb.buildPage();
+    }
     if (!page)
     {
         Logger::write(Logger::ZONE_ERROR, "RetroFE", "Could not create page");
@@ -2100,7 +2130,6 @@ Page *RetroFE::loadSplashPage( )
 
     return page;
 }
-
 
 // Load a collection
 CollectionInfo *RetroFE::getCollection(std::string collectionName)
