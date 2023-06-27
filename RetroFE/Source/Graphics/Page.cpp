@@ -185,6 +185,7 @@ void Page::setActiveMenuItemsFromPlaylist(MenuInfo_S info, ScrollingList* menu)
     }
 }
 
+
 void Page::onNewItemSelected()
 {
     if(!getAnActiveMenu()) return;
@@ -485,9 +486,8 @@ void Page::setScrollOffsetIndex(unsigned int i)
 
     for(std::vector<ScrollingList *>::iterator it = activeMenu_.begin(); it != activeMenu_.end(); it++)
     {
-        ScrollingList *menu = *it;
-        if (menu && !menu->isPlaylist())
-            menu->setScrollOffsetIndex(i);
+        if ((*it) && !(*it)->isPlaylist())
+            (*it)->setScrollOffsetIndex(i);
     }
 }
 
@@ -935,7 +935,6 @@ bool Page::popCollection()
     return true;
 }
 
-
 void Page::enterMenu()
 {
     triggerEventOnAllMenus("menuEnter");
@@ -1007,7 +1006,6 @@ void Page::nextPlaylist()
     }
     playlistChange();
 }
-
 
 void Page::prevPlaylist()
 {
@@ -1484,7 +1482,9 @@ bool Page::isPlaying()
 
     for(std::vector<Component *>::iterator it = LayerComponents.begin(); it != LayerComponents.end(); ++it)
     {
-        retVal |= (*it)->isPlaying();
+        if ((*it)->baseViewInfo.Monitor == 0) {
+            retVal |= (*it)->isPlaying();
+        }
     }
 
     return retVal;

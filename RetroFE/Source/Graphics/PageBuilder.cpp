@@ -97,9 +97,9 @@ Page *PageBuilder::buildPage( std::string collectionName )
     }
 
     std::vector<std::string> monitors;
-    monitors.push_back("");
+    monitors.push_back(layoutPage);
     for ( int i = 0; i < SDL::getNumScreens(); i++ )
-        monitors.push_back( " - " + std::to_string( i ) );
+        monitors.push_back("layout - " + std::to_string( i ) );
    
 
     for ( size_t monitor = 0; monitor < monitors.size(); monitor++ )
@@ -108,8 +108,8 @@ Page *PageBuilder::buildPage( std::string collectionName )
             monitor_ = monitor - 1;
 		else
             monitor_ = monitor;
-        layoutFile       = Utils::combinePath(layoutPath, layoutPage + monitors[monitor] + ".xml");
-        layoutFileAspect = Utils::combinePath(layoutPath, layoutPage + " " + std::to_string( screenWidth_/Utils::gcd( screenWidth_, screenHeight_ ) ) + "x" + std::to_string( screenHeight_/Utils::gcd( screenWidth_, screenHeight_ ) ) + monitors[monitor] + ".xml" );
+        layoutFile       = Utils::combinePath(layoutPath, monitors[monitor] + ".xml");
+        layoutFileAspect = Utils::combinePath(layoutPath, "layout " + std::to_string( screenWidth_/Utils::gcd( screenWidth_, screenHeight_ ) ) + "x" + std::to_string( screenHeight_/Utils::gcd( screenWidth_, screenHeight_ ) ) + monitors[monitor] + ".xml" );
 
         Logger::write(Logger::ZONE_INFO, "Layout", "Initializing " + layoutFileAspect);
 
@@ -401,6 +401,7 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
         xml_attribute<> *src        = componentXml->first_attribute("src");
         xml_attribute<> *idXml      = componentXml->first_attribute("id");
         xml_attribute<> *monitorXml = componentXml->first_attribute("monitor");
+        xml_attribute<>* additiveXml = componentXml->first_attribute("additive");
 
         int id = -1;
         if (idXml)
@@ -422,7 +423,8 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
             altImagePath = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName, std::string(src->value()));
 
             int monitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor_;
-            Image *c = new Image(imagePath, altImagePath, *page, monitor);
+            bool additive = additiveXml ? bool(additiveXml->value()) : false;
+            Image *c = new Image(imagePath, altImagePath, *page, monitor, additive);
             c->setId( id );
             xml_attribute<> *menuScrollReload = componentXml->first_attribute("menuScrollReload");
             if (menuScrollReload &&
@@ -1122,6 +1124,7 @@ void PageBuilder::buildCustomMenu(ScrollingList *menu, xml_node<> *menuXml, xml_
         ViewInfo *viewInfo = new ViewInfo();
         buildViewInfo(componentXml, *viewInfo, itemDefaults);
         viewInfo->Monitor = menu->baseViewInfo.Monitor;
+        viewInfo->Additive = menu->baseViewInfo.Additive;
 
         points->push_back(viewInfo);
         tweenPoints->push_back(createTweenInstance(componentXml));
@@ -1333,6 +1336,7 @@ void PageBuilder::buildViewInfo(xml_node<> *componentXml, ViewInfo &info, xml_no
     xml_attribute<> *monitor            = findAttribute(componentXml, "monitor", defaultXml);
     xml_attribute<> *volume             = findAttribute(componentXml, "volume", defaultXml);
     xml_attribute<>* restart = findAttribute(componentXml, "restart", defaultXml);
+    xml_attribute<>* additive = findAttribute(componentXml, "additive", defaultXml);
 
     info.X = getHorizontalAlignment(x, 0);
     info.Y = getVerticalAlignment(y, 0);
@@ -1376,6 +1380,7 @@ void PageBuilder::buildViewInfo(xml_node<> *componentXml, ViewInfo &info, xml_no
     info.Monitor            = monitor            ? Utils::convertInt(monitor->value())             : 0;
     info.Volume             = volume             ? Utils::convertFloat(volume->value())            : 1.f;
     info.Restart = restart ? Utils::toLower(restart->value()) == "true" : false;
+    info.Additive = additive ? Utils::toLower(additive->value()) == "true" : false;
 
     if(fontColor)
     {
