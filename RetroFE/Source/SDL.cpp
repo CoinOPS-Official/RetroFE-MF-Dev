@@ -88,7 +88,7 @@ bool SDL::initialize( Configuration &config )
     Logger::write( Logger::ZONE_INFO, "SDL", "Number of displays requested: " + std::to_string( numScreens_ ) );
 
     // Preset the SDL settings for all monitors
-    screenCount_ = numDisplays_ = std::min(numScreens_, numDisplays_);
+    screenCount_= std::min(numScreens_, numDisplays_);
     for (int i = 0; i < screenCount_; ++i)
     {
 
