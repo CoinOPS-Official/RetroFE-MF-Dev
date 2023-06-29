@@ -71,6 +71,8 @@ RetroFE::RetroFE( Configuration &c )
     , keyLastTime_(0)
     , keyDelayTime_(.3f)
     , reboot_(false)
+    , kioskLock_(false)
+    , paused_(false)
 {
     menuMode_                            = false;
     attractMode_                         = false;
@@ -78,6 +80,14 @@ RetroFE::RetroFE( Configuration &c )
     firstPlaylist_                       = "all"; // todo
 }
 
+#ifdef WIN32
+void RetroFE::postMessage(LPCTSTR windowTitle, UINT Msg, WPARAM wParam, LPARAM lParam ) {
+    HWND hwnd = FindWindow(NULL, windowTitle);
+	if (hwnd != NULL) {
+        PostMessage(hwnd, Msg, wParam, lParam);
+    }
+}
+#endif
 
 RetroFE::~RetroFE( )
 {
@@ -90,7 +100,7 @@ void RetroFE::render( )
 {
 
     SDL_LockMutex( SDL::getMutex( ) );
-    for ( int i = 0; i < SDL::getNumDisplays( ); ++i )
+    for ( int i = 0; i < SDL::getScreenCount( ); ++i )
     {
         SDL_SetRenderDrawColor( SDL::getRenderer( i ), 0x0, 0x0, 0x00, 0xFF );
         SDL_RenderClear( SDL::getRenderer( i ) );
@@ -101,7 +111,7 @@ void RetroFE::render( )
         currentPage_->draw( );
     }
 
-    for ( int i = 0; i < SDL::getNumDisplays( ); ++i )
+    for ( int i = 0; i < SDL::getScreenCount( ); ++i )
     {
         SDL_RenderPresent( SDL::getRenderer( i ) );
     }
@@ -155,9 +165,8 @@ void RetroFE::launchEnter( )
 
     // Disable window focus
     SDL_SetWindowGrab(SDL::getWindow( 0 ), SDL_FALSE);
-
     // Free the textures, and optionally take down SDL
-    freeGraphicsMemory( );
+    //freeGraphicsMemory();
 
     bool hideMouse = false;
     int  mouseX    = 5000;
@@ -173,9 +182,8 @@ void RetroFE::launchEnter( )
 // Return from the launch of a game/program
 void RetroFE::launchExit( )
 {
-
     // Optionally set up SDL, and load the textures
-    allocateGraphicsMemory( );
+    //allocateGraphicsMemory();
 
     // Restore the SDL settings
     SDL_RestoreWindow( SDL::getWindow( 0 ) );
@@ -312,11 +320,19 @@ bool RetroFE::run( )
     if(! SDL::initialize( config_ ) ) return false;
     fontcache_.initialize( );
 
+#ifdef WIN32
+    bool highPriority = false;
+    config_.getProperty("highPriority", highPriority);
+    if (highPriority) {
+        SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
+    }
+#endif
+
     // Define control configuration
     std::string controlsConfPath = Utils::combinePath( Configuration::absolutePath, "controls" );
-    for (int i = 9; i > 0; i--)
-        config_.import("controls", controlsConfPath + std::to_string(i) + ".conf", false);
     config_.import("controls", controlsConfPath + ".conf");
+    for (int i = 1; i < 10; i++)
+        config_.import("controls", controlsConfPath + std::to_string(i) + ".conf", false);
 
     if (config_.propertiesEmpty())
     {
@@ -345,6 +361,7 @@ bool RetroFE::run( )
         return false;
     }
 
+    bool attractModeFast = false;
     int attractModeTime           = 0;
     int attractModeNextTime       = 0;
     int attractModePlaylistTime   = 0;
@@ -362,6 +379,7 @@ bool RetroFE::run( )
     config_.getProperty( "attractModeMinTime", attractModeMinTime );
     config_.getProperty( "attractModeMaxTime", attractModeMaxTime );
     config_.getProperty( "firstCollection", firstCollection );
+    config_.getProperty("attractModeFast", attractModeFast);
 
     attract_.idleTime           = static_cast<float>(attractModeTime);
     attract_.idleNextTime       = static_cast<float>(attractModeNextTime);
@@ -369,6 +387,7 @@ bool RetroFE::run( )
     attract_.idleCollectionTime = static_cast<float>(attractModeCollectionTime);
     attract_.minTime            = attractModeMinTime;
     attract_.maxTime            = attractModeMaxTime;
+    attract_.isFast = attractModeFast;
 
     int fps     = 60;
     int fpsIdle = 60;
@@ -392,6 +411,7 @@ bool RetroFE::run( )
     Menu     m( config_, input_ );
     preloadTime = static_cast<float>( SDL_GetTicks( ) ) / 1000;
     l.LEDBlinky( 1 );
+    config_.getProperty("kiosk", kioskLock_);
 
     Logger::end("RETROFE RUN Init");
 
@@ -481,6 +501,9 @@ bool RetroFE::run( )
         // Load art on entering RetroFE
         case RETROFE_LOAD_ART:
             currentPage_->start( );
+#ifdef WIN32            
+			postMessage("MediaplayerHiddenWindow",0x8001, 50, 0);		
+#endif			
             state = RETROFE_ENTER;
             break;
 
@@ -510,15 +533,25 @@ bool RetroFE::run( )
                 currentPage_->deInitialize( );
                 delete currentPage_;
 
-                currentPage_ = loadPage( );
+                // find first collection
+                std::string firstCollection = "Main";
+                config_.getProperty("firstCollection", firstCollection);
+                currentPage_ = loadPage(firstCollection);
+                currentPage_->setLocked(kioskLock_);
                 splashMode = false;
                 if ( currentPage_ )
                 {
-                    std::string firstCollection = "Main";
+                    currentPage_->setLocked(kioskLock_);
+                    CollectionInfo* info;
 
-                    config_.getProperty( "firstCollection", firstCollection );
+                    // add collections to cycle
+                    std::string cycleString;
+                    config_.getProperty("cycleCollection", cycleString);
+                    Utils::listToVector(cycleString, collectionCycle_, ',');
+                    collectionCycleIt_ = collectionCycle_.begin();
+
                     config_.setProperty( "currentCollection", firstCollection );
-                    CollectionInfo *info = getCollection(firstCollection);
+                    info = getCollection(firstCollection);
 
                     if (info == NULL) {
                         state = RETROFE_QUIT_REQUEST;
@@ -584,10 +617,9 @@ bool RetroFE::run( )
                 }
                 bool rememberMenu = false;
                 config_.getProperty("rememberMenu", rememberMenu);
-                if (rememberMenu) {
+                if (rememberMenu && currentPage_->getPlaylistName() != "lastplayed") {
                     currentPage_->returnToRememberSelectedItem();
                 }
-                currentPage_->onNewItemSelected();
                 state = RETROFE_PLAYLIST_LOAD_ART;
             }
             break;
@@ -596,6 +628,7 @@ bool RetroFE::run( )
         case RETROFE_PLAYLIST_LOAD_ART:
             if (currentPage_->isIdle( ))
             {
+                currentPage_->onNewItemSelected();
                 currentPage_->reallocateMenuSpritePoints(); // update playlist menu
                 currentPage_->playlistEnter();
                 state = RETROFE_PLAYLIST_ENTER;
@@ -631,7 +664,6 @@ bool RetroFE::run( )
         case RETROFE_MENUJUMP_EXIT:
             if (currentPage_->isIdle( ))
             {
-                currentPage_->onNewItemSelected( );
                 state = RETROFE_MENUJUMP_LOAD_ART;
             }
             break;
@@ -640,6 +672,7 @@ bool RetroFE::run( )
         case RETROFE_MENUJUMP_LOAD_ART:
             if (currentPage_->isIdle( ))
             {
+                currentPage_->onNewItemSelected();
                 currentPage_->reallocateMenuSpritePoints(false); // skip updating playlist menu
                 currentPage_->menuJumpEnter( );
                 state = RETROFE_MENUJUMP_ENTER;
@@ -715,13 +748,18 @@ bool RetroFE::run( )
                     // Load new layout if available
                     std::string layoutName;
                     config_.getProperty( "layout", layoutName );
-                    PageBuilder pb( layoutName, "layout", config_, &fontcache_ );
+                    PageBuilder pb( layoutName, getLayoutFileName(), config_, &fontcache_ );
                     Page *page = pb.buildPage( nextPageItem_->name );
                     if ( page )
                     {
+                        if (page->controlsType() != "") {
+                            updatePageControls(page->controlsType());
+                            page->setControlsType("");
+                        }
                         currentPage_->freeGraphicsMemory( );
                         pages_.push( currentPage_ );
                         currentPage_ = page;
+                        currentPage_->setLocked(kioskLock_);
                     }
                 }
 
@@ -838,18 +876,13 @@ bool RetroFE::run( )
                     {
                         attractModePlaylistCollectionNumber_ = 0;
                         currentPage_->nextPlaylist( );
-                        std::string attractModeSkipPlaylist = "";
-                        std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
-                        // check if collection has different setting
-                        if (config_.propertyExists(settingPrefix + "attractModeSkipPlaylist")) {
-                            config_.getProperty(settingPrefix + "attractModeSkipPlaylist", attractModeSkipPlaylist);
-                        }
-                        else {
-                            config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
+                      
+                        if (isInAttractModeSkipPlaylist(currentPage_->getPlaylistName()))
+                        {
+                            //todo find next playlist that isn't in skip list
+                            currentPage_->nextPlaylist();
                         }
 
-                        if (currentPage_->getPlaylistName( ) == attractModeSkipPlaylist)
-                            currentPage_->nextPlaylist( );
                         state = RETROFE_PLAYLIST_REQUEST;
                     }
                 }
@@ -870,6 +903,7 @@ bool RetroFE::run( )
                     currentPage_ = pages_.top( );
                     pages_.pop( );
                     currentPage_->allocateGraphicsMemory( );
+                    currentPage_->setLocked(kioskLock_);
                 }
                 else // Inside a collection with the same layout
                 {
@@ -915,18 +949,13 @@ bool RetroFE::run( )
                     {
                         attractModePlaylistCollectionNumber_ = 0;
                         currentPage_->nextPlaylist( );
-                        std::string attractModeSkipPlaylist = "";
-                        std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
-                        // check if collection has different setting
-                        if (config_.propertyExists(settingPrefix + "attractModeSkipPlaylist")) {
-                            config_.getProperty(settingPrefix + "attractModeSkipPlaylist", attractModeSkipPlaylist);
-                        }
-                        else {
-                            config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
+
+                        if (isInAttractModeSkipPlaylist(currentPage_->getPlaylistName())) 
+                        {
+                            //todo find next playlist that isn't in skip list
+                            currentPage_->nextPlaylist();
                         }
 
-                        if (currentPage_->getPlaylistName( ) == attractModeSkipPlaylist)
-                            currentPage_->nextPlaylist( );
                         state = RETROFE_PLAYLIST_REQUEST;
                     }
                 }
@@ -1078,6 +1107,7 @@ bool RetroFE::run( )
                     currentPage_ = pages_.top( );
                     pages_.pop( );
                     currentPage_->allocateGraphicsMemory( );
+                    currentPage_->setLocked(kioskLock_);
                 }
                 else // Inside a collection with the same layout
                 {
@@ -1201,26 +1231,27 @@ bool RetroFE::run( )
                 nextPageItem_ = currentPage_->getSelectedItem( );
                 launchEnter( );
                 CollectionInfoBuilder cib(config_, *metadb_);
-                std::string attractModeSkipPlaylist  = "";
                 std::string lastPlayedSkipCollection = "";
                 int         size = 0;
                 config_.getProperty( "lastPlayedSkipCollection", lastPlayedSkipCollection );
                 config_.getProperty( "lastplayedSize", size );
-                std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
-                // check if collection has different setting
-                if (config_.propertyExists(settingPrefix + "attractModeSkipPlaylist")) {
-                    config_.getProperty(settingPrefix + "attractModeSkipPlaylist", attractModeSkipPlaylist);
-                }
-                else {
-                    config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
-                }
 
-                if (currentPage_->getPlaylistName( )    != attractModeSkipPlaylist &&
-                    nextPageItem_->collectionInfo->name != lastPlayedSkipCollection)
-                    cib.updateLastPlayedPlaylist( currentPage_->getCollection(), nextPageItem_, size ); // Update last played playlist if not currently in the skip playlist (e.g. settings)
+                if (nextPageItem_->collectionInfo->name != lastPlayedSkipCollection)
+                {
+                    cib.updateLastPlayedPlaylist(currentPage_->getCollection(), nextPageItem_, size); // Update last played playlist if not currently in the skip playlist (e.g. settings)
+                    currentPage_->updateReloadables(0);
+                    
+                    // with new sort by last played return to first
+                    if (currentPage_->getPlaylistName() == "lastplayed")
+                    {
+                        currentPage_->setScrollOffsetIndex(0);
+                        currentPage_->highlightLoadArt();
+                        currentPage_->reallocateMenuSpritePoints();
+                    }
+                }
 
                 l.LEDBlinky( 3, nextPageItem_->collectionInfo->name, nextPageItem_ );
-                if (l.run(nextPageItem_->collectionInfo->name, nextPageItem_)) // Run and check if we need to reboot
+                if (l.run(nextPageItem_->collectionInfo->name, nextPageItem_, currentPage_)) // Run and check if we need to reboot
                 {
                     attract_.reset( );
                     reboot_ = true;
@@ -1228,9 +1259,11 @@ bool RetroFE::run( )
                 }
                 else
                 {
+                    attract_.reset();
                     launchExit( );
                     l.LEDBlinky( 4 );
                     currentPage_->exitGame( );
+                    
                     state = RETROFE_LAUNCH_EXIT;
                 }
             }
@@ -1272,7 +1305,10 @@ bool RetroFE::run( )
                     delete currentPage_;
                     currentPage_ = pages_.top( );
                     pages_.pop( );
-                    currentPage_->allocateGraphicsMemory( );
+                    if (currentPage_->getSelectedItem() != NULL) {
+                        currentPage_->allocateGraphicsMemory();
+                        currentPage_->setLocked(kioskLock_);
+                    }
                 }
                 else
                 {
@@ -1344,13 +1380,18 @@ bool RetroFE::run( )
                 lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName( );
                 std::string layoutName;
                 config_.getProperty( "layout", layoutName );
-                PageBuilder pb( layoutName, "layout", config_, &fontcache_, true );
+                PageBuilder pb( layoutName, getLayoutFileName(), config_, &fontcache_, true );
                 Page *page = pb.buildPage( );
                 if ( page )
                 {
+                    if (page->controlsType() != "") {
+                        updatePageControls(page->controlsType());
+                        page->setControlsType("");
+                    }
                     currentPage_->freeGraphicsMemory( );
                     pages_.push( currentPage_ );
                     currentPage_ = page;
+                    currentPage_->setLocked(kioskLock_);
                     menuMode_ = true;
                     m.setPage( page );
                 }
@@ -1434,10 +1475,10 @@ bool RetroFE::run( )
 		
             if ( currentPage_ )
             {
-                if (!splashMode)
+                if (!splashMode && !paused_)
                 {
                     int attractReturn = attract_.update( deltaTime, *currentPage_ );
-                    if (attractReturn == 1) // Change playlist
+                    if (!kioskLock_ && attractReturn == 1) // Change playlist
                     {
                         attract_.reset( attract_.isSet( ) );
                         std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
@@ -1459,32 +1500,28 @@ bool RetroFE::run( )
                             config_.getProperty("cyclePlaylist", cycleString);
                         }
 
+                        // go to next playlist in cycle or from all found playlists
                         std::vector<std::string> cycleVector;
-                        Utils::listToVector(cycleString, cycleVector, ',' );
-                        if ( cyclePlaylist )
-                            currentPage_->nextCyclePlaylist( cycleVector );
+                        Utils::listToVector(cycleString, cycleVector, ',');
+                        if (cyclePlaylist)
+                            currentPage_->nextCyclePlaylist(cycleVector);
                         else
-                            currentPage_->nextPlaylist( );
+                            currentPage_->nextPlaylist();
 
-                        std::string attractModeSkipPlaylist = "";
-                        // check if collection has different setting
-                        if (config_.propertyExists(settingPrefix + "attractModeSkipPlaylist")) {
-                            config_.getProperty(settingPrefix + "attractModeSkipPlaylist", attractModeSkipPlaylist);
-                        }
-                        else {
-                            config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
-                        }
-
-                        if (currentPage_->getPlaylistName( ) == attractModeSkipPlaylist)
+                        // if that next playlist is one to skip for attract, then find one that isn't
+                        if (isInAttractModeSkipPlaylist(currentPage_->getPlaylistName()))
                         {
-                            if ( cyclePlaylist )
-                                currentPage_->nextCyclePlaylist( cycleVector );
-                            else
-                                currentPage_->nextPlaylist( );
+                            if (cyclePlaylist) {
+                                goToNextAttractModePlaylistByCycle(cycleVector);
+                            }
+                            else {
+                                // todo perform smarter playlist skipping
+                                currentPage_->nextPlaylist();
+                            }
                         }
                         state = RETROFE_PLAYLIST_REQUEST;
                     }
-                    if (attractReturn == 2) // Change collection
+                    if (!kioskLock_ && attractReturn == 2) // Change collection
                     {
                         attract_.reset( attract_.isSet( ) );
                         state = RETROFE_COLLECTION_DOWN_REQUEST;
@@ -1497,7 +1534,7 @@ bool RetroFE::run( )
                 currentPage_->update( deltaTime );
                 SDL_PumpEvents( );
                 input_.updateKeystate( );
-                if (!splashMode)
+                if (!splashMode && !paused_)
                 {
                     if ( currentPage_->isAttractIdle( ) )
                     {
@@ -1549,6 +1586,59 @@ bool RetroFE::back(bool &exit)
     return canGoBack;
 }
 
+bool RetroFE::isStandalonePlaylist(std::string playlist)
+{
+    return playlist == "street fighter and capcom fighters" ||
+        playlist == "street fighter";
+}
+
+bool RetroFE::isInAttractModeSkipPlaylist(std::string playlist)
+{
+    if (lkupAttractModeSkipPlaylist_.empty()) {
+        std::string attractModeSkipPlaylist = "";
+        std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
+        // check if collection has different setting
+        if (config_.propertyExists(settingPrefix + "attractModeSkipPlaylist")) {
+            config_.getProperty(settingPrefix + "attractModeSkipPlaylist", attractModeSkipPlaylist);
+        }
+        else {
+            config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
+        }
+
+        if (attractModeSkipPlaylist != "") {
+            // see if any of the comma seperated match current playlist
+            std::stringstream ss(attractModeSkipPlaylist);
+            std::string playlist = "";
+            while (ss.good())
+            {
+                getline(ss, playlist, ',');
+                lkupAttractModeSkipPlaylist_.insert(make_pair(playlist, true));
+            }
+        }
+    }
+
+    return !lkupAttractModeSkipPlaylist_.empty() && lkupAttractModeSkipPlaylist_.find(playlist) != lkupAttractModeSkipPlaylist_.end();
+}
+
+void RetroFE::goToNextAttractModePlaylistByCycle(std::vector<std::string> cycleVector)
+{
+    // find current position
+    std::vector<std::string>::iterator it = cycleVector.begin();
+    while (it != cycleVector.end() && *it != currentPage_->getPlaylistName())
+        ++it;
+    // find next playlist that is not in list 
+    for (;;) {
+        if (!isInAttractModeSkipPlaylist(*it)) {
+            break;
+        }
+        ++it;
+        if (it == cycleVector.end())
+            it = cycleVector.begin();
+    }
+    if (currentPage_->playlistExists(*it)) {
+        currentPage_->selectPlaylist(*it);                            
+    }
+}
 
 // Process the user input
 RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
@@ -1610,14 +1700,33 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
     // Ignore other keys while the menu is scrolling
     if ( page->isIdle( ) && currentTime_ - keyLastTime_ > keyDelayTime_ )
     {
-        if ( input_.keystate(UserInput::KeyCodeMenu) && !menuMode_)
+
+        // lock or unlock playlist/collection/menu nav and fav toggle
+        if (input_.keystate(UserInput::KeyCodeKisok)) {
+            attract_.reset();
+            kioskLock_ = !kioskLock_;
+            page->setLocked(kioskLock_);
+            page->onNewItemSelected();
+            keyLastTime_ = currentTime_;
+        }else if ( input_.keystate(UserInput::KeyCodeMenu) && !menuMode_)
         {
             state = RETROFE_MENUMODE_START_REQUEST;
         }
+        else if (input_.keystate(UserInput::KeyCodeQuitCombo1) && input_.keystate(UserInput::KeyCodeQuitCombo2)) {
+            attract_.reset();
+            bool controllerComboExit = false;
+            config_.getProperty("controllerComboExit", controllerComboExit);
+            if (controllerComboExit) {
+#ifdef WIN32
+                postMessage("MediaplayerHiddenWindow", 0x8001, 51, 0);
+#endif              			
+                return RETROFE_QUIT_REQUEST;
+            }
+        }
 
         // Handle Collection Up/Down keys
-        else if ((input_.keystate(UserInput::KeyCodeCollectionUp)   && ( page->isHorizontalScroll( ) || !input_.keystate(UserInput::KeyCodeUp))) ||
-                 (input_.keystate(UserInput::KeyCodeCollectionLeft) && (!page->isHorizontalScroll( ) || !input_.keystate(UserInput::KeyCodeLeft))))
+        else if (!kioskLock_ && ((input_.keystate(UserInput::KeyCodeCollectionUp)   && ( page->isHorizontalScroll( ) || !input_.keystate(UserInput::KeyCodeUp))) ||
+                 (input_.keystate(UserInput::KeyCodeCollectionLeft) && (!page->isHorizontalScroll( ) || !input_.keystate(UserInput::KeyCodeLeft)))))
         {
             attract_.reset( );
             bool backOnCollection = false;
@@ -1628,8 +1737,8 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
                 state = RETROFE_BACK_REQUEST;
         }
 
-        else if ((input_.keystate(UserInput::KeyCodeCollectionDown)  && ( page->isHorizontalScroll( ) || !input_.keystate(UserInput::KeyCodeDown))) ||
-                 (input_.keystate(UserInput::KeyCodeCollectionRight) && (!page->isHorizontalScroll( ) || !input_.keystate(UserInput::KeyCodeRight))))
+        else if (!kioskLock_ && ((input_.keystate(UserInput::KeyCodeCollectionDown)  && ( page->isHorizontalScroll( ) || !input_.keystate(UserInput::KeyCodeDown))) ||
+                 (input_.keystate(UserInput::KeyCodeCollectionRight) && (!page->isHorizontalScroll( ) || !input_.keystate(UserInput::KeyCodeRight)))))
         {
             attract_.reset( );
             bool backOnCollection = false;
@@ -1640,14 +1749,14 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
                 state = RETROFE_BACK_REQUEST;
         }
 
-        else if (input_.keystate(UserInput::KeyCodePageUp))
+        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodePageUp))
         {
             attract_.reset( );
             page->pageScroll(Page::ScrollDirectionBack);
             state = RETROFE_MENUJUMP_REQUEST;
         }
 
-        else if (input_.keystate(UserInput::KeyCodePageDown))
+        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodePageDown))
         {
             attract_.reset( );
             page->pageScroll(Page::ScrollDirectionForward);
@@ -1657,46 +1766,61 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
         else if (input_.keystate(UserInput::KeyCodeLetterUp))
         {
             attract_.reset( );
-            bool cfwLetterSub;
-            config_.getProperty( "cfwLetterSub", cfwLetterSub );
-            if (cfwLetterSub && page->hasSubs())
-                page->cfwLetterSubScroll(Page::ScrollDirectionBack);
-            else
-                page->letterScroll(Page::ScrollDirectionBack);
-            state = RETROFE_MENUJUMP_REQUEST;
+            if (currentPage_->getPlaylistName() != "lastplayed") {
+                // if playlist same name as meta sort value then support meta jump
+                if (Item::validSortType(page->getPlaylistName())) {
+                    page->metaScroll(Page::ScrollDirectionBack, page->getPlaylistName());
+                }
+                else {
+                    bool cfwLetterSub;
+                    config_.getProperty("cfwLetterSub", cfwLetterSub);
+                    if (cfwLetterSub && page->hasSubs())
+                        page->cfwLetterSubScroll(Page::ScrollDirectionBack);
+                    else
+                        page->letterScroll(Page::ScrollDirectionBack);
+                }
+                state = RETROFE_MENUJUMP_REQUEST;
+            }
         }
 
         else if (input_.keystate(UserInput::KeyCodeLetterDown))
         {
             attract_.reset( );
-            bool cfwLetterSub;
-            config_.getProperty( "cfwLetterSub", cfwLetterSub );
-            if (cfwLetterSub && page->hasSubs())
-                page->cfwLetterSubScroll(Page::ScrollDirectionForward);
-            else
-                page->letterScroll(Page::ScrollDirectionForward);
-            state = RETROFE_MENUJUMP_REQUEST;
+            if (currentPage_->getPlaylistName() != "lastplayed") {
+                if (Item::validSortType(page->getPlaylistName())) {
+                    page->metaScroll(Page::ScrollDirectionForward, page->getPlaylistName());
+                }
+                else {
+                    bool cfwLetterSub;
+                    config_.getProperty("cfwLetterSub", cfwLetterSub);
+                    if (cfwLetterSub && page->hasSubs())
+                        page->cfwLetterSubScroll(Page::ScrollDirectionForward);
+                    else
+                        page->letterScroll(Page::ScrollDirectionForward);
+                }
+                state = RETROFE_MENUJUMP_REQUEST;
+            }
         }
 
-        else if ( input_.keystate(UserInput::KeyCodeFavPlaylist) )
+        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeFavPlaylist) )
         {
             attract_.reset( );
             page->favPlaylist( );
             state = RETROFE_PLAYLIST_REQUEST;
         }
 
-        else if ( input_.keystate(UserInput::KeyCodeNextPlaylist) ||
+        else if (!kioskLock_ && (input_.keystate(UserInput::KeyCodeNextPlaylist) ||
                  (input_.keystate(UserInput::KeyCodePlaylistDown)  &&  page->isHorizontalScroll( )) ||
-                 (input_.keystate(UserInput::KeyCodePlaylistRight) && !page->isHorizontalScroll( )))
+                 (input_.keystate(UserInput::KeyCodePlaylistRight) && !page->isHorizontalScroll( ))))
         {
             attract_.reset( );
             page->nextPlaylist( );
             state = RETROFE_PLAYLIST_REQUEST;
         }
 
-        else if ( input_.keystate(UserInput::KeyCodePrevPlaylist) ||
+        else if (!kioskLock_ && (input_.keystate(UserInput::KeyCodePrevPlaylist) ||
                  (input_.keystate(UserInput::KeyCodePlaylistUp)   &&  page->isHorizontalScroll( )) ||
-                 (input_.keystate(UserInput::KeyCodePlaylistLeft) && !page->isHorizontalScroll( )))
+                 (input_.keystate(UserInput::KeyCodePlaylistLeft) && !page->isHorizontalScroll( ))))
         {
             attract_.reset( );
             page->playlistPrevEnter();
@@ -1704,11 +1828,10 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             state = RETROFE_PLAYLIST_REQUEST;
         }
 
-        else if ( input_.keystate(UserInput::KeyCodeCyclePlaylist) ||
-                  input_.keystate(UserInput::KeyCodeNextCyclePlaylist) )
+        else if (!kioskLock_ && (input_.keystate(UserInput::KeyCodeCyclePlaylist) ||
+                  input_.keystate(UserInput::KeyCodeNextCyclePlaylist)))
         {
-            if (currentPage_->getPlaylistName() != "street fighter and capcom fighters" &&
-                currentPage_->getPlaylistName() != "street fighter")
+            if (!isStandalonePlaylist(currentPage_->getPlaylistName()))
             {
                 attract_.reset();
                 std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
@@ -1729,10 +1852,28 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             }
         }
 
-        else if ( input_.keystate(UserInput::KeyCodePrevCyclePlaylist) )
+        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeCycleCollection))
         {
-            if (currentPage_->getPlaylistName() != "street fighter and capcom fighters" &&
-                currentPage_->getPlaylistName() != "street fighter")
+            attract_.reset();
+            if (collectionCycle_.size()) {
+                collectionCycleIt_++;
+                if (collectionCycleIt_ == collectionCycle_.end()) {
+                    collectionCycleIt_ = collectionCycle_.begin();
+                }
+                if (!pages_.empty() && pages_.size() > 1)
+                    pages_.pop();
+
+                nextPageItem_ = new Item();
+                nextPageItem_->name = *collectionCycleIt_;
+                menuMode_ = false;
+
+                state = RETROFE_NEXT_PAGE_REQUEST;
+            }
+        }
+
+        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodePrevCyclePlaylist))
+        {
+            if (!isStandalonePlaylist(currentPage_->getPlaylistName()))
             {
                 attract_.reset();
                 std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
@@ -1752,7 +1893,7 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             }
         }
 
-        else if ( input_.keystate(UserInput::KeyCodeRemovePlaylist) )
+        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeRemovePlaylist))
         {
             attract_.reset( );
             page->rememberSelectedItem();
@@ -1763,20 +1904,24 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             state = RETROFE_PLAYLIST_ENTER;
         }
 
-        else if ( input_.keystate(UserInput::KeyCodeAddPlaylist) )
+        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeAddPlaylist) )
         {
-            attract_.reset( );
-            page->rememberSelectedItem();
-            page->addPlaylist( );
+            if (!isStandalonePlaylist(currentPage_->getPlaylistName()))
+            {
+                attract_.reset();
+                    page->rememberSelectedItem();
+                    page->addPlaylist();
 
-            // don't trigger playlist change events but refresh item states
-            currentPage_->onNewItemSelected();
-            state = RETROFE_PLAYLIST_ENTER;
+                    // don't trigger playlist change events but refresh item states
+                    currentPage_->onNewItemSelected();
+                    state = RETROFE_PLAYLIST_ENTER;
+            }
         }
 
-        else if ( input_.keystate(UserInput::KeyCodeTogglePlaylist) )
+        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeTogglePlaylist) )
         {
-            if (currentPage_->getPlaylistName() != "favorites" )
+            if (currentPage_->getPlaylistName() != "favorites" && 
+                !isStandalonePlaylist(currentPage_->getPlaylistName()))
             {
                 attract_.reset();
                 page->rememberSelectedItem();
@@ -1822,10 +1967,14 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
 
         else if ( input_.keystate(UserInput::KeyCodePause) )
         {
-            attract_.reset( );
             page->pause( );
             page->jukeboxJump( );
             keyLastTime_ = currentTime_;
+            paused_ = !paused_;
+            if (!paused_) {
+                // trigger attract on unpause
+                attract_.activate();
+            }
         }
 
         else if ( input_.keystate(UserInput::KeyCodeRestart) )
@@ -1867,30 +2016,23 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
                 else
                 {
                     CollectionInfoBuilder cib(config_, *metadb_);
-                    std::string attractModeSkipPlaylist  = "";
                     std::string lastPlayedSkipCollection = "";
                     int         size = 0;
                     config_.getProperty( "lastPlayedSkipCollection", lastPlayedSkipCollection );
                     config_.getProperty("lastplayedCollectionSize", size);
 
-                    std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
-                    // check if collection has different setting
-                    if (config_.propertyExists(settingPrefix + "attractModeSkipPlaylist")) {
-                        config_.getProperty(settingPrefix + "attractModeSkipPlaylist", attractModeSkipPlaylist);
+                    if (!isInAttractModeSkipPlaylist(currentPage_->getPlaylistName()) &&
+                        nextPageItem_->collectionInfo->name != lastPlayedSkipCollection) 
+                    {
+                        cib.updateLastPlayedPlaylist(currentPage_->getCollection(), nextPageItem_, size); // Update last played playlist if not currently in the skip playlist (e.g. settings)
+                        currentPage_->updateReloadables(0);
                     }
-                    else {
-                        config_.getProperty("attractModeSkipPlaylist", attractModeSkipPlaylist);
-                    }
-    
-                    if (currentPage_->getPlaylistName( )    != attractModeSkipPlaylist &&
-                        nextPageItem_->collectionInfo->name != lastPlayedSkipCollection)
-                        cib.updateLastPlayedPlaylist( currentPage_->getCollection(), nextPageItem_, size ); // Update last played playlist if not currently in the skip playlist (e.g. settings)
                     state = RETROFE_NEXT_PAGE_REQUEST;
                 }
             }
         }
 
-        else if (input_.keystate(UserInput::KeyCodeBack))
+        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeBack))
         {
             attract_.reset( );
             if ( back( exit ) || exit )
@@ -1899,20 +2041,23 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             }
         }
 
-        else if (input_.keystate(UserInput::KeyCodeQuit))
+        else if (input_.keystate(UserInput::KeyCodeQuit)) // !kioskLock_ && 
         {
             attract_.reset( );
+#ifdef WIN32
+        postMessage("MediaplayerHiddenWindow", 0x8001, 51,0);		
+#endif              			
             state = RETROFE_QUIT_REQUEST;
         }
 
-        else if (input_.keystate(UserInput::KeyCodeReboot))
+        else if (input_.keystate(UserInput::KeyCodeReboot)) // !kioskLock_ && 
         {
             attract_.reset( );
             reboot_ = true;
             state   = RETROFE_QUIT_REQUEST;
         }
 
-        else if (input_.keystate(UserInput::KeyCodeSaveFirstPlaylist))
+        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeSaveFirstPlaylist))
         {
             attract_.reset( );
             if ( page->getMenuDepth( ) == 1 )
@@ -1946,8 +2091,6 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
          !input_.keystate(UserInput::KeyCodePageDown) &&
          !input_.keystate(UserInput::KeyCodeLetterUp) &&
          !input_.keystate(UserInput::KeyCodeLetterDown) &&
-         !input_.keystate(UserInput::KeyCodeCollectionUp) &&
-         !input_.keystate(UserInput::KeyCodeCollectionDown) &&
          !attract_.isActive( ) )
     {
         page->resetScrollPeriod( );
@@ -1963,18 +2106,26 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
 
 
 // Load a page
-Page *RetroFE::loadPage( )
+Page* RetroFE::loadPage(std::string collectionName)
 {
     std::string layoutName;
 
-    config_.getProperty( "layout", layoutName );
+    config_.getProperty("layout", layoutName);
 
-    PageBuilder pb( layoutName, "layout", config_, &fontcache_ );
-    Page *page = pb.buildPage( );
-
-    if ( !page )
+    PageBuilder pb(layoutName, getLayoutFileName(), config_, &fontcache_);
+    Page* page = pb.buildPage(collectionName);
+    if (!page) {
+        page = pb.buildPage();
+    }
+    if (!page)
     {
-        Logger::write( Logger::ZONE_ERROR, "RetroFE", "Could not create page" );
+        Logger::write(Logger::ZONE_ERROR, "RetroFE", "Could not create page");
+    }
+    else {
+        if (page->controlsType() != "") {
+            updatePageControls(page->controlsType());
+            page->setControlsType("");
+        }
     }
 
     return page;
@@ -1994,7 +2145,6 @@ Page *RetroFE::loadSplashPage( )
     return page;
 }
 
-
 // Load a collection
 CollectionInfo *RetroFE::getCollection(std::string collectionName)
 {
@@ -2012,6 +2162,7 @@ CollectionInfo *RetroFE::getCollection(std::string collectionName)
     DIR *dp;
     struct dirent *dirp;
 
+    // check collection folder exists 
     std::string path = Utils::combinePath( Configuration::absolutePath, "collections", collectionName );
     dp = opendir( path.c_str( ) );
     if (dp == NULL) {
@@ -2045,19 +2196,26 @@ CollectionInfo *RetroFE::getCollection(std::string collectionName)
             }
         }
     }
-    if (dp) closedir( dp );
+    if (dp) closedir(dp);
 
+    // sort a collection's items
     bool menuSort = true;
     config_.getProperty( "collections." + collectionName + ".list.menuSort", menuSort );
+    if (menuSort) {
+        config_.getProperty("collections." + collectionName + ".list.sortType", collection->sortType);
+        if (!Item::validSortType(collection->sortType)) {
+            collection->sortType = "";
+        }
+        collection->sortItems();
+    }
 
-    if (menuSort)
-        collection->sortItems( );
-
+    // build collection menu if menu.txt exists
     MenuParser mp;
-    mp.buildMenuItems( collection, menuSort);
+    mp.buildMenuItems(collection, menuSort);
 
-    cib.addPlaylists( collection );
-    collection->sortPlaylists( );
+    // adds items to "all" list except those found in "exclude_all.txt"
+    cib.addPlaylists(collection);
+    collection->sortPlaylists();
 
     // Add extra info, if available
     for ( std::vector<Item *>::iterator it = collection->items.begin( ); it != collection->items.end( ); it++ )
@@ -2116,6 +2274,14 @@ CollectionInfo *RetroFE::getCollection(std::string collectionName)
     return collection;
 }
 
+void RetroFE::updatePageControls(std::string type)
+{
+    Logger::write(Logger::ZONE_INFO, "Layout", "Layout changed controls type " + type);
+    std::string controlsConfPath = Utils::combinePath(Configuration::absolutePath, "controls");
+    if (config_.import("controls", controlsConfPath + " - " + type + ".conf")) {
+        input_.reconfigure();
+    }
+}
 
 // Load a menu
 CollectionInfo *RetroFE::getMenuCollection( std::string collectionName )
@@ -2161,4 +2327,24 @@ void RetroFE::saveRetroFEState( )
     {
         Logger::write(Logger::ZONE_ERROR, "RetroFE", "Save failed: " + file);
     }
+}
+
+std::string RetroFE::getLayoutFileName()
+{
+    std::string layoutName = "layout";
+    std::string randomLayoutNames;
+    config_.getProperty("randomLayout", randomLayoutNames);
+    if (randomLayoutNames != "") {
+        Logger::write(Logger::ZONE_INFO, "RetroFE", "Choosing random layout from: " + randomLayoutNames);
+        std::vector<std::string> randomLayoutVector;
+        Utils::listToVector(randomLayoutNames, randomLayoutVector, ',');
+        if (randomLayoutVector.size() > 1) {
+            layoutName = randomLayoutVector[rand() % randomLayoutVector.size()];
+        }
+        else {
+            layoutName = randomLayoutVector[0];
+        }
+    }
+
+    return layoutName;
 }

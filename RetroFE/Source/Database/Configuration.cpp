@@ -35,6 +35,7 @@
 std::string Configuration::absolutePath;
 bool Configuration::HardwareVideoAccel = false;
 int Configuration::AvdecMaxThreads = 2;
+bool Configuration::MuteVideo = false;
 
 Configuration::Configuration()
 {
@@ -182,7 +183,7 @@ bool Configuration::parseLine(std::string collection, std::string keyPrefix, std
             value = Utils::replace(value, "%ITEM_COLLECTION_NAME%", collection);
         }
 
-        properties_.insert(PropertiesPair(key, value));
+        properties_[key] = value;
 
         std::stringstream ss;
         ss << "Dump: "  << "\"" << key << "\" = \"" << value << "\"";

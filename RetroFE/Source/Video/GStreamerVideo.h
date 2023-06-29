@@ -51,6 +51,7 @@ public:
     unsigned long long getCurrent( );
     unsigned long long getDuration( );
     bool isPaused( );
+    void hide(bool hide);
 
 private:
     static void processNewBuffer (GstElement *fakesink, GstBuffer *buf, GstPad *pad, gpointer data);
@@ -74,4 +75,6 @@ private:
     double currentVolume_;
     int monitor_;
     bool paused_;
+	bool MuteVideo;
+    bool hide_;
 };

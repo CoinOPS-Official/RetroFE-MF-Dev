@@ -71,8 +71,10 @@ bool SDL::initialize( Configuration &config )
 	int AvdecMaxThreads = 2;
 	config.getProperty("AvdecMaxThreads", AvdecMaxThreads);
 	Configuration::AvdecMaxThreads = AvdecMaxThreads;
-
-    // check for a few other necessary Configurations
+	bool MuteVideo = false;
+	config.getProperty("MuteVideo", MuteVideo);
+	Configuration::MuteVideo = MuteVideo;
+	// check for a few other necessary Configurations
     config.getProperty( "numScreens", numScreens_ );
 
     if ( numScreens_ <= 0 )
@@ -222,7 +224,8 @@ bool SDL::initialize( Configuration &config )
             std::stringstream ss;
             ss << "Creating "<< windowWidth_[i] << "x" << windowHeight_[i] << " window (fullscreen: " << fullscreenStr << ")" << " on display " << screenNum;
             Logger::write( Logger::ZONE_INFO, "SDL", ss.str( ));
-            window_[i] = SDL_CreateWindow( "RetroFE", SDL_WINDOWPOS_CENTERED_DISPLAY(screenNum), SDL_WINDOWPOS_CENTERED_DISPLAY(screenNum), windowWidth_[i], windowHeight_[i], windowFlags );
+            std::string retrofeTitle = "RetroFE " + std::to_string(i);
+            window_[i] = SDL_CreateWindow( retrofeTitle.c_str(), SDL_WINDOWPOS_CENTERED_DISPLAY(screenNum), SDL_WINDOWPOS_CENTERED_DISPLAY(screenNum), windowWidth_[i], windowHeight_[i], windowFlags );
 			
 			
 #ifdef WIN32

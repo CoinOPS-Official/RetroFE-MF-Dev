@@ -74,7 +74,7 @@ public:
     bool addComponent(Component *c);
     void pageScroll(ScrollDirection direction);
     void letterScroll(ScrollDirection direction);
-    void subScroll(ScrollDirection direction);
+    void metaScroll(ScrollDirection direction, std::string attribute);
     void cfwLetterSubScroll(ScrollDirection direction);
     unsigned int getCollectionSize();
     unsigned int getSelectedIndex();
@@ -95,6 +95,7 @@ public:
     bool isMenuIdle();
     void setStatusTextComponent(Text *t);
     void update(float dt);
+    void updateReloadables(float dt);
     void cleanup();
     void draw();
     void freeGraphicsMemory();
@@ -107,6 +108,8 @@ public:
     CollectionInfo *getCollection();
     void  setMinShowTime(float value);
     float getMinShowTime();
+    std::string controlsType();
+    void setControlsType(std::string type);
     void  menuScroll();
     void  highlightEnter();
     void  highlightExit();
@@ -151,6 +154,8 @@ public:
     unsigned long long getCurrent( );
     unsigned long long getDuration( );
     bool  isPaused( );
+    void setLocked(bool locked);
+    bool isLocked();
     ScrollingList* getPlaylistMenu();
     void setPlaylistMenu(ScrollingList*);
     bool playlistExists(std::string);
@@ -162,16 +167,18 @@ private:
     void playlistChange();
     std::string collectionName_;
     Configuration &config_;
+    std::string controlsType_;
+    bool locked_;
 
     struct MenuInfo_S
     {
-        CollectionInfo *collection;
-        CollectionInfo::Playlists_T::iterator playlist; 
+        CollectionInfo* collection;
+        CollectionInfo::Playlists_T::iterator playlist;
         bool queueDelete;
     };
-
-    typedef std::vector< std::vector<ScrollingList *> > MenuVector_T;
     typedef std::list<MenuInfo_S> CollectionVector_T;
+    
+    typedef std::vector< std::vector<ScrollingList *> > MenuVector_T;
     void setActiveMenuItemsFromPlaylist(MenuInfo_S info, ScrollingList* menu);
 
     std::vector<ScrollingList *> activeMenu_;

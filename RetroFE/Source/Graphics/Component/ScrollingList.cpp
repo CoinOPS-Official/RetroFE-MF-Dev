@@ -340,7 +340,7 @@ void ScrollingList::letterDown( )
 }
 
 
-void ScrollingList::letterChange( bool increment )
+void ScrollingList::letterChange( bool increment)
 {
 
     if ( !items_ || items_->size( ) == 0 ) return;
@@ -402,15 +402,71 @@ void ScrollingList::letterChange( bool increment )
 }
 
 
-void ScrollingList::subUp( )
+void ScrollingList::metaUp(std::string attribute)
 {
-    subChange( true );
+    metaChange(true, attribute);
 }
 
 
-void ScrollingList::subDown( )
+void ScrollingList::metaDown(std::string attribute)
 {
-    subChange( false );
+    metaChange(false, attribute);
+}
+
+
+void ScrollingList::metaChange(bool increment, std::string attribute)
+{
+
+    if (!items_ || items_->size() == 0) return;
+
+    Item* startItem = items_->at((itemIndex_ + selectedOffsetIndex_) % items_->size());
+    std::string startValue = items_->at((itemIndex_ + selectedOffsetIndex_) % items_->size())->getMetaAttribute(attribute);
+
+    for (unsigned int i = 0; i < items_->size(); ++i)
+    {
+        unsigned int index = 0;
+        if (increment)
+        {
+            index = loopIncrement(itemIndex_, i, items_->size());
+        }
+        else
+        {
+            index = loopDecrement(itemIndex_, i, items_->size());
+        }
+
+        std::string endValue = items_->at((index + selectedOffsetIndex_) % items_->size())->getMetaAttribute(attribute);
+
+        if (startValue != endValue) {
+            itemIndex_ = index;
+            break;
+        }
+    }
+
+    if (!increment) // For decrement, find the first game of the new meta attribute
+    {
+        bool prevLetterSubToCurrent = false;
+        config_.getProperty("prevLetterSubToCurrent", prevLetterSubToCurrent);
+        if (!prevLetterSubToCurrent || items_->at((itemIndex_ + 1 + selectedOffsetIndex_) % items_->size()) == startItem)
+        {
+            startValue = items_->at((itemIndex_ + selectedOffsetIndex_) % items_->size())->getMetaAttribute(attribute);
+
+            for (unsigned int i = 0; i < items_->size(); ++i)
+            {
+                unsigned int index = loopDecrement(itemIndex_, i, items_->size());
+
+                std::string endValue = items_->at((index + selectedOffsetIndex_) % items_->size())->getMetaAttribute(attribute);
+
+                if (startValue != endValue) {
+                    itemIndex_ = loopIncrement(index, 1, items_->size());
+                    break;
+                }
+            }
+        }
+        else
+        {
+            itemIndex_ = loopIncrement(itemIndex_, 1, items_->size());
+        }
+    }
 }
 
 
@@ -621,7 +677,10 @@ void ScrollingList::update( float dt )
     for ( unsigned int i = 0; i < scrollPoints_->size( ); i++ )
     {
         Component *c = components_.at( i );
-        if ( c ) c->update(dt );
+        if (c) {
+            c->playlistName = playlistName;
+            c->update(dt);
+        }
     }
 }
 
@@ -659,6 +718,7 @@ void ScrollingList::resetTweens( Component *c, AnimationEvents *sets, ViewInfo *
     nextViewInfo->ImageHeight     = c->baseViewInfo.ImageHeight;
     nextViewInfo->ImageWidth      = c->baseViewInfo.ImageWidth;
     nextViewInfo->BackgroundAlpha = c->baseViewInfo.BackgroundAlpha;
+	
 
     c->setTweens(sets );
 
@@ -667,6 +727,10 @@ void ScrollingList::resetTweens( Component *c, AnimationEvents *sets, ViewInfo *
     c->baseViewInfo = *currentViewInfo;
 
     TweenSet *set = new TweenSet( );
+    // don't trigger video restart if scrolling fast 
+    if (currentViewInfo->Restart && scrollPeriod_ > minScrollTime_)
+        set->push(new Tween(TWEEN_PROPERTY_RESTART, LINEAR, currentViewInfo->Restart, nextViewInfo->Restart, 0));
+
     set->push(new Tween(TWEEN_PROPERTY_HEIGHT, LINEAR, currentViewInfo->Height, nextViewInfo->Height, scrollTime ) );
     set->push(new Tween(TWEEN_PROPERTY_WIDTH, LINEAR, currentViewInfo->Width, nextViewInfo->Width, scrollTime ) );
     set->push(new Tween(TWEEN_PROPERTY_ANGLE, LINEAR, currentViewInfo->Angle, nextViewInfo->Angle, scrollTime ) );
@@ -684,6 +748,7 @@ void ScrollingList::resetTweens( Component *c, AnimationEvents *sets, ViewInfo *
     set->push(new Tween(TWEEN_PROPERTY_LAYER, LINEAR, currentViewInfo->Layer, nextViewInfo->Layer, scrollTime ) );
     set->push(new Tween(TWEEN_PROPERTY_VOLUME, LINEAR, currentViewInfo->Volume, nextViewInfo->Volume, scrollTime ) );
     set->push(new Tween(TWEEN_PROPERTY_MONITOR, LINEAR, currentViewInfo->Monitor, nextViewInfo->Monitor, scrollTime ) );
+
     scrollTween->Push( set );
 }
 
@@ -784,10 +849,10 @@ bool ScrollingList::allocateTexture( unsigned int index, Item *item )
             {
                 name = names[n];
                 if (selectedImage_ && item->name == selectedItemName) {
-                    t = imageBuild.CreateImage(imagePath, page, name + "-selected", baseViewInfo.Monitor);
+                    t = imageBuild.CreateImage(imagePath, page, name + "-selected", baseViewInfo.Monitor, baseViewInfo.Additive);
                 }
                 if (!t) {
-                    t = imageBuild.CreateImage(imagePath, page, name, baseViewInfo.Monitor);
+                    t = imageBuild.CreateImage(imagePath, page, name, baseViewInfo.Monitor, baseViewInfo.Additive);
                 }
             }
         }
@@ -814,10 +879,10 @@ bool ScrollingList::allocateTexture( unsigned int index, Item *item )
             {
                 name = names[n];
                 if (selectedImage_ && item->name == selectedItemName) {
-                    t = imageBuild.CreateImage(imagePath, page, name + "-selected", baseViewInfo.Monitor);
+                    t = imageBuild.CreateImage(imagePath, page, name + "-selected", baseViewInfo.Monitor, baseViewInfo.Additive);
                 }
                 if (!t) {
-                    t = imageBuild.CreateImage(imagePath, page, name, baseViewInfo.Monitor);
+                    t = imageBuild.CreateImage(imagePath, page, name, baseViewInfo.Monitor, baseViewInfo.Additive);
                 }
             }
         }
@@ -857,10 +922,10 @@ bool ScrollingList::allocateTexture( unsigned int index, Item *item )
         {
             name = imageType_;
             if (selectedImage_ && item->name == selectedItemName) {
-                t = imageBuild.CreateImage(imagePath, page, name + "-selected", baseViewInfo.Monitor);
+                t = imageBuild.CreateImage(imagePath, page, name + "-selected", baseViewInfo.Monitor, baseViewInfo.Additive);
             }
             if (!t) {
-                t = imageBuild.CreateImage(imagePath, page, name, baseViewInfo.Monitor);
+                t = imageBuild.CreateImage(imagePath, page, name, baseViewInfo.Monitor, baseViewInfo.Additive);
             }
         }
     }
@@ -876,10 +941,10 @@ bool ScrollingList::allocateTexture( unsigned int index, Item *item )
         {
             name = imageType_;
             if (selectedImage_ && item->name == selectedItemName) {
-                t = imageBuild.CreateImage(item->filepath, page, name + "-selected", baseViewInfo.Monitor);
+                t = imageBuild.CreateImage(item->filepath, page, name + "-selected", baseViewInfo.Monitor, baseViewInfo.Additive);
             }
             if (!t) {
-                t = imageBuild.CreateImage(item->filepath, page, name, baseViewInfo.Monitor);
+                t = imageBuild.CreateImage(item->filepath, page, name, baseViewInfo.Monitor, baseViewInfo.Additive);
             }
         }
     }
@@ -913,10 +978,10 @@ bool ScrollingList::allocateTexture( unsigned int index, Item *item )
 
             name = names[n];
             if (selectedImage_ && item->name == selectedItemName) {
-                t = imageBuild.CreateImage(imagePath, page, name + "-selected", baseViewInfo.Monitor);
+                t = imageBuild.CreateImage(imagePath, page, name + "-selected", baseViewInfo.Monitor, baseViewInfo.Additive);
             }
             if (!t) {
-                t = imageBuild.CreateImage(imagePath, page, name, baseViewInfo.Monitor);
+                t = imageBuild.CreateImage(imagePath, page, name, baseViewInfo.Monitor, baseViewInfo.Additive);
             }
 
             // check sub-collection path for art
@@ -933,10 +998,10 @@ bool ScrollingList::allocateTexture( unsigned int index, Item *item )
                 }
                 name = names[n];
                 if (selectedImage_ && item->name == selectedItemName) {
-                    t = imageBuild.CreateImage(imagePath, page, name + "-selected", baseViewInfo.Monitor);
+                    t = imageBuild.CreateImage(imagePath, page, name + "-selected", baseViewInfo.Monitor, baseViewInfo.Additive);
                 }
                 if (!t) {
-                    t = imageBuild.CreateImage(imagePath, page, name, baseViewInfo.Monitor);
+                    t = imageBuild.CreateImage(imagePath, page, name, baseViewInfo.Monitor, baseViewInfo.Additive);
                 }
             }
         }
@@ -968,10 +1033,10 @@ bool ScrollingList::allocateTexture( unsigned int index, Item *item )
             {
                 name = imageType_;
                 if (selectedImage_ && item->name == selectedItemName) {
-                    t = imageBuild.CreateImage(imagePath, page, name + "-selected", baseViewInfo.Monitor);
+                    t = imageBuild.CreateImage(imagePath, page, name + "-selected", baseViewInfo.Monitor, baseViewInfo.Additive);
                 }
                 if (!t) {
-                    t = imageBuild.CreateImage(imagePath, page, name, baseViewInfo.Monitor);
+                    t = imageBuild.CreateImage(imagePath, page, name, baseViewInfo.Monitor, baseViewInfo.Additive);
                 }
             }
         }
@@ -980,10 +1045,10 @@ bool ScrollingList::allocateTexture( unsigned int index, Item *item )
         {
             name = imageType_;
             if (selectedImage_ && item->name == selectedItemName) {
-                t = imageBuild.CreateImage(item->filepath, page, name + "-selected", baseViewInfo.Monitor);
+                t = imageBuild.CreateImage(item->filepath, page, name + "-selected", baseViewInfo.Monitor, baseViewInfo.Additive);
             }
             if (!t) {
-                t = imageBuild.CreateImage(item->filepath, page, name, baseViewInfo.Monitor);
+                t = imageBuild.CreateImage(item->filepath, page, name, baseViewInfo.Monitor, baseViewInfo.Additive);
             }
         }
 

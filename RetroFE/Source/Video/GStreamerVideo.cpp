@@ -53,6 +53,8 @@ GStreamerVideo::GStreamerVideo( int monitor )
     , volume_(0.0)
     , currentVolume_(0.0)
     , monitor_(monitor)
+	, MuteVideo(Configuration::MuteVideo)
+    , hide_(false)
 {
     paused_ = false;
 }
@@ -115,7 +117,7 @@ bool GStreamerVideo::initialize()
         return true;
     }
 
-    std::string path = Utils::combinePath(Configuration::absolutePath, "Core");
+    std::string path = Utils::combinePath(Configuration::absolutePath, "retrofe");
     gst_init(NULL, NULL);
 
 #ifdef WIN32
@@ -190,6 +192,11 @@ bool GStreamerVideo::stop()
     frameReady_ = false;
 
     return true;
+}
+
+void GStreamerVideo::hide(bool hide)
+{
+    hide_ = hide;
 }
 
 bool GStreamerVideo::play(std::string file)
@@ -386,29 +393,39 @@ void GStreamerVideo::update(float /* dt */)
 {
 	if(playbin_)
 	{
-		if(volume_ > 1.0)
-			volume_ = 1.0;
-        if ( currentVolume_ > volume_ || currentVolume_ + 0.005 >= volume_ )
-            currentVolume_ = volume_;
-        else
-            currentVolume_ += 0.005;
-		gst_stream_volume_set_volume( GST_STREAM_VOLUME( playbin_ ), GST_STREAM_VOLUME_FORMAT_LINEAR, static_cast<double>(currentVolume_));
-		if(currentVolume_ < 0.1)
+		if(MuteVideo)
+		{
+			// Keep the audio muted.
 			gst_stream_volume_set_mute( GST_STREAM_VOLUME( playbin_ ), true );
+		}
 		else
-			gst_stream_volume_set_mute( GST_STREAM_VOLUME( playbin_ ), false );
+		{
+			if(volume_ > 1.0)
+				volume_ = 1.0;
+			if ( currentVolume_ > volume_ || currentVolume_ + 0.005 >= volume_ )
+				currentVolume_ = volume_;
+			else
+				currentVolume_ += 0.005;
+
+			// Update the volume only if not muted.
+			gst_stream_volume_set_volume( GST_STREAM_VOLUME( playbin_ ), GST_STREAM_VOLUME_FORMAT_LINEAR, static_cast<double>(currentVolume_));
+			if(currentVolume_ < 0.1)
+				gst_stream_volume_set_mute( GST_STREAM_VOLUME( playbin_ ), true );
+			else
+				gst_stream_volume_set_mute( GST_STREAM_VOLUME( playbin_ ), false );
+		}
 	}
 
     SDL_LockMutex(SDL::getMutex());
     
-	if(!texture_ && width_ != 0 && height_ != 0)
+	if(!hide_ && !texture_ && width_ != 0 && height_ != 0)
     {
         texture_ = SDL_CreateTexture(SDL::getRenderer(monitor_), SDL_PIXELFORMAT_IYUV,
                                     SDL_TEXTUREACCESS_STREAMING, width_, height_);
         SDL_SetTextureBlendMode(texture_, SDL_BLENDMODE_BLEND);
     }
 
-    if(videoBuffer_)
+    if(!hide_ && videoBuffer_)
     {
         GstVideoMeta *meta;
         meta = gst_buffer_get_video_meta(videoBuffer_);
