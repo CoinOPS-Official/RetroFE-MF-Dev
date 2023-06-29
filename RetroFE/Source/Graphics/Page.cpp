@@ -1568,6 +1568,15 @@ void Page::setLayoutHeight(int monitor, int height)
         layoutHeight_[monitor] = height;
 }
 
+void Page::swapMonitorLayouts()
+{
+    /*int tmp_height = layoutHeight_[m1];
+    int tmp_width = layoutWidth_[m1];
+    layoutHeight_[m1] = layoutHeight_[m0];
+    layoutWidth_[m1] = layoutWidth_[m0];
+    layoutHeight_[m0] = tmp_height;
+    layoutWidth_[m0] = tmp_width;*/
+}
 
 void Page::setJukebox()
 {

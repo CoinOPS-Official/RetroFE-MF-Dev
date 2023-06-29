@@ -319,6 +319,10 @@ Page *PageBuilder::buildPage( std::string collectionName )
         }
     }
 
+    if (swapMonitors_) {
+        page->swapMonitorLayouts();
+    }
+    
     return page;
 }
 

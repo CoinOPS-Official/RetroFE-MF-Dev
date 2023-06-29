@@ -142,6 +142,7 @@ public:
     int   getLayoutHeight(int monitor);
     void  setLayoutWidth(int monitor, int width);
     void  setLayoutHeight(int monitor, int height);
+    void swapMonitorLayouts();
     void  setJukebox();
     bool  isJukebox();
     bool  isJukeboxPlaying();
