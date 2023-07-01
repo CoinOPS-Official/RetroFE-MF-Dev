@@ -1656,10 +1656,25 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
     while ( SDL_PollEvent( &e ) )
     {
         input_.update(e);
-        if ( e.type == SDL_KEYDOWN && !SDL_KEYUP )
+        if (e.type == SDL_KEYDOWN || e.type == SDL_MOUSEMOTION)
         {
             break;
         }
+    }
+
+    bool screensaver = false;
+    config_.getProperty("screensaver", screensaver);
+    if (screensaver && (
+        e.type == SDL_MOUSEMOTION || 
+        e.type == SDL_KEYDOWN || 
+        e.type == SDL_MOUSEBUTTONDOWN ||
+        e.type == SDL_JOYBUTTONDOWN || 
+        e.type == SDL_CONTROLLERBUTTONDOWN)
+    ) {
+#ifdef WIN32
+        postMessage("MediaplayerHiddenWindow", 0x8001, 51, 0);
+#endif              			
+        return RETROFE_QUIT;
     }
 
     // Handle next/previous game inputs
