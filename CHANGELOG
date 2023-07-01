@@ -2,6 +2,7 @@ vx.x
 
 v0.10.34.2
 	- update version *.2 (monkofthefunk)
+	- fixed collection setting autoPlaylist to go to upon nav (monkofthefunk)
 
 v0.10.34.1
 	- added vsync; fix if vSync is yes skip SDL_Delay fps limiter (inigomonyota)
