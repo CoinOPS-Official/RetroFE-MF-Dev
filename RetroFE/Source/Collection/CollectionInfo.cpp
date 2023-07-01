@@ -228,7 +228,6 @@ void CollectionInfo::sortPlaylists()
     {
         if ( itP->second != allItems )
         {
-            // temporarily set collection info's sortType so search has access to it
             sortType = Item::validSortType(itP->first) ? itP->first : "";
             std::sort(itP->second->begin(), itP->second->end(), itemIsLess(sortType));
         }

@@ -609,7 +609,9 @@ bool RetroFE::run( )
                 }
                 bool rememberMenu = false;
                 config_.getProperty("rememberMenu", rememberMenu);
-                if (rememberMenu && currentPage_->getPlaylistName() != "lastplayed") {
+                if (rememberMenu && currentPage_->getPlaylistName() != "lastplayed" && 
+                    currentPage_->getPlaylistName() != "playcount"
+                ) {
                     currentPage_->returnToRememberSelectedItem();
                 }
                 state = RETROFE_PLAYLIST_LOAD_ART;
@@ -1762,7 +1764,9 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
         else if (input_.keystate(UserInput::KeyCodeLetterUp))
         {
             attract_.reset( );
-            if (currentPage_->getPlaylistName() != "lastplayed") {
+            if (currentPage_->getPlaylistName() != "lastplayed" && 
+                currentPage_->getPlaylistName() != "playcount"
+            ) {
                 // if playlist same name as meta sort value then support meta jump
                 if (Item::validSortType(page->getPlaylistName())) {
                     page->metaScroll(Page::ScrollDirectionBack, page->getPlaylistName());
@@ -1782,7 +1786,9 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
         else if (input_.keystate(UserInput::KeyCodeLetterDown))
         {
             attract_.reset( );
-            if (currentPage_->getPlaylistName() != "lastplayed") {
+            if (currentPage_->getPlaylistName() != "lastplayed" && 
+                currentPage_->getPlaylistName() != "playcount"
+            ) {
                 if (Item::validSortType(page->getPlaylistName())) {
                     page->metaScroll(Page::ScrollDirectionForward, page->getPlaylistName());
                 }
