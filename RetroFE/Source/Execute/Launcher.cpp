@@ -335,7 +335,7 @@ void Launcher::keepRendering(std::atomic<bool> &stop_thread, Page &currentPage)
 
         currentPage.draw();
 
-        for (int i = 1; i < SDL::getNumDisplays(); ++i)
+        for (int i = 1; i < SDL::getScreenCount(); ++i)
         {
             SDL_RenderPresent(SDL::getRenderer(i));
         }
