@@ -1650,7 +1650,7 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
 {
     bool screensaver = false;
     config_.getProperty("screensaver", screensaver);
-    std::map<UINT32, bool> ssExitInputs = {
+    std::map<Uint32, bool> ssExitInputs = {
         {SDL_MOUSEMOTION,true},
         {SDL_KEYDOWN,true},
         {SDL_MOUSEBUTTONDOWN,true},
