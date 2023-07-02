@@ -10,6 +10,7 @@ v0.10.34.2
 	- added animated marquee to linux (monkofthefunk)
 	- fixed crash on settings reboot (monkofthefunk)
 	- added screensaver setting that will quit upon mouse move or button down (monkofthefunk)
+	- fixed removal of favorite in favorite playlist, update menu (monkofthefunk)
 
 v0.10.34.1
 	- added vsync; fix if vSync is yes skip SDL_Delay fps limiter (inigomonyota)
