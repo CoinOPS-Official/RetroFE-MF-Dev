@@ -1655,8 +1655,9 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
     SDL_Event e;
     while ( SDL_PollEvent( &e ) )
     {
+        // some hose !SDL_KEYUP prevents double action
         input_.update(e);
-        if (e.type == SDL_KEYDOWN || e.type == SDL_MOUSEMOTION)
+        if (e.type == SDL_KEYDOWN && !SDL_KEYUP || e.type == SDL_MOUSEMOTION)
         {
             break;
         }
