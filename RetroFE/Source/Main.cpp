@@ -136,7 +136,7 @@ bool ImportConfiguration(Configuration* c)
         Logger::write(Logger::ZONE_ERROR, "RetroFE", "Could not import \"" + settingsConfPath + ".conf\"");
         return false;
     }
-    for (int i = 1; i < 15; i++)
+    for (int i = 1; i < 16; i++)
         c->import("", "", settingsConfPath + std::to_string(i) + ".conf", false);
     c->import("", "", settingsConfPath + "_saved.conf", false);
 
