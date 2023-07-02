@@ -1926,7 +1926,6 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             page->removePlaylist( );
 
             // don't trigger playlist change events but refresh item states
-           // currentPage_->onNewItemSelected();
             currentPage_->reallocateMenuSpritePoints(); // update playlist menu
 
             state = RETROFE_PLAYLIST_ENTER;
