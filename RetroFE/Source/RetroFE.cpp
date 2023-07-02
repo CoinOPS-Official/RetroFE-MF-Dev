@@ -1648,6 +1648,18 @@ void RetroFE::goToNextAttractModePlaylistByCycle(std::vector<std::string> cycleV
 // Process the user input
 RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
 {
+    bool screensaver = false;
+    config_.getProperty("screensaver", screensaver);
+    std::map<UINT32, bool> ssExitInputs = {
+        {SDL_MOUSEMOTION,true},
+        {SDL_KEYDOWN,true},
+        {SDL_MOUSEBUTTONDOWN,true},
+        {SDL_JOYBUTTONDOWN,true},
+        {SDL_JOYAXISMOTION,true},
+        {SDL_JOYHATMOTION,true},
+        {SDL_CONTROLLERBUTTONDOWN,true},
+        {SDL_CONTROLLERAXISMOTION,true},
+    };
     bool exit = false;
     RETROFE_STATE state = RETROFE_IDLE;
 
@@ -1657,21 +1669,14 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
     {
         // some hose !SDL_KEYUP prevents double action
         input_.update(e);
-        if (e.type == SDL_KEYDOWN && !SDL_KEYUP || e.type == SDL_MOUSEMOTION)
-        {
+        if (e.type == SDL_KEYDOWN && !SDL_KEYUP || 
+            (screensaver && ssExitInputs[e.type])
+        ){
             break;
         }
     }
 
-    bool screensaver = false;
-    config_.getProperty("screensaver", screensaver);
-    if (screensaver && (
-        e.type == SDL_MOUSEMOTION || 
-        e.type == SDL_KEYDOWN || 
-        e.type == SDL_MOUSEBUTTONDOWN ||
-        e.type == SDL_JOYBUTTONDOWN || 
-        e.type == SDL_CONTROLLERBUTTONDOWN)
-    ) {
+    if (screensaver && ssExitInputs[e.type]) {
 #ifdef WIN32
         postMessage("MediaplayerHiddenWindow", 0x8001, 51, 0);
 #endif              			
