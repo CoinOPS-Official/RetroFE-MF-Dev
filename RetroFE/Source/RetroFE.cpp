@@ -410,6 +410,9 @@ bool RetroFE::run( )
     state               = RETROFE_ENTER;
     bool splashMode     = true;
     bool exitSplashMode = false;
+    // don't show splash 
+    bool screensaver = false;
+    config_.getProperty("screensaver", screensaver);
 
     Launcher l( config_ );
     Menu     m( config_, input_ );
@@ -426,11 +429,11 @@ bool RetroFE::run( )
 
         // Exit splash mode when an active key is pressed
         SDL_Event e;
-        if ( splashMode && SDL_PollEvent( &e ) )
+        if ( splashMode && (SDL_PollEvent( &e )))
         {
-            if (input_.update(e))
+            if (screensaver || input_.update(e))
             {
-                if (input_.keystate(UserInput::KeyCodeSelect)) {
+                if (screensaver || input_.keystate(UserInput::KeyCodeSelect)) {
                     exitSplashMode = true;
                     while (SDL_PollEvent(&e))
                     {
@@ -1655,7 +1658,7 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
 {
     bool screensaver = false;
     config_.getProperty("screensaver", screensaver);
-    std::map<UINT32, bool> ssExitInputs = {
+    std::map<unsigned int, bool> ssExitInputs = {
         {SDL_MOUSEMOTION,true},
         {SDL_KEYDOWN,true},
         {SDL_MOUSEBUTTONDOWN,true},
@@ -1672,9 +1675,11 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
     SDL_Event e;
     while ( SDL_PollEvent( &e ) )
     {
+        Logger::write(Logger::ZONE_ERROR, "RetroFE", std::to_string(e.type) + " " + std::to_string(e.key.keysym.scancode));
+
         // some how !SDL_KEYUP prevents double action
         input_.update(e);
-        if (e.type == SDL_KEYDOWN && !SDL_KEYUP || 
+        if (e.type == SDL_POLLSENTINEL ||
             (screensaver && ssExitInputs[e.type])
         ){
             break;
@@ -1757,8 +1762,14 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             }
         }
         // KeyCodeCycleCollection shared with KeyCodeQuitCombo1 and can missfire
-        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeCycleCollection) && currentTime_ - keyLastTime_ > keyDelayTime_+2.0)
-        {
+        else if (!kioskLock_ && input_.lastKeyPressed(UserInput::KeyCodeCycleCollection)){
+            // delay a bit longer for next cycle or ignore second keyboard hit count
+            if (!(currentTime_ - keyLastTime_ > keyDelayTime_ + 1.0)) {
+                return RETROFE_IDLE;
+            }
+            input_.resetStates();
+            keyLastTime_ = currentTime_;
+
             attract_.reset();
             if (collectionCycle_.size()) {
                 collectionCycleIt_++;
@@ -1771,9 +1782,72 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
                 nextPageItem_ = new Item();
                 nextPageItem_->name = *collectionCycleIt_;
                 menuMode_ = false;
-
-                keyLastTime_ = currentTime_;
+               
                 return RETROFE_NEXT_PAGE_REQUEST;
+            }
+            return RETROFE_IDLE;
+        }
+        else if (!kioskLock_ && (input_.keystate(UserInput::KeyCodeCyclePlaylist) ||
+            input_.keystate(UserInput::KeyCodeNextCyclePlaylist))
+        ){
+            if (!isStandalonePlaylist(currentPage_->getPlaylistName()))
+            {
+                attract_.reset();
+                std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
+                std::string cycleString;
+                // check if collection has different setting
+                if (config_.propertyExists(settingPrefix + "cyclePlaylist")) {
+                    config_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
+                }
+                else {
+                    config_.getProperty("cyclePlaylist", cycleString);
+                }
+
+                std::vector<std::string> cycleVector;
+                Utils::listToVector(cycleString, cycleVector, ',');
+                page->nextCyclePlaylist(cycleVector);
+                
+                keyLastTime_ = currentTime_;
+                return RETROFE_PLAYLIST_REQUEST;
+
+            }
+        }
+        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodePrevCyclePlaylist))
+        {
+            if (!isStandalonePlaylist(currentPage_->getPlaylistName()))
+            {
+                attract_.reset();
+                std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
+                std::string cycleString;
+                // check if collection has different setting
+                if (config_.propertyExists(settingPrefix + "cyclePlaylist")) {
+                    config_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
+                }
+                else {
+                    config_.getProperty("cyclePlaylist", cycleString);
+                }
+                std::vector<std::string> cycleVector;
+                Utils::listToVector(cycleString, cycleVector, ',');
+                page->playlistPrevEnter();
+                page->prevCyclePlaylist(cycleVector);
+                
+                keyLastTime_ = currentTime_;
+                return RETROFE_PLAYLIST_REQUEST;
+            }
+        }
+        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeBack))
+        {
+            attract_.reset();
+            if (back(exit) || exit)
+            {
+                // if collection cycle then also update it's position
+                if (collectionCycle_.size()) {
+                    if (collectionCycleIt_ != collectionCycle_.begin()) {
+                        collectionCycleIt_--;
+                    }
+                }
+                keyLastTime_ = currentTime_;
+                return (exit) ? RETROFE_QUIT_REQUEST : RETROFE_BACK_REQUEST;
             }
         }
     }
@@ -1883,52 +1957,6 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             page->playlistPrevEnter();
             page->prevPlaylist( );
             state = RETROFE_PLAYLIST_REQUEST;
-        }
-
-        else if (!kioskLock_ && (input_.keystate(UserInput::KeyCodeCyclePlaylist) ||
-                  input_.keystate(UserInput::KeyCodeNextCyclePlaylist)))
-        {
-            if (!isStandalonePlaylist(currentPage_->getPlaylistName()))
-            {
-                attract_.reset();
-                std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
-                std::string cycleString;
-                // check if collection has different setting
-                if (config_.propertyExists(settingPrefix + "cyclePlaylist")) {
-                    config_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
-                }
-                else {
-                    config_.getProperty("cyclePlaylist", cycleString);
-                }
-
-                std::vector<std::string> cycleVector;
-                Utils::listToVector(cycleString, cycleVector, ',');
-                page->nextCyclePlaylist(cycleVector);
-                state = RETROFE_PLAYLIST_REQUEST;
-
-            }
-        }
-
-        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodePrevCyclePlaylist))
-        {
-            if (!isStandalonePlaylist(currentPage_->getPlaylistName()))
-            {
-                attract_.reset();
-                std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
-                std::string cycleString;
-                // check if collection has different setting
-                if (config_.propertyExists(settingPrefix + "cyclePlaylist")) {
-                    config_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
-                }
-                else {
-                    config_.getProperty("cyclePlaylist", cycleString);
-                }
-                std::vector<std::string> cycleVector;
-                Utils::listToVector(cycleString, cycleVector, ',');
-                page->playlistPrevEnter();
-                page->prevCyclePlaylist(cycleVector);
-                state = RETROFE_PLAYLIST_REQUEST;
-            }
         }
 
         else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeRemovePlaylist))
@@ -2068,15 +2096,6 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
                     }
                     state = RETROFE_NEXT_PAGE_REQUEST;
                 }
-            }
-        }
-
-        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeBack))
-        {
-            attract_.reset( );
-            if ( back( exit ) || exit )
-            {
-                state = (exit) ? RETROFE_QUIT_REQUEST : RETROFE_BACK_REQUEST;
             }
         }
 

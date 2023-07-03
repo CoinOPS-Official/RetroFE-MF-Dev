@@ -84,6 +84,7 @@ public:
     void resetStates();
     bool update(SDL_Event &e);
     bool keystate(KeyCode_E);
+    bool lastKeyPressed(KeyCode_E code);
     bool newKeyPressed(KeyCode_E code);
     void clearJoysticks( );
     void reconfigure();
@@ -93,6 +94,7 @@ private:
     bool MapKey(std::string keyDescription, KeyCode_E key);
     bool MapKey(std::string keyDescription, KeyCode_E key, bool required);
     Configuration &config_;
+    bool updated_;
     SDL_JoystickID joysticks_[cMaxJoy];
     std::vector<std::pair<InputHandler *, KeyCode_E> > keyHandlers_;
     bool lastKeyState_[KeyCodeMax]; 
