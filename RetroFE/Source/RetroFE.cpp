@@ -413,9 +413,6 @@ bool RetroFE::run( )
     // don't show splash 
     bool screensaver = false;
     config_.getProperty("screensaver", screensaver);
-    if (screensaver) {
-        exitSplashMode = true;
-    }
 
     Launcher l( config_ );
     Menu     m( config_, input_ );
@@ -432,11 +429,11 @@ bool RetroFE::run( )
 
         // Exit splash mode when an active key is pressed
         SDL_Event e;
-        if ( splashMode && SDL_PollEvent( &e ) )
+        if ( splashMode && (SDL_PollEvent( &e )))
         {
-            if (input_.update(e))
+            if (screensaver || input_.update(e))
             {
-                if (input_.keystate(UserInput::KeyCodeSelect)) {
+                if (screensaver || input_.keystate(UserInput::KeyCodeSelect)) {
                     exitSplashMode = true;
                     while (SDL_PollEvent(&e))
                     {
