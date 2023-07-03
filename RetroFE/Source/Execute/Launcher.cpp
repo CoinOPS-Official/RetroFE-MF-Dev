@@ -313,7 +313,7 @@ bool Launcher::execute(std::string executable, std::string args, std::string cur
         retVal = true;
     }
 
-    if (multiple_display&& stop_thread == false) {
+    if (multiple_display && stop_thread == false) {
         stop_thread = true;
         proc_thread.join();
     }
