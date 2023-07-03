@@ -1760,8 +1760,13 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             }
         }
         // KeyCodeCycleCollection shared with KeyCodeQuitCombo1 and can missfire
-        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeCycleCollection) && currentTime_ - keyLastTime_ > keyDelayTime_+1.0)
+        else if (!kioskLock_ && input_.lastKeyPressed(UserInput::KeyCodeCycleCollection))
         {
+            if (!(currentTime_ - keyLastTime_ > keyDelayTime_ + 1.0)) {
+                return RETROFE_IDLE;
+            }
+            keyLastTime_ = currentTime_;
+
             attract_.reset();
             if (collectionCycle_.size()) {
                 collectionCycleIt_++;
@@ -1774,8 +1779,7 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
                 nextPageItem_ = new Item();
                 nextPageItem_->name = *collectionCycleIt_;
                 menuMode_ = false;
-
-                keyLastTime_ = currentTime_;
+               
                 return RETROFE_NEXT_PAGE_REQUEST;
             }
         }
