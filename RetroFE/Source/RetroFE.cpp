@@ -576,7 +576,6 @@ bool RetroFE::run( )
 
                     if (screensaver) {
                         currentPage_->selectRandom();
-                       
                     }
 
                     currentPage_->onNewItemSelected();
