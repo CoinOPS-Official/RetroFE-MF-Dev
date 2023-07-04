@@ -574,6 +574,11 @@ bool RetroFE::run( )
                     if (currentPage_->getPlaylistName() != firstPlaylist_ )
                         currentPage_->selectPlaylist( "all" );
 
+                    if (screensaver) {
+                        currentPage_->selectRandom();
+                       
+                    }
+
                     currentPage_->onNewItemSelected();
                     currentPage_->reallocateMenuSpritePoints(); // update playlist menu
 
