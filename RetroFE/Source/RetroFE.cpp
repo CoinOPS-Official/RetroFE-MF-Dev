@@ -574,6 +574,10 @@ bool RetroFE::run( )
                     if (currentPage_->getPlaylistName() != firstPlaylist_ )
                         currentPage_->selectPlaylist( "all" );
 
+                    if (screensaver) {
+                        currentPage_->selectRandom();
+                    }
+
                     currentPage_->onNewItemSelected();
                     currentPage_->reallocateMenuSpritePoints(); // update playlist menu
 
@@ -1270,7 +1274,13 @@ bool RetroFE::run( )
                     launchExit( );
                     l.LEDBlinky( 4 );
                     currentPage_->exitGame( );
-                    
+                    // with new sort by last played return to first
+                    if (currentPage_->getPlaylistName() == "lastplayed")
+                    {
+                        currentPage_->setScrollOffsetIndex(0);
+                        currentPage_->reallocateMenuSpritePoints();
+                    }
+
                     state = RETROFE_LAUNCH_EXIT;
                 }
             }
@@ -1281,14 +1291,6 @@ bool RetroFE::run( )
             if ( currentPage_->isIdle( ) )
             {
                 state = RETROFE_IDLE;
-            }
-            else {
-                // with new sort by last played return to first
-                if (currentPage_->getPlaylistName() == "lastplayed")
-                {
-                    currentPage_->setScrollOffsetIndex(0);
-                    currentPage_->reallocateMenuSpritePoints();
-                }
             }
             break;
 
