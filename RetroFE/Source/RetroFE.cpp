@@ -1245,7 +1245,7 @@ bool RetroFE::run( )
 
         // Wait for onGameEnter animation to finish; launch game; start onGameExit animation
         case RETROFE_LAUNCH_REQUEST:
-            if ( currentPage_->isIdle( ) && !currentPage_->isSelectPlaying( ) )
+            if ( currentPage_->isIdle( ) )
             {
                 nextPageItem_ = currentPage_->getSelectedItem( );
                 launchEnter( );
