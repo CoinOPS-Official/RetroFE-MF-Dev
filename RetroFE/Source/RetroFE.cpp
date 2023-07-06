@@ -1677,8 +1677,6 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
     SDL_Event e;
     while ( SDL_PollEvent( &e ) )
     {
-        Logger::write(Logger::ZONE_ERROR, "RetroFE", std::to_string(e.type) + " " + std::to_string(e.key.keysym.scancode));
-
         // some how !SDL_KEYUP prevents double action
         input_.update(e);
         if (e.type == SDL_POLLSENTINEL ||
