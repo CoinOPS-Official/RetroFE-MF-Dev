@@ -80,15 +80,6 @@ RetroFE::RetroFE( Configuration &c )
     firstPlaylist_                       = "all"; // todo
 }
 
-#ifdef WIN32
-void RetroFE::postMessage(LPCTSTR windowTitle, UINT Msg, WPARAM wParam, LPARAM lParam ) {
-    HWND hwnd = FindWindow(NULL, windowTitle);
-	if (hwnd != NULL) {
-        PostMessage(hwnd, Msg, wParam, lParam);
-    }
-}
-#endif
-
 RetroFE::~RetroFE( )
 {
     deInitialize( );
@@ -177,8 +168,8 @@ void RetroFE::launchEnter( )
     if ( hideMouse )
         SDL_WarpMouseGlobal( mouseX, mouseY );
 #ifdef WIN32            
-			postMessage("MediaplayerHiddenWindow",0x8001, 75, 0);		
-#endif			
+        Utils::postMessage("MediaplayerHiddenWindow",0x8001, 75, 0);		
+#endif		
 }
 
 
@@ -219,7 +210,7 @@ void RetroFE::launchExit( )
     if ( hideMouse )
         SDL_WarpMouseGlobal( mouseX, mouseY );
 #ifdef WIN32            
-			postMessage("MediaplayerHiddenWindow",0x8001, 76, 0);		
+			Utils::postMessage("MediaplayerHiddenWindow",0x8001, 76, 0);		
 #endif			
 }
 
@@ -503,7 +494,7 @@ bool RetroFE::run( )
         case RETROFE_LOAD_ART:
             currentPage_->start( );
 #ifdef WIN32            
-			postMessage("MediaplayerHiddenWindow",0x8001, 50, 0);		
+			Utils::postMessage("MediaplayerHiddenWindow",0x8001, 50, 0);		
 #endif			
             state = RETROFE_ENTER;
             break;
@@ -1688,7 +1679,7 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
 
     if (screensaver && ssExitInputs[e.type]) {
 #ifdef WIN32
-        postMessage("MediaplayerHiddenWindow", 0x8001, 51, 0);
+        Utils::postMessage("MediaplayerHiddenWindow", 0x8001, 51, 0);
 #endif              			
         return RETROFE_QUIT;
     }
@@ -1756,7 +1747,7 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             config_.getProperty("controllerComboExit", controllerComboExit);
             if (controllerComboExit) {
 #ifdef WIN32
-                postMessage("MediaplayerHiddenWindow", 0x8001, 51, 0);
+                Utils::postMessage("MediaplayerHiddenWindow", 0x8001, 51, 0);
 #endif              			
                 return RETROFE_QUIT_REQUEST;
             }
@@ -1783,6 +1774,32 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
                 nextPageItem_->name = *collectionCycleIt_;
                 menuMode_ = false;
                
+                return RETROFE_NEXT_PAGE_REQUEST;
+            }
+            return RETROFE_IDLE;
+        }
+        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodePrevCycleCollection)) {
+            // delay a bit longer for next cycle or ignore second keyboard hit count
+            if (!(currentTime_ - keyLastTime_ > keyDelayTime_ + 1.0)) {
+                return RETROFE_IDLE;
+            }
+            input_.resetStates();
+            keyLastTime_ = currentTime_;
+
+            attract_.reset();
+            if (collectionCycle_.size()) {
+                if (collectionCycleIt_ == collectionCycle_.begin()) {
+                    collectionCycleIt_ = collectionCycle_.end();
+                }
+                collectionCycleIt_--;
+
+                if (!pages_.empty() && pages_.size() > 1)
+                    pages_.pop();
+
+                nextPageItem_ = new Item();
+                nextPageItem_->name = *collectionCycleIt_;
+                menuMode_ = false;
+
                 return RETROFE_NEXT_PAGE_REQUEST;
             }
             return RETROFE_IDLE;
@@ -2103,7 +2120,7 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
         {
             attract_.reset( );
 #ifdef WIN32
-        postMessage("MediaplayerHiddenWindow", 0x8001, 51,0);		
+        Utils::postMessage("MediaplayerHiddenWindow", 0x8001, 51,0);		
 #endif              			
             state = RETROFE_QUIT_REQUEST;
         }
