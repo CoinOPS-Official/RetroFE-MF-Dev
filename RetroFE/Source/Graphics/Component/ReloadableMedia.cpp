@@ -373,6 +373,11 @@ void ReloadableMedia::reloadTexture()
                 defined = true;
             }
         }
+        else if (typeLC == "systemGen")
+        {
+            (void)config_.getProperty("collections." + selectedItem->collectionInfo->name + ".systemGen", basename);
+            defined = true;
+        }
 
         if (!selectedItem->leaf) // item is not a leaf
         {
