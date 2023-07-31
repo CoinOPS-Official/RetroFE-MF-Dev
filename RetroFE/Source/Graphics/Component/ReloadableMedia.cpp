@@ -195,6 +195,10 @@ void ReloadableMedia::reloadTexture()
             {
                 basename = page.getPlaylistName();
             }
+            else if (typeLC == "systemgen")
+            {
+                (void)config_.getProperty("collections." + selectedItem->collectionInfo->name + ".systemGen", basename);
+            }
 
             if(systemMode_)
             {
@@ -373,9 +377,11 @@ void ReloadableMedia::reloadTexture()
                 defined = true;
             }
         }
-        else if (typeLC == "systemGen")
+        else if (typeLC == "systemgen")
         {
             (void)config_.getProperty("collections." + selectedItem->collectionInfo->name + ".systemGen", basename);
+            Logger::write(Logger::ZONE_ERROR, "RetroFE", "collections." + selectedItem->collectionInfo->name + ".systemGen " + basename);
+
             defined = true;
         }
 
