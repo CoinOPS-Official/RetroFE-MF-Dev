@@ -126,8 +126,10 @@ void ReloadableMedia::reloadTexture()
 
     if(loadedComponent_)
     {
-        // delete image/video/text if no selected Item, or if not a playlist type or playlists are different
-        if (!selectedItem || !(typeLC.rfind("playlist", 0) == 0 && (page.getPlaylistName() == loadedComponent_->playlistName)))
+        // delete image/video/text if no selected Item, or if not a systemgen or playlist type or playlists are different
+        // todo probably have to improve systemgen to check if next one is the same like playlist
+        if (!selectedItem || !((typeLC.rfind("systemgen", 0) == 0 || typeLC.rfind("playlist", 0) == 0) && 
+            (page.getPlaylistName() == loadedComponent_->playlistName)))
         {
             delete loadedComponent_;
             loadedComponent_ = NULL;
