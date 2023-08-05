@@ -27,6 +27,7 @@ v0.10.34.2
 	- fixed size_t exception (monkofthefunk)
 	- fixed don't add videos to monitor=2+ if display doesn't exist (monkofthefunk)
 	- added to layout animationDoneRemove remove video, to free up a video slot after a one time video is done (monkofthefunk)
+	- fixed layer count tide to numScreens setting, also allow single screen to allow second monitor show desktop (monkofthefunk)
 
 v0.10.34.1
 	- added vsync; fix if vSync is yes skip SDL_Delay fps limiter (inigomonyota)

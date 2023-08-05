@@ -103,8 +103,8 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
 
     std::vector<std::string> layouts;
     layouts.push_back(layoutPage);
-    // todo replace numScreens with numLayers
-    for ( int i = 0; i < SDL::getNumScreens(); i++ )
+    // layout - #.xml
+    for (int i = 0; i < 4; i++)
         layouts.push_back("layout - " + std::to_string( i ) );
    
     for ( unsigned int layer = 0; layer < layouts.size(); layer++ )
