@@ -37,14 +37,16 @@ VideoComponent::~VideoComponent()
 
     if(videoInst_)
     {
-        videoInst_->stop();
         if ( VideoFactory::canDelete( videoInst_ ) )
+        {
             delete videoInst_;
+            Logger::write(Logger::ZONE_DEBUG, "Component", "Deleted - VideoC " + videoFile_);
+        }
         videoInst_ = NULL;
     }
 }
 
-void VideoComponent::update(float dt)
+bool VideoComponent::update(float dt)
 {
     if (videoInst_)
     {
@@ -77,8 +79,7 @@ void VideoComponent::update(float dt)
         }
     }
 
-    Component::update(dt);
-
+   return Component::update(dt);
 }
 
 void VideoComponent::allocateGraphicsMemory()
@@ -93,6 +94,8 @@ void VideoComponent::allocateGraphicsMemory()
 
 void VideoComponent::freeGraphicsMemory()
 {
+    Logger::write(Logger::ZONE_DEBUG, "Component", "Free - VideoC " + videoFile_);
+
     videoInst_->stop();
     isPlaying_ = false;
 
