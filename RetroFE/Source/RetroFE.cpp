@@ -1243,12 +1243,9 @@ bool RetroFE::run( )
 
         // Launching game; start onGameEnter animation
         case RETROFE_LAUNCH_ENTER:
-            if (!currentPage_->isMenuScrolling())
-            {
-                currentPage_->enterGame();  // Start onGameEnter animation
-                currentPage_->playSelect(); // Play launch sound
-                state = RETROFE_LAUNCH_REQUEST;
-            }
+            currentPage_->enterGame();  // Start onGameEnter animation
+            currentPage_->playSelect(); // Play launch sound
+            state = RETROFE_LAUNCH_REQUEST;
             break;
 
         // Wait for onGameEnter animation to finish; launch game; start onGameExit animation
@@ -2100,7 +2097,7 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             //todo: add admin mode support
         }
 
-        else if (input_.keystate(UserInput::KeyCodeSelect))
+        else if (input_.keystate(UserInput::KeyCodeSelect) && !currentPage_->isMenuScrolling())
         {
             attract_.reset( );
             nextPageItem_ = page->getSelectedItem( );
