@@ -739,8 +739,6 @@ bool RetroFE::run( )
                 lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
                 lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName( );
                 std::string nextPageName = nextPageItem_->name;
-                Logger::write(Logger::ZONE_ERROR, "++++RETROFE_NEXT_PAGE_MENU_EXIT", nextPageName);
-                Logger::write(Logger::ZONE_ERROR, "****RETROFE_NEXT_PAGE_MENU_EXIT", currentPage_->getSelectedItem()->name);
 
                 if ( !menuMode_ )
                 {
@@ -1072,7 +1070,6 @@ bool RetroFE::run( )
         // Start onHighlightEnter animation
         case RETROFE_COLLECTION_HIGHLIGHT_LOAD_ART:
             currentPage_->highlightEnter( );
-            
             if (currentPage_->getSelectedItem())
                 l.LEDBlinky( 9, currentPage_->getSelectedItem()->collectionInfo->name, currentPage_->getSelectedItem());
             state = RETROFE_COLLECTION_HIGHLIGHT_ENTER;
