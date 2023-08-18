@@ -1036,8 +1036,6 @@ bool RetroFE::run( )
                         currentPage_->setScrolling(Page::ScrollDirectionIdle); // Stop scrolling
                         nextPageItem_ = currentPage_->getSelectedItem( );
 
-                        Logger::write(Logger::ZONE_ERROR, "++++RETROFE_COLLECTION_DOWN_SCROLL", nextPageItem_->name);
-                        Logger::write(Logger::ZONE_ERROR, "****RETROFE_COLLECTION_DOWN_SCROLL", currentPage_->getSelectedItem()->name);
                         bool enterOnCollection = true;
                         config_.getProperty( "enterOnCollection", enterOnCollection );
                         if (nextPageItem_->leaf || (!attractMode_ && !enterOnCollection) ) // Current selection is a game or enterOnCollection is not set
@@ -1046,7 +1044,7 @@ bool RetroFE::run( )
                         }
                         else // Current selection is a menu
                         {
-                            state = RETROFE_COLLECTION_HIGHLIGHT_EXIT;
+                            state = RETROFE_COLLECTION_HIGHLIGHT_REQUEST;
                         }
                     }
                 }
@@ -1056,7 +1054,9 @@ bool RetroFE::run( )
 
         // Start onHighlightExit animation
         case RETROFE_COLLECTION_HIGHLIGHT_REQUEST:
+            currentPage_->setScrolling(Page::ScrollDirectionIdle);
             currentPage_->highlightExit( );
+
             state = RETROFE_COLLECTION_HIGHLIGHT_EXIT;
             break;
 
@@ -1072,10 +1072,7 @@ bool RetroFE::run( )
         // Start onHighlightEnter animation
         case RETROFE_COLLECTION_HIGHLIGHT_LOAD_ART:
             currentPage_->highlightEnter( );
-
-            Logger::write(Logger::ZONE_ERROR, "---RETROFE_COLLECTION_HIGHLIGHT_LOAD_ART", nextPageItem_->name);
-            Logger::write(Logger::ZONE_ERROR, "***RETROFE_COLLECTION_HIGHLIGHT_LOAD_ART", currentPage_->getSelectedItem()->name);
-
+            
             if (currentPage_->getSelectedItem())
                 l.LEDBlinky( 9, currentPage_->getSelectedItem()->collectionInfo->name, currentPage_->getSelectedItem());
             state = RETROFE_COLLECTION_HIGHLIGHT_ENTER;
@@ -1085,6 +1082,8 @@ bool RetroFE::run( )
         case RETROFE_COLLECTION_HIGHLIGHT_ENTER:
             if (currentPage_->isIdle( ))
             {
+                nextPageItem_ = currentPage_->getSelectedItem();
+
                 RETROFE_STATE state_tmp = processUserInput( currentPage_ );
                 if ( state_tmp == RETROFE_COLLECTION_DOWN_REQUEST )
                 {
@@ -1247,9 +1246,12 @@ bool RetroFE::run( )
 
         // Launching game; start onGameEnter animation
         case RETROFE_LAUNCH_ENTER:
-            currentPage_->enterGame( );  // Start onGameEnter animation
-            currentPage_->playSelect( ); // Play launch sound
-            state = RETROFE_LAUNCH_REQUEST;
+            if (!currentPage_->isMenuScrolling())
+            {
+                currentPage_->enterGame();  // Start onGameEnter animation
+                currentPage_->playSelect(); // Play launch sound
+                state = RETROFE_LAUNCH_REQUEST;
+            }
             break;
 
         // Wait for onGameEnter animation to finish; launch game; start onGameExit animation
