@@ -75,57 +75,80 @@ PageBuilder::~PageBuilder()
 {
 }
 
-Page *PageBuilder::buildPage( std::string collectionName )
+Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault )
 {
     Page *page = NULL;
 
     std::string layoutFile;
     std::string layoutFileAspect;
     std::string layoutName = layoutKey;
+    std::string layoutPathDefault = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName);
 
     if ( isMenu_ )
     {
         layoutPath = Utils::combinePath(Configuration::absolutePath, "menu");
     }
-    else if ( collectionName == "" )
-    {
-        layoutPath = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName);
-    }
-    else
+    else if ( collectionName != "" )
     {
         layoutPath = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName, "collections", collectionName);
         layoutPath = Utils::combinePath(layoutPath, "layout");
+
+        if (ignoreMainDefault) {
+            std::ifstream file((layoutPath + ".xml").c_str());
+            // check collection has layout otherwise it would have used default folder layout
+            if (!file.good()) {
+                return NULL;
+            }
+        }
     }
 
     std::vector<std::string> layouts;
     layouts.push_back(layoutPage);
-    // layout - 1.xml layer support
-    for ( int i = 0; i < 4; i++ )
+    // layout - #.xml
+    for (int i = 0; i < 4; i++)
         layouts.push_back("layout - " + std::to_string( i ) );
    
-
-    for ( size_t layout = 0; layout < layouts.size(); layout++ )
+    for ( unsigned int layer = 0; layer < layouts.size(); layer++ )
     {
-        layoutFile       = Utils::combinePath(layoutPath, layouts[layout] + ".xml");
+        layoutFile       = Utils::combinePath(layoutPath, layouts[layer] + ".xml");
         layoutFileAspect = Utils::combinePath(layoutPath, "layout " + 
             std::to_string( screenWidth_/Utils::gcd( screenWidth_, screenHeight_ ) ) + "x" + 
-            std::to_string( screenHeight_/Utils::gcd( screenWidth_, screenHeight_ ) ) + layouts[layout] +
+            std::to_string( screenHeight_/Utils::gcd( screenWidth_, screenHeight_ ) ) + layouts[layer] +
             ".xml" );
+        layoutFileAspect = Utils::combinePath(layoutPath, "layout " + std::to_string( screenWidth_/Utils::gcd( screenWidth_, screenHeight_ ) ) + "x" + std::to_string( screenHeight_/Utils::gcd( screenWidth_, screenHeight_ ) ) + monitors[monitor] + ".xml" );
 
         Logger::write(Logger::ZONE_INFO, "Layout", "Initializing " + layoutFileAspect);
 
         rapidxml::xml_document<> doc;
         std::ifstream file(layoutFileAspect.c_str());
-
+        // aspect layout
         if ( !file.good( ) )
         {
             Logger::write( Logger::ZONE_INFO, "Layout", "could not find layout file: " + layoutFileAspect );
             Logger::write( Logger::ZONE_INFO, "Layout", "Initializing " + layoutFile );
+            
+            // collection or default layout
             file.open( layoutFile.c_str( ) );
             if ( !file.good( ) )
             {
                 Logger::write( Logger::ZONE_INFO, "Layout", "could not find layout file: " + layoutFile );
-                continue;
+
+                // try default layout
+                if (layoutPath != layoutPathDefault) {
+                    layoutFile = Utils::combinePath(layoutPathDefault, layouts[layer] + ".xml");
+                    Logger::write(Logger::ZONE_INFO, "Layout", "Initializing " + layoutFile);
+
+                    file.open(layoutFile.c_str());
+                    if (!file.good())
+                    {
+                        // try next layout
+                        continue;
+                    }
+                }
+                else {
+                    // try next layout
+                    continue;
+                }
             }
         }
 
@@ -217,7 +240,7 @@ Page *PageBuilder::buildPage( std::string collectionName )
                     }
                     SDL::setRotation(display, rotate);
                     config_.setProperty("rotation" + std::to_string(display), std::to_string(rotate));
-                    Logger::write(Logger::ZONE_INFO, "Configuration", "Layout rotated layout - " + std::to_string(layout) + " Setting rotation for screen " + std::to_string(display) + " to " + std::to_string(rotate * 90) + " degrees.");
+                    Logger::write(Logger::ZONE_INFO, "Configuration", "Layout rotated layout - " + std::to_string(layer) + " Setting rotation for screen " + std::to_string(display) + " to " + std::to_string(rotate * 90) + " degrees.");
                 }
 
                 std::stringstream ss;
@@ -227,9 +250,9 @@ Page *PageBuilder::buildPage( std::string collectionName )
                 if ( !page )
                     page = new Page(config_, layoutWidth_, layoutHeight_ );
                 else
-                {
-                    page->setLayoutWidth(layout,  layoutWidth_);
-                    page->setLayoutHeight(layout, layoutHeight_);
+                    page->setLayoutWidth(layer,  layoutWidth_);
+                    page->setLayoutHeight(layer, layoutHeight_);
+                    page->setLayoutHeight( monitor, layoutHeight_ ); 
                 }
 
                 if(minShowTimeXml) 
@@ -452,22 +475,24 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
             std::string altImagePath;
             altImagePath = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName, std::string(src->value()));
 
-            int monitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor_;
-
-            bool additive = additiveXml ? bool(additiveXml->value()) : false;
-            Image *c = new Image(imagePath, altImagePath, *page, monitor, additive);
-            c->setId( id );
-            xml_attribute<> *menuScrollReload = componentXml->first_attribute("menuScrollReload");
-            if (menuScrollReload &&
-                (Utils::toLower(menuScrollReload->value()) == "true" ||
-                 Utils::toLower(menuScrollReload->value()) == "yes"))
-            {
-                c->setMenuScrollReload(true);
+            // don't add videos if display doesn't exist
+            if (monitor + 1 <= SDL::getScreenCount()) {
+                bool additive = additiveXml ? bool(additiveXml->value()) : false;
+                Image* c = new Image(imagePath, altImagePath, *page, monitor, additive);
+                c->setId(id);
+                xml_attribute<>* menuScrollReload = componentXml->first_attribute("menuScrollReload");
+                if (menuScrollReload &&
+                    (Utils::toLower(menuScrollReload->value()) == "true" ||
+                        Utils::toLower(menuScrollReload->value()) == "yes"))
+                {
+                    c->setMenuScrollReload(true);
+                }
+                buildViewInfo(componentXml, c->baseViewInfo);
+                loadTweens(c, componentXml);
+                page->addComponent(c);
             }
-            buildViewInfo(componentXml, c->baseViewInfo);
-            loadTweens(c, componentXml);
-            page->addComponent(c);
         }
+    }
     }
 
 
@@ -498,21 +523,30 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
             altVideoPath = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName, std::string(srcXml->value()));
             int numLoops = numLoopsXml ? Utils::convertInt(numLoopsXml->value()) : 1;
 
-            int monitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor_;
-
-            Video *c = new Video(videoPath, altVideoPath, numLoops, *page, monitor);
-            c->setId( id );
-            xml_attribute<> *menuScrollReload = componentXml->first_attribute("menuScrollReload");
-            if (menuScrollReload &&
-                (Utils::toLower(menuScrollReload->value()) == "true" ||
-                 Utils::toLower(menuScrollReload->value()) == "yes"))
-            {
-                c->setMenuScrollReload(true);
+            // don't add videos if display doesn't exist
+            if (monitor + 1 <= SDL::getScreenCount()) {
+                Video* c = new Video(videoPath, altVideoPath, numLoops, *page, monitor);
+                c->setId(id);
+                xml_attribute<>* menuScrollReload = componentXml->first_attribute("menuScrollReload");
+                if (menuScrollReload &&
+                    (Utils::toLower(menuScrollReload->value()) == "true" ||
+                        Utils::toLower(menuScrollReload->value()) == "yes"))
+                {
+                    c->setMenuScrollReload(true);
+                }
+                xml_attribute<>* animationDoneRemove = componentXml->first_attribute("animationDoneRemove");
+                if (animationDoneRemove &&
+                    (Utils::toLower(animationDoneRemove->value()) == "true" ||
+                        Utils::toLower(animationDoneRemove->value()) == "yes"))
+                {
+                    c->setAnimationDoneRemove(true);
+                }
+                buildViewInfo(componentXml, c->baseViewInfo);
+                loadTweens(c, componentXml);
+                page->addComponent(c);
             }
-            buildViewInfo(componentXml, c->baseViewInfo);
-            loadTweens(c, componentXml);
-            page->addComponent(c);
         }
+    }
     }
 
 
@@ -1049,7 +1083,7 @@ ScrollingList * PageBuilder::buildMenu(xml_node<> *menuXml, Page &page)
     xml_attribute<> *minScrollTimeXml      = menuXml->first_attribute("minScrollTime");
     xml_attribute<> *scrollOrientationXml  = menuXml->first_attribute("orientation");
     xml_attribute<>* selectedImage         = menuXml->first_attribute("selectedImage");
-
+    xml_attribute<>* textFallback          = menuXml->first_attribute("textFallback");
 
     if(menuTypeXml)
     {
@@ -1129,6 +1163,8 @@ ScrollingList * PageBuilder::buildMenu(xml_node<> *menuXml, Page &page)
             menu->horizontalScroll = true;
         }
     }
+
+    menu->enableTextFallback(textFallback && Utils::toLower(textFallback->value()) == "true");
 
     buildViewInfo(menuXml, menu->baseViewInfo);
 
@@ -1416,10 +1452,15 @@ void PageBuilder::buildViewInfo(xml_node<> *componentXml, ViewInfo &info, xml_no
     info.Volume             = volume             ? Utils::convertFloat(volume->value())            : 1.f;
     info.Restart = restart ? Utils::toLower(restart->value()) == "true" : false;
     info.Additive = additive ? Utils::toLower(additive->value()) == "true" : false;
+    bool disableVideoRestart;
+    config_.getProperty("disableVideoRestart", disableVideoRestart);
+    if (disableVideoRestart)
+        info.Restart = false;
 
     if (swapMonitors_ && info.Monitor < 2) {
         info.Monitor = info.Monitor == 0 ? 1 : 0;
     }
+
 
     if(fontColor)
     {
@@ -1507,17 +1548,37 @@ void PageBuilder::getAnimationEvents(xml_node<> *node, TweenSet &tweens)
                 bool  fromDefined = true;
                 if (from)
                 {
-                    fromValue = Utils::convertFloat(from->value());
+                    std::string fromStr = from->value();
+                    if(fromStr == "left") {
+                        fromValue = 0.0f;
+                    } else if(fromStr == "center") {
+                        fromValue = static_cast<float>(layoutWidth_) / 2;
+                    } else if(fromStr == "right" || fromStr == "stretch") {
+                        fromValue = static_cast<float>(layoutWidth_);
+                    } else {
+                        fromValue = Utils::convertFloat(fromStr);
+                    }
                 }
                 else
                 {
-                   fromDefined = false;
+                    fromDefined = false;
                 }
+
                 float toValue = 0.0f;
                 if (to)
                 {
-                    toValue = Utils::convertFloat(to->value());
+                    std::string toStr = to->value();
+                    if(toStr == "left") {
+                        toValue = 0.0f;
+                    } else if(toStr == "center") {
+                        toValue = static_cast<float>(layoutWidth_) / 2;
+                    } else if(toStr == "right" || toStr == "stretch") {
+                        toValue = static_cast<float>(layoutWidth_);
+                    } else {
+                        toValue = Utils::convertFloat(toStr);
+                    }
                 }
+
                 float durationValue = Utils::convertFloat(durationXml->value());
 
                 TweenAlgorithm algorithm = LINEAR;
@@ -1526,7 +1587,6 @@ void PageBuilder::getAnimationEvents(xml_node<> *node, TweenSet &tweens)
                 if(algorithmXml)
                 {
                     algorithm = Tween::getTweenType(algorithmXml->value());
-
                 }
 
                 if(Tween::getTweenProperty(animateType, property))

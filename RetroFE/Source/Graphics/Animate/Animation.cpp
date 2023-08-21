@@ -28,6 +28,7 @@ Animation::Animation(Animation &copy)
         Push(new TweenSet(**it));
     }
 }
+
 Animation::~Animation()
 {
     Clear();
@@ -40,16 +41,12 @@ void Animation::Push(TweenSet *set)
 
 void Animation::Clear()
 {
-    std::vector<TweenSet *>::iterator it = animationVector_.begin();
-    while(it != animationVector_.end())
-    {
-        delete *it;
-        animationVector_.erase(it);
-        it = animationVector_.begin();
+    for (TweenSet* set : animationVector_) {
+        delete set;
     }
-
     animationVector_.clear();
 }
+
 
 std::vector<TweenSet *> *Animation::tweenSets()
 {
@@ -62,7 +59,7 @@ TweenSet *Animation::tweenSet(unsigned int index)
 }
 
 
-unsigned int Animation::size()
+size_t Animation::size()
 {
     return animationVector_.size();
 }

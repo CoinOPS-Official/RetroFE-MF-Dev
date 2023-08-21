@@ -40,14 +40,13 @@ void TweenSet::push(Tween *tween)
 
 void TweenSet::clear()
 {
-    std::vector<Tween *>::iterator it = set_.begin();
-    while(it != set_.end())
+    for(Tween* tween : set_)
     {
-        delete *it;
-        set_.erase(it);
-        it = set_.begin();
+        delete tween;
     }
+    set_.clear();
 }
+
 std::vector<Tween *> *TweenSet::tweens()
 {
     return &set_;
@@ -59,7 +58,7 @@ Tween *TweenSet::getTween(unsigned int index)
 }
 
 
-unsigned int TweenSet::size()
+size_t TweenSet::size()
 {
     return set_.size();
 }

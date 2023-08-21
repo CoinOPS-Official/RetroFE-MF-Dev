@@ -74,7 +74,7 @@ public:
     void setPoints( std::vector<ViewInfo *> *scrollPoints, std::vector<AnimationEvents *> *tweenPoints );
     unsigned int getSelectedIndex( );
     void setSelectedIndex( unsigned int index );
-    unsigned int getSize( );
+    size_t getSize( );
     void pageUp( );
     void pageDown( );
     void letterUp( );
@@ -97,12 +97,13 @@ public:
     unsigned int getSelectedItemPosition();
     void allocateGraphicsMemory( );
     void freeGraphicsMemory( );
-    void update( float dt );
+    bool update( float dt );
     void draw( );
     void draw( unsigned int layer );
     void setScrollAcceleration( float value );
     void setStartScrollTime( float value );
     void setMinScrollTime( float value );
+    void enableTextFallback(bool value);
     bool horizontalScroll;
     void deallocateSpritePoints( );
     void allocateSpritePoints( );
@@ -113,13 +114,14 @@ public:
 private:
 
     void resetTweens( Component *c, AnimationEvents *sets, ViewInfo *currentViewInfo, ViewInfo *nextViewInfo, double scrollTime );
-    unsigned int loopIncrement( unsigned int offset, unsigned int i, unsigned int size );
-    unsigned int loopDecrement( unsigned int offset, unsigned int i, unsigned int size );
+    inline unsigned int loopIncrement(size_t offset, size_t i, size_t size );
+    inline unsigned int loopDecrement(size_t offset, size_t i, size_t size );
 
     bool layoutMode_;
     bool commonMode_;
     bool playlistType_;
     bool selectedImage_;
+    bool textFallback_;
 
     std::vector<Component *> *spriteList_;
     std::vector<ViewInfo *> *scrollPoints_;

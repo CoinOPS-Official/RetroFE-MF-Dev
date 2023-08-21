@@ -132,12 +132,36 @@ bool Launcher::run(std::string collection, Item *collectionItem, Page *currentPa
     return reboot;
 }
 
+void Launcher::startScript()
+{
+#ifdef WIN32
+    std::string exe = Configuration::absolutePath + "\\start.bat";
+
+#else
+    std::string exe = "./start.sh";
+#endif
+    execute(exe, "", Configuration::absolutePath, false);
+}
+
+void Launcher::exitScript()
+{
+#ifdef WIN32
+    std::string exe = Configuration::absolutePath + "\\exit.bat";
+   
+#else
+    std::string exe = "./exit.sh";
+#endif
+    execute(exe, "", Configuration::absolutePath, false);
+}
 
 void Launcher::LEDBlinky( int command, std::string collection, Item *collectionItem )
 {
 	std::string LEDBlinkyDirectory = "";
 	config_.getProperty( "LEDBlinkyDirectory", LEDBlinkyDirectory );
-	std::string exe  = LEDBlinkyDirectory + "\\LEDBlinky.exe";
+	if (LEDBlinkyDirectory == "") {
+        return;
+    }
+    std::string exe  = LEDBlinkyDirectory + "\\LEDBlinky.exe";
 	std::string args = std::to_string( command );
 	bool wait = false;
 	if ( command == 2 )
@@ -219,6 +243,16 @@ bool Launcher::execute(std::string executable, std::string args, std::string cur
     Logger::write(Logger::ZONE_INFO, "Launcher", "Attempting to launch: " + executionString);
     Logger::write(Logger::ZONE_INFO, "Launcher", "     from within folder: " + currentDirectory);
 
+    std::atomic<bool> stop_thread = true;;
+    std::thread proc_thread;
+    bool multiple_display = SDL::getScreenCount() > 1;
+    if (multiple_display && currentPage != NULL) {
+        stop_thread = false;
+        proc_thread = std::thread([this, &stop_thread, &currentPage]() {
+            this->keepRendering(std::ref(stop_thread), *currentPage);
+            });
+    }
+
 #ifdef WIN32
     STARTUPINFO startupInfo;
     PROCESS_INFORMATION processInfo;
@@ -252,15 +286,6 @@ bool Launcher::execute(std::string executable, std::string args, std::string cur
     else
     {
 #ifdef WIN32
-        std::atomic<bool> stop_thread;
-        std::thread proc_thread;
-        bool multiple_display = SDL::getScreenCount() > 1;
-        if (multiple_display) {
-            stop_thread = false;
-            proc_thread = std::thread([this, &stop_thread, &currentPage]() {
-                this->keepRendering(std::ref(stop_thread), *currentPage);
-                });
-        }
         // lower priority
         SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
 
@@ -276,10 +301,7 @@ bool Launcher::execute(std::string executable, std::string args, std::string cur
 				}
 			}
         }
-        if (multiple_display) {
-            stop_thread = true;
-            proc_thread.join();
-        }
+
         //resume priority
         bool highPriority = false;
         config_.getProperty("highPriority", highPriority);
@@ -289,8 +311,14 @@ bool Launcher::execute(std::string executable, std::string args, std::string cur
 
         // result = GetExitCodeProcess(processInfo.hProcess, &exitCode);
         CloseHandle(processInfo.hProcess);
+        CloseHandle(processInfo.hThread);
 #endif
         retVal = true;
+    }
+
+    if (multiple_display && stop_thread == false) {
+        stop_thread = true;
+        proc_thread.join();
     }
 
     Logger::write(Logger::ZONE_INFO, "Launcher", "Completed");
@@ -335,7 +363,7 @@ void Launcher::keepRendering(std::atomic<bool> &stop_thread, Page &currentPage)
 
         currentPage.draw();
 
-        for (int i = 1; i < SDL::getNumDisplays(); ++i)
+        for (int i = 1; i < SDL::getScreenCount(); ++i)
         {
             SDL_RenderPresent(SDL::getRenderer(i));
         }
