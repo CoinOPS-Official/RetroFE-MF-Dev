@@ -60,7 +60,6 @@ PageBuilder::PageBuilder(std::string layoutKey, std::string layoutPage, Configur
     , fontSize_(24)
     , fontCache_(fc)
     , isMenu_(isMenu)
-    , swapMonitors_(false)
 {
     screenWidth_  = SDL::getWindowWidth(0);
     screenHeight_ = SDL::getWindowHeight(0);
@@ -105,9 +104,10 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
     std::vector<std::string> layouts;
     layouts.push_back(layoutPage);
     // layout - #.xml
-    for (int i = 0; i < 4; i++)
-        layouts.push_back("layout - " + std::to_string( i ) );
-   
+    for (int i = 0; i < 4; i++) {
+        layouts.push_back("layout - " + std::to_string(i));
+    }
+
     for ( unsigned int layer = 0; layer < layouts.size(); layer++ )
     {
         layoutFile       = Utils::combinePath(layoutPath, layouts[layer] + ".xml");
@@ -115,7 +115,10 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
             std::to_string( screenWidth_/Utils::gcd( screenWidth_, screenHeight_ ) ) + "x" + 
             std::to_string( screenHeight_/Utils::gcd( screenWidth_, screenHeight_ ) ) + layouts[layer] +
             ".xml" );
-        layoutFileAspect = Utils::combinePath(layoutPath, "layout " + std::to_string( screenWidth_/Utils::gcd( screenWidth_, screenHeight_ ) ) + "x" + std::to_string( screenHeight_/Utils::gcd( screenWidth_, screenHeight_ ) ) + monitors[monitor] + ".xml" );
+        layoutFileAspect = Utils::combinePath(layoutPath, "layout " +
+            std::to_string(screenWidth_ / Utils::gcd(screenWidth_, screenHeight_)) + "x" +
+            std::to_string(screenHeight_ / Utils::gcd(screenWidth_, screenHeight_)) + layouts[layer] +
+            ".xml");
 
         Logger::write(Logger::ZONE_INFO, "Layout", "Initializing " + layoutFileAspect);
 
@@ -160,37 +163,37 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
 
             doc.parse<0>(&buffer[0]);
 
-            xml_node<> *root = doc.first_node("layout");
+            xml_node<>* root = doc.first_node("layout");
 
-
-            if(!root)
+            if (!root)
             {
                 Logger::write(Logger::ZONE_ERROR, "Layout", "Missing <layout> tag");
                 return NULL;
             }
             else
             {
-                xml_attribute<> *layoutWidthXml = root->first_attribute("width");
-                xml_attribute<> *layoutHeightXml = root->first_attribute("height");
-                xml_attribute<> *fontXml = root->first_attribute("font");
-                xml_attribute<> *fontColorXml = root->first_attribute("fontColor");
-                xml_attribute<> *fontSizeXml = root->first_attribute("loadFontSize");
-                xml_attribute<> *minShowTimeXml = root->first_attribute("minShowTime");
+                xml_attribute<>* layoutWidthXml = root->first_attribute("width");
+                xml_attribute<>* layoutHeightXml = root->first_attribute("height");
+                xml_attribute<>* fontXml = root->first_attribute("font");
+                xml_attribute<>* fontColorXml = root->first_attribute("fontColor");
+                xml_attribute<>* fontSizeXml = root->first_attribute("loadFontSize");
+                xml_attribute<>* minShowTimeXml = root->first_attribute("minShowTime");
                 xml_attribute<>* controls = root->first_attribute("controls");
 
-                if(!layoutWidthXml || !layoutHeightXml)
+                if (!layoutWidthXml || !layoutHeightXml)
                 {
                     Logger::write(Logger::ZONE_ERROR, "Layout", "<layout> tag must specify a width and height");
                     return NULL;
                 }
-                if(fontXml)
+
+                if (fontXml)
                 {
                     fontName_ = config_.convertToAbsolutePath(
-                               Utils::combinePath(config_.absolutePath, "layouts", layoutKey, ""),
-                               fontXml->value());
+                        Utils::combinePath(config_.absolutePath, "layouts", layoutKey, ""),
+                        fontXml->value());
                 }
 
-                if(fontColorXml)
+                if (fontColorXml)
                 {
                     int intColor = 0;
                     std::stringstream ss;
@@ -204,7 +207,7 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
                     fontColor_.r = intColor & 0xFF;
                 }
 
-                if(fontSizeXml)
+                if (fontSizeXml)
                 {
                     fontSize_ = Utils::convertInt(fontSizeXml->value());
                 }
@@ -212,7 +215,7 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
                 layoutWidth_ = Utils::convertInt(layoutWidthXml->value());
                 layoutHeight_ = Utils::convertInt(layoutHeightXml->value());
 
-                if(layoutWidth_ == 0 || layoutHeight_ == 0)
+                if (layoutWidth_ == 0 || layoutHeight_ == 0)
                 {
                     Logger::write(Logger::ZONE_ERROR, "Layout", "Layout width and height cannot be set to 0");
                     return NULL;
@@ -226,36 +229,28 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
                     // if layout width is narrow and height is tall then rotate, but if display can't handle it then don't rotate
                     rotate = 0;
                     if (layoutWidth_ < layoutHeight_) {
-                        if (SDL::getWindowWidth(display) < SDL::getWindowHeight(display)) {
-                            // if this vert display isn't main the swap with another
-                            if (display != 0) {
-                                swapMonitors_ = true;
-                                // revert main monitor rotation if swaping
-                                SDL::setRotation(0, 0);
-                            }
-                        }
-                        else {                            
+                        if (SDL::getWindowWidth(display) > SDL::getWindowHeight(display)) {
                             rotate = 1;
                         }
                     }
                     SDL::setRotation(display, rotate);
                     config_.setProperty("rotation" + std::to_string(display), std::to_string(rotate));
-                    Logger::write(Logger::ZONE_INFO, "Configuration", "Layout rotated layout - " + std::to_string(layer) + " Setting rotation for screen " + std::to_string(display) + " to " + std::to_string(rotate * 90) + " degrees.");
+                    Logger::write(Logger::ZONE_INFO, "Configuration", "Layout rotated layout - " + std::to_string(layer) +
+                        " Setting rotation for screen " + std::to_string(display) + " to " + std::to_string(rotate * 90) + " degrees.");
                 }
 
                 std::stringstream ss;
                 ss << layoutWidth_ << "x" << layoutHeight_ << " (scale " << (float)screenWidth_ / (float)layoutWidth_ << "x" << (float)screenHeight_ / (float)layoutHeight_ << ")";
                 Logger::write(Logger::ZONE_INFO, "Layout", "Layout resolution " + ss.str());
 
-                if ( !page )
-                    page = new Page(config_, layoutWidth_, layoutHeight_ );
+                if (!page)
+                    page = new Page(config_, layoutWidth_, layoutHeight_);
                 else
-                    page->setLayoutWidth(layer,  layoutWidth_);
-                    page->setLayoutHeight(layer, layoutHeight_);
-                    page->setLayoutHeight( monitor, layoutHeight_ ); 
-                }
+                    page->setLayoutWidth(layer, layoutWidth_);
 
-                if(minShowTimeXml) 
+                page->setLayoutHeight(layer, layoutHeight_);
+
+                if (minShowTimeXml)
                 {
                     page->setMinShowTime(Utils::convertFloat(minShowTimeXml->value()));
                 }
@@ -268,36 +263,36 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
                 }
 
                 // load sounds
-                for(xml_node<> *sound = root->first_node("sound"); sound; sound = sound->next_sibling("sound"))
+                for (xml_node<>* sound = root->first_node("sound"); sound; sound = sound->next_sibling("sound"))
                 {
-                    xml_attribute<> *src  = sound->first_attribute("src");
-                    xml_attribute<> *type = sound->first_attribute("type");
-                    std::string file      = Configuration::convertToAbsolutePath(layoutPath, src->value());
+                    xml_attribute<>* src = sound->first_attribute("src");
+                    xml_attribute<>* type = sound->first_attribute("type");
+                    std::string file = Configuration::convertToAbsolutePath(layoutPath, src->value());
                     std::string layoutName;
                     config_.getProperty("layout", layoutName);
-                    std::string altfile   = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName, std::string(src->value()));
-                    if(!type)
+                    std::string altfile = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName, std::string(src->value()));
+                    if (!type)
                     {
                         Logger::write(Logger::ZONE_ERROR, "Layout", "Sound tag missing type attribute");
                     }
                     else
                     {
-                        Sound *sound = new Sound(file, altfile);
+                        Sound* sound = new Sound(file, altfile);
                         std::string soundType = type->value();
 
-                        if(!soundType.compare("load"))
+                        if (!soundType.compare("load"))
                         {
                             page->setLoadSound(sound);
                         }
-                        else if(!soundType.compare("unload"))
+                        else if (!soundType.compare("unload"))
                         {
                             page->setUnloadSound(sound);
                         }
-                        else if(!soundType.compare("highlight"))
+                        else if (!soundType.compare("highlight"))
                         {
                             page->setHighlightSound(sound);
                         }
-                        else if(!soundType.compare("select"))
+                        else if (!soundType.compare("select"))
                         {
                             page->setSelectSound(sound);
                         }
@@ -308,14 +303,12 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
                     }
                 }
 
-                if(!buildComponents(root, page))
+                if (!buildComponents(root, page))
                 {
                     delete page;
                     page = NULL;
                 }
-
             }
-
         }
         catch(rapidxml::parse_error &e)
         {
@@ -340,10 +333,6 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
         {
             Logger::write(Logger::ZONE_ERROR, "Layout", "Could not initialize layout (see previous messages for reason)");
         }
-    }
-
-    if (swapMonitors_) {
-        page->swapMonitorLayouts();
     }
     
     return page;
@@ -474,6 +463,7 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
             config_.getProperty("layout", layoutName);
             std::string altImagePath;
             altImagePath = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName, std::string(src->value()));
+            int monitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor_;
 
             // don't add videos if display doesn't exist
             if (monitor + 1 <= SDL::getScreenCount()) {
@@ -493,7 +483,6 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
             }
         }
     }
-    }
 
 
     for(xml_node<> *componentXml = layout->first_node("video"); componentXml; componentXml = componentXml->next_sibling("video"))
@@ -502,6 +491,7 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
         xml_attribute<> *numLoopsXml = componentXml->first_attribute("numLoops");
         xml_attribute<> *idXml = componentXml->first_attribute("id");
         xml_attribute<> *monitorXml = componentXml->first_attribute("monitor");
+        int monitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor_;
 
         int id = -1;
         if (idXml)
@@ -547,8 +537,6 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
             }
         }
     }
-    }
-
 
     for(xml_node<> *componentXml = layout->first_node("text"); componentXml; componentXml = componentXml->next_sibling("text"))
     {
@@ -1456,11 +1444,6 @@ void PageBuilder::buildViewInfo(xml_node<> *componentXml, ViewInfo &info, xml_no
     config_.getProperty("disableVideoRestart", disableVideoRestart);
     if (disableVideoRestart)
         info.Restart = false;
-
-    if (swapMonitors_ && info.Monitor < 2) {
-        info.Monitor = info.Monitor == 0 ? 1 : 0;
-    }
-
 
     if(fontColor)
     {
