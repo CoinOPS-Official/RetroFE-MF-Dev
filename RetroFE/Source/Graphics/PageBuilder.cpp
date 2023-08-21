@@ -217,7 +217,6 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
                     return NULL;
                 }
 
-                // todo find out if a monitor exists that matches a rotation
                 // 1 - 90 degree rotation, 2 - 180, 3 - 270
                 int rotate = 0;
                 for (int display = 0; display < SDL::getNumDisplays(); display++)
