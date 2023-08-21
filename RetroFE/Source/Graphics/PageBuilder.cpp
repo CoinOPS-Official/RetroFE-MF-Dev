@@ -111,10 +111,6 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
     for ( unsigned int layer = 0; layer < layouts.size(); layer++ )
     {
         layoutFile       = Utils::combinePath(layoutPath, layouts[layer] + ".xml");
-        layoutFileAspect = Utils::combinePath(layoutPath, "layout " + 
-            std::to_string( screenWidth_/Utils::gcd( screenWidth_, screenHeight_ ) ) + "x" + 
-            std::to_string( screenHeight_/Utils::gcd( screenWidth_, screenHeight_ ) ) + layouts[layer] +
-            ".xml" );
         layoutFileAspect = Utils::combinePath(layoutPath, "layout " +
             std::to_string(screenWidth_ / Utils::gcd(screenWidth_, screenHeight_)) + "x" +
             std::to_string(screenHeight_ / Utils::gcd(screenWidth_, screenHeight_)) + layouts[layer] +
@@ -245,10 +241,10 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
 
                 if (!page)
                     page = new Page(config_, layoutWidth_, layoutHeight_);
-                else
+                else {
                     page->setLayoutWidth(layer, layoutWidth_);
-
-                page->setLayoutHeight(layer, layoutHeight_);
+                    page->setLayoutHeight(layer, layoutHeight_);
+                }
 
                 if (minShowTimeXml)
                 {
@@ -334,7 +330,7 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
             Logger::write(Logger::ZONE_ERROR, "Layout", "Could not initialize layout (see previous messages for reason)");
         }
     }
-    
+
     return page;
 }
 
@@ -403,11 +399,9 @@ float PageBuilder::getVerticalAlignment(xml_attribute<> *attribute, float valueI
             value = Utils::convertFloat(str);
         }
     }
+
     return value;
 }
-
-
-
 
 bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
 {
@@ -491,7 +485,6 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
         xml_attribute<> *numLoopsXml = componentXml->first_attribute("numLoops");
         xml_attribute<> *idXml = componentXml->first_attribute("id");
         xml_attribute<> *monitorXml = componentXml->first_attribute("monitor");
-        int monitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor_;
 
         int id = -1;
         if (idXml)
@@ -512,6 +505,7 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
             std::string altVideoPath;
             altVideoPath = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName, std::string(srcXml->value()));
             int numLoops = numLoopsXml ? Utils::convertInt(numLoopsXml->value()) : 1;
+            int monitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor_;
 
             // don't add videos if display doesn't exist
             if (monitor + 1 <= SDL::getScreenCount()) {
