@@ -104,7 +104,7 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
     std::vector<std::string> layouts;
     layouts.push_back(layoutPage);
     // layout - #.xml
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 6; i++) {
         layouts.push_back("layout - " + std::to_string(i));
     }
 
@@ -215,24 +215,6 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
                 {
                     Logger::write(Logger::ZONE_ERROR, "Layout", "Layout width and height cannot be set to 0");
                     return NULL;
-                }
-
-                // todo find out if a monitor exists that matches a rotation
-                // 1 - 90 degree rotation, 2 - 180, 3 - 270
-                int rotate = 0;
-                for (int display = 0; display < SDL::getNumDisplays(); display++)
-                {
-                    // if layout width is narrow and height is tall then rotate, but if display can't handle it then don't rotate
-                    rotate = 0;
-                    if (layoutWidth_ < layoutHeight_) {
-                        if (SDL::getWindowWidth(display) > SDL::getWindowHeight(display)) {
-                            rotate = 1;
-                        }
-                    }
-                    SDL::setRotation(display, rotate);
-                    config_.setProperty("rotation" + std::to_string(display), std::to_string(rotate));
-                    Logger::write(Logger::ZONE_INFO, "Configuration", "Layout rotated layout - " + std::to_string(layer) +
-                        " Setting rotation for screen " + std::to_string(display) + " to " + std::to_string(rotate * 90) + " degrees.");
                 }
 
                 std::stringstream ss;
@@ -405,9 +387,11 @@ float PageBuilder::getVerticalAlignment(xml_attribute<> *attribute, float valueI
 
 bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
 {
+    xml_attribute<>* layoutMonitorXml = layout->first_attribute("monitor");
+    int monitor = layoutMonitorXml ? Utils::convertInt(layoutMonitorXml->value()) : monitor_;
     for(xml_node<> *componentXml = layout->first_node("menu"); componentXml; componentXml = componentXml->next_sibling("menu"))
     {
-        ScrollingList *scrollingList = buildMenu(componentXml,*page);
+        ScrollingList *scrollingList = buildMenu(componentXml,*page, monitor);
         xml_attribute<> *indexXml = componentXml->first_attribute("menuIndex");
         int index = indexXml ? Utils::convertInt(indexXml->value()) : -1;
         if (scrollingList->isPlaylist()) {
@@ -426,12 +410,15 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
         {
             c->setMenuScrollReload(true);
         }
+        xml_attribute<>* monitorXml = componentXml->first_attribute("monitor");
+        c->baseViewInfo.Monitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor;
+
         buildViewInfo(componentXml, c->baseViewInfo);
         loadTweens(c, componentXml);
         page->addComponent(c);
     }
 
-
+    int cMonitor;
     for(xml_node<> *componentXml = layout->first_node("image"); componentXml; componentXml = componentXml->next_sibling("image"))
     {
         xml_attribute<> *src        = componentXml->first_attribute("src");
@@ -457,12 +444,12 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
             config_.getProperty("layout", layoutName);
             std::string altImagePath;
             altImagePath = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName, std::string(src->value()));
-            int monitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor_;
+            cMonitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor;
 
             // don't add videos if display doesn't exist
-            if (monitor + 1 <= SDL::getScreenCount()) {
+            if (cMonitor + 1 <= SDL::getScreenCount()) {
                 bool additive = additiveXml ? bool(additiveXml->value()) : false;
-                Image* c = new Image(imagePath, altImagePath, *page, monitor, additive);
+                Image* c = new Image(imagePath, altImagePath, *page, cMonitor, additive);
                 c->setId(id);
                 xml_attribute<>* menuScrollReload = componentXml->first_attribute("menuScrollReload");
                 if (menuScrollReload &&
@@ -471,6 +458,7 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
                 {
                     c->setMenuScrollReload(true);
                 }
+
                 buildViewInfo(componentXml, c->baseViewInfo);
                 loadTweens(c, componentXml);
                 page->addComponent(c);
@@ -486,6 +474,7 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
         xml_attribute<> *idXml = componentXml->first_attribute("id");
         xml_attribute<> *monitorXml = componentXml->first_attribute("monitor");
 
+        int numLoops = 0;
         int id = -1;
         if (idXml)
         {
@@ -504,12 +493,12 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
             config_.getProperty("layout", layoutName);
             std::string altVideoPath;
             altVideoPath = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName, std::string(srcXml->value()));
-            int numLoops = numLoopsXml ? Utils::convertInt(numLoopsXml->value()) : 1;
-            int monitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor_;
+            numLoops = numLoopsXml ? Utils::convertInt(numLoopsXml->value()) : 1;
+            cMonitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor;
 
             // don't add videos if display doesn't exist
-            if (monitor + 1 <= SDL::getScreenCount()) {
-                Video* c = new Video(videoPath, altVideoPath, numLoops, *page, monitor);
+            if (cMonitor + 1 <= SDL::getScreenCount()) {
+                Video* c = new Video(videoPath, altVideoPath, numLoops, *page, cMonitor);
                 c->setId(id);
                 xml_attribute<>* menuScrollReload = componentXml->first_attribute("menuScrollReload");
                 if (menuScrollReload &&
@@ -525,6 +514,7 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
                 {
                     c->setAnimationDoneRemove(true);
                 }
+
                 buildViewInfo(componentXml, c->baseViewInfo);
                 loadTweens(c, componentXml);
                 page->addComponent(c);
@@ -550,10 +540,10 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
         }
         else
         {
-            Font *font = addFont(componentXml, NULL);
-            int monitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor_;
+            cMonitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor;
+            Font *font = addFont(componentXml, NULL, cMonitor);
 
-            Text *c = new Text(value->value(), *page, font, monitor);
+            Text *c = new Text(value->value(), *page, font, cMonitor);
             c->setId( id );
             xml_attribute<> *menuScrollReload = componentXml->first_attribute("menuScrollReload");
             if (menuScrollReload &&
@@ -562,6 +552,7 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
             {
                 c->setMenuScrollReload(true);
             }
+
             buildViewInfo(componentXml, c->baseViewInfo);
             loadTweens(c, componentXml);
             page->addComponent(c);
@@ -571,10 +562,10 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
     for(xml_node<> *componentXml = layout->first_node("statusText"); componentXml; componentXml = componentXml->next_sibling("statusText"))
     {
         xml_attribute<> *monitorXml = componentXml->first_attribute("monitor");
-        Font *font = addFont(componentXml, NULL);
-        int monitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor_;
+        cMonitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor;
+        Font* font = addFont(componentXml, NULL, cMonitor);
 
-        Text *c = new Text("", *page, font, monitor);
+        Text *c = new Text("", *page, font, cMonitor);
         xml_attribute<> *menuScrollReload = componentXml->first_attribute("menuScrollReload");
         if (menuScrollReload &&
             (Utils::toLower(menuScrollReload->value()) == "true" ||
@@ -582,6 +573,7 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
         {
             c->setMenuScrollReload(true);
         }
+
         buildViewInfo(componentXml, c->baseViewInfo);
         loadTweens(c, componentXml);
         page->addComponent(c);
@@ -600,7 +592,9 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
 
 void PageBuilder::loadReloadableImages(xml_node<> *layout, std::string tagName, Page *page)
 {
-    
+    xml_attribute<>* layoutMonitorXml = layout->first_attribute("monitor");
+    int monitor = layoutMonitorXml ? Utils::convertInt(layoutMonitorXml->value()) : monitor_;
+    int cMonitor = 0;
     for(xml_node<> *componentXml = layout->first_node(tagName.c_str()); componentXml; componentXml = componentXml->next_sibling(tagName.c_str()))
     {
         std::string reloadableImagePath;
@@ -623,6 +617,7 @@ void PageBuilder::loadReloadableImages(xml_node<> *layout, std::string tagName, 
         xml_attribute<> *alignmentXml      = componentXml->first_attribute("alignment");
         xml_attribute<> *idXml             = componentXml->first_attribute("id");
         xml_attribute<>* randomSelectXml = componentXml->first_attribute("randomSelect");
+        xml_attribute<>* monitorXml = componentXml->first_attribute("monitor");
 
         bool systemMode = false;
         bool layoutMode = false;
@@ -649,6 +644,7 @@ void PageBuilder::loadReloadableImages(xml_node<> *layout, std::string tagName, 
             Logger::write(Logger::ZONE_ERROR, "Layout", "Reloadable scroling text component in layout does not specify a type");
         }
 
+        cMonitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor;
 
         if(mode)
         {
@@ -695,7 +691,7 @@ void PageBuilder::loadReloadableImages(xml_node<> *layout, std::string tagName, 
         {
             if(type)
             {
-                Font *font = addFont(componentXml, NULL);
+                Font *font = addFont(componentXml, NULL, cMonitor);
                 std::string timeFormat = "%H:%M";
                 if (timeFormatXml)
                 {
@@ -727,6 +723,7 @@ void PageBuilder::loadReloadableImages(xml_node<> *layout, std::string tagName, 
                     pluralPostfix = pluralPostfixXml->value();
                 }
                 c = new ReloadableText(type->value(), *page, config_, systemMode, font, layoutKey, timeFormat, textFormat, singlePrefix, singlePostfix, pluralPrefix, pluralPostfix);
+                c->baseViewInfo.Monitor = cMonitor;
                 c->setId( id );
                 xml_attribute<> *menuScrollReload = componentXml->first_attribute("menuScrollReload");
                 if (menuScrollReload &&
@@ -741,7 +738,7 @@ void PageBuilder::loadReloadableImages(xml_node<> *layout, std::string tagName, 
         {
             if(type)
             {
-                Font *font = addFont(componentXml, NULL);
+                Font *font = addFont(componentXml, NULL, cMonitor);
                 std::string direction = "horizontal";
                 std::string textFormat = "";
                 if (textFormatXml)
@@ -800,6 +797,7 @@ void PageBuilder::loadReloadableImages(xml_node<> *layout, std::string tagName, 
                 }
                 c = new ReloadableScrollingText(config_, systemMode, layoutMode, menuMode, type->value(), singlePrefix, singlePostfix, pluralPrefix, pluralPostfix, textFormat, alignment, *page, selectedOffset, font, direction, scrollingSpeed, startPosition, startTime, endTime);
                 c->setId( id );
+                c->baseViewInfo.Monitor = cMonitor;
                 xml_attribute<> *menuScrollReload = componentXml->first_attribute("menuScrollReload");
                 if (menuScrollReload &&
                     (Utils::toLower(menuScrollReload->value()) == "true" ||
@@ -823,7 +821,7 @@ void PageBuilder::loadReloadableImages(xml_node<> *layout, std::string tagName, 
                 xml_attribute<> *numLoopsXml = componentXml->first_attribute("jukeboxNumLoops");
                 jukeboxNumLoops = numLoopsXml ? Utils::convertInt(numLoopsXml->value()) : 1;
             }
-            Font *font = addFont(componentXml, NULL);
+            Font *font = addFont(componentXml, NULL, cMonitor);
 
             std::string typeString      = "video";
             std::string imageTypeString = "";
@@ -836,6 +834,7 @@ void PageBuilder::loadReloadableImages(xml_node<> *layout, std::string tagName, 
 
             c = new ReloadableMedia(config_, systemMode, layoutMode, commonMode, menuMode, typeString, imageTypeString, *page, 
                 selectedOffset, (tagName == "reloadableVideo") || (tagName == "reloadableAudio"), font, jukebox, jukeboxNumLoops, randomSelectInt);
+            c->baseViewInfo.Monitor = cMonitor;
             c->setId( id );
 
             xml_attribute<> *menuScrollReload = componentXml->first_attribute("menuScrollReload");
@@ -865,12 +864,11 @@ void PageBuilder::loadReloadableImages(xml_node<> *layout, std::string tagName, 
     }
 }
 
-Font *PageBuilder::addFont(xml_node<> *component, xml_node<> *defaults)
+Font *PageBuilder::addFont(xml_node<> *component, xml_node<> *defaults, int monitor)
 {
     xml_attribute<> *fontXml = component->first_attribute("font");
     xml_attribute<> *fontColorXml = component->first_attribute("fontColor");
     xml_attribute<> *fontSizeXml = component->first_attribute("loadFontSize");
-    xml_attribute<> *monitorXml = component->first_attribute("monitor");
 
     if(defaults)
     {
@@ -922,8 +920,6 @@ Font *PageBuilder::addFont(xml_node<> *component, xml_node<> *defaults)
     {
         fontSize = Utils::convertInt(fontSizeXml->value());
     }
-
-    int monitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor_;
 
     fontCache_->loadFont(fontName, fontSize, fontColor, monitor);
 
@@ -1047,8 +1043,7 @@ void PageBuilder::buildTweenSet(AnimationEvents *tweens, xml_node<> *componentXm
     }
 }
 
-
-ScrollingList * PageBuilder::buildMenu(xml_node<> *menuXml, Page &page)
+ScrollingList * PageBuilder::buildMenu(xml_node<> *menuXml, Page &page, int monitor)
 {
     ScrollingList *menu = NULL;
     std::string menuType = "vertical";
@@ -1066,6 +1061,7 @@ ScrollingList * PageBuilder::buildMenu(xml_node<> *menuXml, Page &page)
     xml_attribute<> *scrollOrientationXml  = menuXml->first_attribute("orientation");
     xml_attribute<>* selectedImage         = menuXml->first_attribute("selectedImage");
     xml_attribute<>* textFallback          = menuXml->first_attribute("textFallback");
+    xml_attribute<>* monitorXml = menuXml->first_attribute("monitor");
 
     if(menuTypeXml)
     {
@@ -1115,10 +1111,14 @@ ScrollingList * PageBuilder::buildMenu(xml_node<> *menuXml, Page &page)
         }
     }
 
+    int cMonitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor;
+
     // on default, text will be rendered to the menu. Preload it into cache.
-    Font *font = addFont(itemDefaults, NULL);
+    Font *font = addFont(itemDefaults, NULL, cMonitor);
 
     menu = new ScrollingList(config_, page, layoutMode, commonMode, playlistType, selectedImage, font, layoutKey, imageType, videoType);
+    menu->baseViewInfo.Monitor = cMonitor;
+
     buildViewInfo(menuXml, menu->baseViewInfo);
 
     if(scrollTimeXml)
@@ -1175,8 +1175,8 @@ void PageBuilder::buildCustomMenu(ScrollingList *menu, xml_node<> *menuXml, xml_
     for(xml_node<> *componentXml = menuXml->first_node("item"); componentXml; componentXml = componentXml->next_sibling("item"))
     {
         ViewInfo *viewInfo = new ViewInfo();
-        buildViewInfo(componentXml, *viewInfo, itemDefaults);
         viewInfo->Monitor = menu->baseViewInfo.Monitor;
+        buildViewInfo(componentXml, *viewInfo, itemDefaults);
         viewInfo->Additive = menu->baseViewInfo.Additive;
 
         points->push_back(viewInfo);
@@ -1234,7 +1234,8 @@ void PageBuilder::buildVerticalMenu(ScrollingList *menu, xml_node<> *menuXml, xm
     if(overrideItems.find(MENU_START) != overrideItems.end())
     {
         xml_node<> *component = overrideItems[MENU_START];
-        ViewInfo *viewInfo = createMenuItemInfo(component, itemDefaults, menu->baseViewInfo.Y + height);
+        ViewInfo *viewInfo = createMenuItemInfo(component, itemDefaults, menu->baseViewInfo);
+        viewInfo->Y = menu->baseViewInfo.Y + height;
         points->push_back(viewInfo);
         tweenPoints->push_back(createTweenInstance(component));
         height += viewInfo->Height;
@@ -1245,6 +1246,7 @@ void PageBuilder::buildVerticalMenu(ScrollingList *menu, xml_node<> *menuXml, xm
     while(!end)
     {
         ViewInfo *viewInfo = new ViewInfo();
+        viewInfo->Monitor = menu->baseViewInfo.Monitor;
         xml_node<> *component = itemDefaults;
 
         // uss overridden item setting if specified by layout for the given index
@@ -1286,7 +1288,8 @@ void PageBuilder::buildVerticalMenu(ScrollingList *menu, xml_node<> *menuXml, xm
     if(overrideItems.find(MENU_END) != overrideItems.end())
     {
         xml_node<> *component = overrideItems[MENU_END];
-        ViewInfo *viewInfo = createMenuItemInfo(component, itemDefaults, menu->baseViewInfo.Y + height);
+        ViewInfo *viewInfo = createMenuItemInfo(component, itemDefaults, menu->baseViewInfo);
+        viewInfo->Y = menu->baseViewInfo.Y + height;
         points->push_back(viewInfo);
         tweenPoints->push_back(createTweenInstance(component));
     }
@@ -1310,11 +1313,13 @@ void PageBuilder::buildVerticalMenu(ScrollingList *menu, xml_node<> *menuXml, xm
     menu->setPoints(points, tweenPoints);
 }
 
-ViewInfo *PageBuilder::createMenuItemInfo(xml_node<> *component, xml_node<> *defaults, float y)
+ViewInfo *PageBuilder::createMenuItemInfo(xml_node<> *component, xml_node<> *defaults, ViewInfo& menuViewInfo)
 {
     ViewInfo *viewInfo = new ViewInfo();
+    viewInfo->Monitor = menuViewInfo.Monitor;
+
     buildViewInfo(component, *viewInfo, defaults);
-    viewInfo->Y = y;
+
     return viewInfo;
 }
 
@@ -1430,7 +1435,7 @@ void PageBuilder::buildViewInfo(xml_node<> *componentXml, ViewInfo &info, xml_no
     info.ContainerY         = containerY         ? Utils::convertFloat(containerY->value())        : 0.f;
     info.ContainerWidth     = containerWidth     ? Utils::convertFloat(containerWidth->value())    : -1.f;
     info.ContainerHeight    = containerHeight    ? Utils::convertFloat(containerHeight->value())   : -1.f;
-    info.Monitor            = monitor            ? Utils::convertInt(monitor->value())             : 0;
+    info.Monitor            = monitor            ? Utils::convertInt(monitor->value())             : info.Monitor;
     info.Volume             = volume             ? Utils::convertFloat(volume->value())            : 1.f;
     info.Restart = restart ? Utils::toLower(restart->value()) == "true" : false;
     info.Additive = additive ? Utils::toLower(additive->value()) == "true" : false;
@@ -1441,7 +1446,7 @@ void PageBuilder::buildViewInfo(xml_node<> *componentXml, ViewInfo &info, xml_no
 
     if(fontColor)
     {
-      Font *font = addFont(componentXml, defaultXml);
+      Font *font = addFont(componentXml, defaultXml, info.Monitor);
       info.font = font;
     }
 
