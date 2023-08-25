@@ -416,7 +416,6 @@ bool SDL::renderCopy( SDL_Texture *texture, float alpha, SDL_Rect *src, SDL_Rect
     // Skip rendering if the object is invisible anyway or if renderer does not exist
     if ( alpha == 0 || viewInfo.Monitor >= screenCount_ || !renderer_[viewInfo.Monitor] )
         return true;
-    
     SDL_GetWindowSize( getWindow( viewInfo.Monitor ), &windowWidth_[viewInfo.Monitor], &windowHeight_[viewInfo.Monitor] );
 
     float scaleX = (float)windowWidth_[viewInfo.Monitor]  / (float)layoutWidth;

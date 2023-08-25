@@ -1,7 +1,7 @@
 vx.x
 
 v0.10.34.3
-	- fixed second display using first aspect ratio when in different monitor postions; add default ""monitor"" to layout element (monkofthefunk)
+	- fixed second display using first aspect ratio when in different monitor postions; add default ""monitor"" to layout element; increased layouts to 5 (monkofthefunk)
 
 v0.10.34.2
 	- update version *.2 (monkofthefunk)
