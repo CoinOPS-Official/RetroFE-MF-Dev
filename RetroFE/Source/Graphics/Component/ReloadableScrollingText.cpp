@@ -549,7 +549,7 @@ void ReloadableScrollingText::draw( )
                             }
                             if (rect.w > 0)
                             {
-                                SDL::renderCopy(t, baseViewInfo.Alpha, &charRect, &rect, baseViewInfo, page.getLayoutWidth(baseViewInfo.Monitor), page.getLayoutHeight(baseViewInfo.Monitor));
+                                SDL::renderCopy(t, baseViewInfo.Alpha, &charRect, &rect, baseViewInfo, page.getLayoutWidth(baseViewInfo.Layout), page.getLayoutHeight(baseViewInfo.Layout));
                                 rect.x += rect.w;
                             }
                             else if ((rect.x + static_cast<int>( glyph.advance * scale )) >= (static_cast<int>( xOrigin ) + imageMaxWidth))
@@ -739,7 +739,7 @@ void ReloadableScrollingText::draw( )
                                 }
                                 if (rect.h > 0)
                                 {
-                                    SDL::renderCopy(t, baseViewInfo.Alpha, &charRect, &rect, baseViewInfo, page.getLayoutWidth(baseViewInfo.Monitor), page.getLayoutHeight(baseViewInfo.Monitor));
+                                    SDL::renderCopy(t, baseViewInfo.Alpha, &charRect, &rect, baseViewInfo, page.getLayoutWidth(baseViewInfo.Layout), page.getLayoutHeight(baseViewInfo.Layout));
                                 }
                             }
                             rect.x += static_cast<int>( glyph.advance * scale );

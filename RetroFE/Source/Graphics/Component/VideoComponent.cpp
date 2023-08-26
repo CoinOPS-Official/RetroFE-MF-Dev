@@ -117,7 +117,7 @@ void VideoComponent::draw()
 
     if(texture)
     {
-        SDL::renderCopy(texture, baseViewInfo.Alpha, NULL, &rect, baseViewInfo, page.getLayoutWidth(baseViewInfo.Monitor), page.getLayoutHeight(baseViewInfo.Monitor));
+        SDL::renderCopy(texture, baseViewInfo.Alpha, NULL, &rect, baseViewInfo, page.getLayoutWidth(baseViewInfo.Layout), page.getLayoutHeight(baseViewInfo.Layout));
     }
 }
 

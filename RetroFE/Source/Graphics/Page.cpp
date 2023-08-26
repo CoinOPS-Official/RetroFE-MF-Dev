@@ -48,11 +48,14 @@ Page::Page(Configuration &config, int layoutWidth, int layoutHeight)
     , controlsType_("")
     , locked_(false)
 {
-    for (int i = 0; i < SDL::getNumScreens(); i++)
+
+    for (int i = 0; i < MAX_LAYOUTS; i++)
     {
         layoutWidth_.push_back(layoutWidth);
         layoutHeight_.push_back(layoutHeight);
     }
+
+    currentLayout_ = 0;
 }
 
 
@@ -104,7 +107,6 @@ void Page::deInitialize()
     }
     collections_.clear();
 }
-
 
 bool Page::isMenusFull()
 {
@@ -1524,36 +1526,41 @@ bool Page::hasSubs()
     return collections_.back().collection->hasSubs;
 }
 
-
-int Page::getLayoutWidth(int monitor)
+void Page::setCurrentLayout(int layout)
 {
-    if ( monitor < SDL::getNumScreens( ) )
-        return layoutWidth_[monitor];
-    else
-        return 0;
+    currentLayout_ = layout;
+}
+
+int Page::getCurrentLayout()
+{
+    return currentLayout_;
+}
+
+int Page::getLayoutWidth(int layout)
+{
+    currentLayout_ = layout;
+    return layoutWidth_[layout];
 }
 
 
-int Page::getLayoutHeight(int monitor)
+int Page::getLayoutHeight(int layout)
 {
-    if ( monitor < SDL::getNumScreens( ) )
-        return layoutHeight_[monitor];
-    else
-        return 0;
+    currentLayout_ = layout;
+    return layoutHeight_[layout];
 }
 
 
-void Page::setLayoutWidth(int monitor, int width)
+void Page::setLayoutWidth(int layout, int width)
 {
-    if ( monitor < SDL::getNumScreens( ) )
-        layoutWidth_[monitor] = width;
+    currentLayout_ = layout;
+    layoutWidth_[layout] = width;
 }
 
 
-void Page::setLayoutHeight(int monitor, int height)
+void Page::setLayoutHeight(int layout, int height)
 {
-    if ( monitor < SDL::getNumScreens( ) )
-        layoutHeight_[monitor] = height;
+    currentLayout_ = layout;
+    layoutHeight_[layout] = height;
 }
 
 void Page::setJukebox()

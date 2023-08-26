@@ -104,16 +104,16 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
     std::vector<std::string> layouts;
     layouts.push_back(layoutPage);
     // layout - #.xml
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < Page::MAX_LAYOUTS; i++) {
         layouts.push_back("layout - " + std::to_string(i));
     }
 
-    for ( unsigned int layer = 0; layer < layouts.size(); layer++ )
+    for ( unsigned int layout = 0; layout < layouts.size(); layout++ )
     {
-        layoutFile       = Utils::combinePath(layoutPath, layouts[layer] + ".xml");
+        layoutFile       = Utils::combinePath(layoutPath, layouts[layout] + ".xml");
         layoutFileAspect = Utils::combinePath(layoutPath, "layout " +
             std::to_string(screenWidth_ / Utils::gcd(screenWidth_, screenHeight_)) + "x" +
-            std::to_string(screenHeight_ / Utils::gcd(screenWidth_, screenHeight_)) + layouts[layer] +
+            std::to_string(screenHeight_ / Utils::gcd(screenWidth_, screenHeight_)) + layouts[layout] +
             ".xml");
 
         Logger::write(Logger::ZONE_INFO, "Layout", "Initializing " + layoutFileAspect);
@@ -134,7 +134,7 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
 
                 // try default layout
                 if (layoutPath != layoutPathDefault) {
-                    layoutFile = Utils::combinePath(layoutPathDefault, layouts[layer] + ".xml");
+                    layoutFile = Utils::combinePath(layoutPathDefault, layouts[layout] + ".xml");
                     Logger::write(Logger::ZONE_INFO, "Layout", "Initializing " + layoutFile);
 
                     file.open(layoutFile.c_str());
@@ -224,8 +224,8 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
                 if (!page)
                     page = new Page(config_, layoutWidth_, layoutHeight_);
                 else {
-                    page->setLayoutWidth(layer, layoutWidth_);
-                    page->setLayoutHeight(layer, layoutHeight_);
+                    page->setLayoutWidth(layout, layoutWidth_);
+                    page->setLayoutHeight(layout, layoutHeight_);
                 }
 
                 if (minShowTimeXml)
@@ -412,6 +412,7 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
         }
         xml_attribute<>* monitorXml = componentXml->first_attribute("monitor");
         c->baseViewInfo.Monitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor;
+        c->baseViewInfo.Layout = page->getCurrentLayout();
 
         buildViewInfo(componentXml, c->baseViewInfo);
         loadTweens(c, componentXml);
@@ -724,6 +725,8 @@ void PageBuilder::loadReloadableImages(xml_node<> *layout, std::string tagName, 
                 }
                 c = new ReloadableText(type->value(), *page, config_, systemMode, font, layoutKey, timeFormat, textFormat, singlePrefix, singlePostfix, pluralPrefix, pluralPostfix);
                 c->baseViewInfo.Monitor = cMonitor;
+                c->baseViewInfo.Layout = page->getCurrentLayout();
+
                 c->setId( id );
                 xml_attribute<> *menuScrollReload = componentXml->first_attribute("menuScrollReload");
                 if (menuScrollReload &&
@@ -798,6 +801,8 @@ void PageBuilder::loadReloadableImages(xml_node<> *layout, std::string tagName, 
                 c = new ReloadableScrollingText(config_, systemMode, layoutMode, menuMode, type->value(), singlePrefix, singlePostfix, pluralPrefix, pluralPostfix, textFormat, alignment, *page, selectedOffset, font, direction, scrollingSpeed, startPosition, startTime, endTime);
                 c->setId( id );
                 c->baseViewInfo.Monitor = cMonitor;
+                c->baseViewInfo.Layout = page->getCurrentLayout();
+
                 xml_attribute<> *menuScrollReload = componentXml->first_attribute("menuScrollReload");
                 if (menuScrollReload &&
                     (Utils::toLower(menuScrollReload->value()) == "true" ||
@@ -835,6 +840,8 @@ void PageBuilder::loadReloadableImages(xml_node<> *layout, std::string tagName, 
             c = new ReloadableMedia(config_, systemMode, layoutMode, commonMode, menuMode, typeString, imageTypeString, *page, 
                 selectedOffset, (tagName == "reloadableVideo") || (tagName == "reloadableAudio"), font, jukebox, jukeboxNumLoops, randomSelectInt);
             c->baseViewInfo.Monitor = cMonitor;
+            c->baseViewInfo.Layout = page->getCurrentLayout();
+
             c->setId( id );
 
             xml_attribute<> *menuScrollReload = componentXml->first_attribute("menuScrollReload");
@@ -1118,6 +1125,7 @@ ScrollingList * PageBuilder::buildMenu(xml_node<> *menuXml, Page &page, int moni
 
     menu = new ScrollingList(config_, page, layoutMode, commonMode, playlistType, selectedImage, font, layoutKey, imageType, videoType);
     menu->baseViewInfo.Monitor = cMonitor;
+    menu->baseViewInfo.Layout = page.getCurrentLayout();
 
     buildViewInfo(menuXml, menu->baseViewInfo);
 
@@ -1176,6 +1184,8 @@ void PageBuilder::buildCustomMenu(ScrollingList *menu, xml_node<> *menuXml, xml_
     {
         ViewInfo *viewInfo = new ViewInfo();
         viewInfo->Monitor = menu->baseViewInfo.Monitor;
+        viewInfo->Layout = menu->baseViewInfo.Layout;
+
         buildViewInfo(componentXml, *viewInfo, itemDefaults);
         viewInfo->Additive = menu->baseViewInfo.Additive;
 
@@ -1247,6 +1257,8 @@ void PageBuilder::buildVerticalMenu(ScrollingList *menu, xml_node<> *menuXml, xm
     {
         ViewInfo *viewInfo = new ViewInfo();
         viewInfo->Monitor = menu->baseViewInfo.Monitor;
+        viewInfo->Layout = menu->baseViewInfo.Layout;
+
         xml_node<> *component = itemDefaults;
 
         // uss overridden item setting if specified by layout for the given index
