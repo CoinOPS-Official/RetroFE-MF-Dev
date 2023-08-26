@@ -416,21 +416,10 @@ bool SDL::renderCopy( SDL_Texture *texture, float alpha, SDL_Rect *src, SDL_Rect
     // Skip rendering if the object is invisible anyway or if renderer does not exist
     if ( alpha == 0 || viewInfo.Monitor >= screenCount_ || !renderer_[viewInfo.Monitor] )
         return true;
-
     SDL_GetWindowSize( getWindow( viewInfo.Monitor ), &windowWidth_[viewInfo.Monitor], &windowHeight_[viewInfo.Monitor] );
-    // if element is comming from one aspect ratio to the monitor of another, use the monitor
-   /* if (layoutWidth < layoutHeight && windowWidth_[viewInfo.Monitor] > windowHeight_[viewInfo.Monitor] ||
-        layoutWidth > layoutHeight && windowWidth_[viewInfo.Monitor] < windowHeight_[viewInfo.Monitor]) {
-        layoutHeight = windowWidth_[viewInfo.Monitor];
-        layoutWidth = windowHeight_[viewInfo.Monitor];
-    }*/
 
     float scaleX = (float)windowWidth_[viewInfo.Monitor]  / (float)layoutWidth;
     float scaleY = (float)windowHeight_[viewInfo.Monitor] / (float)layoutHeight;
-    //Logger::write(Logger::ZONE_WARNING, "SDL", "Audio initialize failed: " + std::to_string(scaleY) + " " +
-    //    std::to_string(viewInfo.Monitor) + " " + std::to_string(windowHeight_[viewInfo.Monitor]) + " " +
-    //    std::to_string(layoutHeight)
-    //);
 
     if ( rotation_[viewInfo.Monitor] % 2 == 1 ) // 90 or 270 degree rotation; change scale factors
     {
