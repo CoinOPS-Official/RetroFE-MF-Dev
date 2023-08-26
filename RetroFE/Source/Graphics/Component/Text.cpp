@@ -159,7 +159,7 @@ void Text::draw( )
             }
 
 
-            SDL::renderCopy( t, baseViewInfo.Alpha, &charRect, &rect, baseViewInfo, page.getLayoutWidth(baseViewInfo.Layout), page.getLayoutHeight(baseViewInfo.Layout) );
+            SDL::renderCopy( t, baseViewInfo.Alpha, &charRect, &rect, baseViewInfo, page.getLayoutWidthByMonitor(baseViewInfo.Monitor), page.getLayoutHeightByMonitor(baseViewInfo.Monitor) );
 
             rect.x += static_cast<int>( glyph.advance * scale );
 

@@ -107,7 +107,7 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
     for (int i = 0; i < Page::MAX_LAYOUTS; i++) {
         layouts.push_back("layout - " + std::to_string(i));
     }
-
+    int monitor=0;
     for ( unsigned int layout = 0; layout < layouts.size(); layout++ )
     {
         layoutFile       = Utils::combinePath(layoutPath, layouts[layout] + ".xml");
@@ -175,12 +175,7 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
                 xml_attribute<>* fontSizeXml = root->first_attribute("loadFontSize");
                 xml_attribute<>* minShowTimeXml = root->first_attribute("minShowTime");
                 xml_attribute<>* controls = root->first_attribute("controls");
-
-                if (!layoutWidthXml || !layoutHeightXml)
-                {
-                    Logger::write(Logger::ZONE_ERROR, "Layout", "<layout> tag must specify a width and height");
-                    return NULL;
-                }
+                xml_attribute<>* layoutMonitorXml = root->first_attribute("monitor");
 
                 if (fontXml)
                 {
@@ -208,24 +203,30 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
                     fontSize_ = Utils::convertInt(fontSizeXml->value());
                 }
 
-                layoutWidth_ = Utils::convertInt(layoutWidthXml->value());
-                layoutHeight_ = Utils::convertInt(layoutHeightXml->value());
-
-                if (layoutWidth_ == 0 || layoutHeight_ == 0)
+                if (layoutWidthXml && layoutHeightXml)
                 {
-                    Logger::write(Logger::ZONE_ERROR, "Layout", "Layout width and height cannot be set to 0");
-                    return NULL;
-                }
+                    layoutWidth_ = Utils::convertInt(layoutWidthXml->value());
+                    layoutHeight_ = Utils::convertInt(layoutHeightXml->value());
 
-                std::stringstream ss;
-                ss << layoutWidth_ << "x" << layoutHeight_ << " (scale " << (float)screenWidth_ / (float)layoutWidth_ << "x" << (float)screenHeight_ / (float)layoutHeight_ << ")";
-                Logger::write(Logger::ZONE_INFO, "Layout", "Layout resolution " + ss.str());
+                    if (layoutWidth_ != 0 && layoutHeight_ != 0)
+                    {
+                        std::stringstream ss;
+                        ss << layoutWidth_ << "x" << layoutHeight_ << " (scale " << (float)screenWidth_ / (float)layoutWidth_ << "x" << (float)screenHeight_ / (float)layoutHeight_ << ")";
+                        Logger::write(Logger::ZONE_INFO, "Layout", "Layout resolution " + ss.str());
 
-                if (!page)
-                    page = new Page(config_, layoutWidth_, layoutHeight_);
-                else {
-                    page->setLayoutWidth(layout, layoutWidth_);
-                    page->setLayoutHeight(layout, layoutHeight_);
+                        if (!page)
+                            page = new Page(config_, layoutWidth_, layoutHeight_);
+                        else {
+                            page->setLayoutWidth(layout, layoutWidth_);
+                            page->setLayoutHeight(layout, layoutHeight_);
+
+                            monitor = layoutMonitorXml ? Utils::convertInt(layoutMonitorXml->value()) : monitor_;
+                            if (monitor) {
+                                page->setLayoutWidthByMonitor(monitor, layoutWidth_);
+                                page->setLayoutHeightByMonitor(monitor, layoutHeight_);
+                            }
+                        }
+                    }
                 }
 
                 if (minShowTimeXml)

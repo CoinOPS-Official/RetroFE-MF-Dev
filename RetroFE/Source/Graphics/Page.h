@@ -84,6 +84,10 @@ public:
     void stop();
     void setCurrentLayout(int layout);
     int getCurrentLayout();
+    int getLayoutWidthByMonitor(int monitor);
+    int getLayoutHeightByMonitor(int monitor);
+    void setLayoutWidthByMonitor(int monitor, int width);
+    void setLayoutHeightByMonitor(int monitor, int height);
     void setScrolling(ScrollDirection direction);
     bool isHorizontalScroll();
     unsigned int getMenuDepth();
@@ -213,6 +217,8 @@ private:
     CollectionInfo::Playlists_T::iterator playlist_;
     std::vector<int> layoutWidth_;
     std::vector<int> layoutHeight_;
+    std::vector<int> layoutWidthByMonitor_;
+    std::vector<int> layoutHeightByMonitor_;
     bool jukebox_;
 
 };

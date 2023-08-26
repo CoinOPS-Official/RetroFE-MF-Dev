@@ -54,6 +54,11 @@ Page::Page(Configuration &config, int layoutWidth, int layoutHeight)
         layoutWidth_.push_back(layoutWidth);
         layoutHeight_.push_back(layoutHeight);
     }
+    for (int i = 0; i < SDL::getNumScreens(); i++)
+    {
+        layoutWidthByMonitor_.push_back(layoutWidth);
+        layoutHeightByMonitor_.push_back(layoutHeight);
+    }
 
     currentLayout_ = 0;
 }
@@ -1535,6 +1540,39 @@ int Page::getCurrentLayout()
 {
     return currentLayout_;
 }
+
+
+int Page::getLayoutWidthByMonitor(int monitor)
+{
+    if (monitor < SDL::getNumScreens())
+        return layoutWidthByMonitor_[monitor];
+    else
+        return 0;
+}
+
+
+int Page::getLayoutHeightByMonitor(int monitor)
+{
+    if (monitor < SDL::getNumScreens())
+        return layoutHeightByMonitor_[monitor];
+    else
+        return 0;
+}
+
+
+void Page::setLayoutWidthByMonitor(int monitor, int width)
+{
+    if (monitor < SDL::getNumScreens())
+        layoutWidthByMonitor_[monitor] = width;
+}
+
+
+void Page::setLayoutHeightByMonitor(int monitor, int height)
+{
+    if (monitor < SDL::getNumScreens())
+        layoutHeightByMonitor_[monitor] = height;
+}
+
 
 int Page::getLayoutWidth(int layout)
 {
