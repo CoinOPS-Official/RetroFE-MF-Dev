@@ -1573,7 +1573,6 @@ void Page::setLayoutHeightByMonitor(int monitor, int height)
         layoutHeightByMonitor_[monitor] = height;
 }
 
-
 int Page::getLayoutWidth(int layout)
 {
     currentLayout_ = layout;
