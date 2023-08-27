@@ -43,7 +43,6 @@ public:
     Page(Configuration &c, int layoutWidth, int layoutHeight );
     virtual ~Page();
     void deInitialize();
-    int maxLayouts();
     virtual void onNewItemSelected();
     virtual void onNewScrollItemSelected();
     void returnToRememberSelectedItem();
