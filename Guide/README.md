@@ -21,3 +21,4 @@ additional artwork like video, box art, screenshots, etc.
 -   [General Layout Structure](PLAYGROUND.MD)
 -   [Layouts](LAYOUTS.MD)
 -   [Meta information](META_INFORMATION.MD)
+
