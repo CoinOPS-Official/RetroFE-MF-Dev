@@ -1,5 +1,5 @@
 # Launchers
-[Back](readme)
+[Back](README.MD)
 
 
 A launcher config file describes how to launch a program (i.e. emulator,
@@ -50,4 +50,4 @@ More elaborate example:
     executable = D:/Emulators/fceux/fceux.exe
     arguments  = "%ITEM_FILEPATH%" -loadstate "%ITEM_DIRECTORY%/%ITEM_NAME%.fcs"
 
-[Back](readme)
+[Back](README.MD)
