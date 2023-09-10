@@ -48,11 +48,19 @@ Page::Page(Configuration &config, int layoutWidth, int layoutHeight)
     , controlsType_("")
     , locked_(false)
 {
-    for (int i = 0; i < SDL::getNumScreens(); i++)
+
+    for (int i = 0; i < MAX_LAYOUTS; i++)
     {
         layoutWidth_.push_back(layoutWidth);
         layoutHeight_.push_back(layoutHeight);
     }
+    for (int i = 0; i < SDL::getNumScreens(); i++)
+    {
+        layoutWidthByMonitor_.push_back(layoutWidth);
+        layoutHeightByMonitor_.push_back(layoutHeight);
+    }
+
+    currentLayout_ = 0;
 }
 
 
@@ -104,7 +112,6 @@ void Page::deInitialize()
     }
     collections_.clear();
 }
-
 
 bool Page::isMenusFull()
 {
@@ -1045,7 +1052,6 @@ void Page::selectPlaylist(std::string playlist)
 void Page::updatePlaylistMenuPosition()
 {
     if (playlistMenu_) {
-        unsigned int i = 0;
         std::string name = getPlaylistName();
         if (name != "") {
             playlistMenu_->selectItemByName(name);
@@ -1244,7 +1250,8 @@ void Page::draw()
 
 void Page::removePlaylist()
 {
-    if(!selectedItem_) return;
+    if (!selectedItem_)
+        return;
 
     MenuInfo_S &info = collections_.back();
     CollectionInfo *collection = info.collection;
@@ -1252,16 +1259,17 @@ void Page::removePlaylist()
     std::vector<Item *> *items = collection->playlists["favorites"];
     std::vector<Item *>::iterator it = std::find(items->begin(), items->end(), selectedItem_);
 
-
-    if(it != items->end())
+    if (it != items->end())
     {
-        unsigned int index = NULL;
-        ScrollingList* amenu = NULL;
+        unsigned int index = 0;  // Initialize with 0 instead of NULL
+        ScrollingList* amenu = nullptr;  // Use nullptr for pointer types
         // get the deleted item's position
-        if (getPlaylistName() == "favorites") {
+        if (getPlaylistName() == "favorites")
+        {
             amenu = getAnActiveMenu();
-            if (amenu) {
-               index = amenu->getScrollOffsetIndex();
+            if (amenu)
+            {
+                index = amenu->getScrollOffsetIndex();
             }
         }
         items->erase(it);
@@ -1270,12 +1278,14 @@ void Page::removePlaylist()
         collection->saveRequest = true;
 
         // set to position to the old deleted position
-        if (amenu) {
+        if (amenu)
+        {
             amenu->setScrollOffsetIndex(index);
         }
     }
     collection->Save();
 }
+
 
 
 void Page::addPlaylist()
@@ -1515,38 +1525,74 @@ bool Page::hasSubs()
     return collections_.back().collection->hasSubs;
 }
 
-
-int Page::getLayoutWidth(int monitor)
+void Page::setCurrentLayout(int layout)
 {
-    if ( monitor < SDL::getNumScreens( ) )
-        return layoutWidth_[monitor];
+    currentLayout_ = layout;
+}
+
+int Page::getCurrentLayout()
+{
+    return currentLayout_;
+}
+
+
+int Page::getLayoutWidthByMonitor(int monitor)
+{
+    if (monitor < SDL::getNumScreens())
+        return layoutWidthByMonitor_[monitor];
     else
         return 0;
 }
 
 
-int Page::getLayoutHeight(int monitor)
+int Page::getLayoutHeightByMonitor(int monitor)
 {
-    if ( monitor < SDL::getNumScreens( ) )
-        return layoutHeight_[monitor];
+    if (monitor < SDL::getNumScreens())
+        return layoutHeightByMonitor_[monitor];
     else
         return 0;
 }
 
 
-void Page::setLayoutWidth(int monitor, int width)
+void Page::setLayoutWidthByMonitor(int monitor, int width)
 {
-    if ( monitor < SDL::getNumScreens( ) )
-        layoutWidth_[monitor] = width;
+    if (monitor < SDL::getNumScreens())
+        layoutWidthByMonitor_[monitor] = width;
 }
 
 
-void Page::setLayoutHeight(int monitor, int height)
+void Page::setLayoutHeightByMonitor(int monitor, int height)
 {
-    if ( monitor < SDL::getNumScreens( ) )
-        layoutHeight_[monitor] = height;
+    if (monitor < SDL::getNumScreens())
+        layoutHeightByMonitor_[monitor] = height;
 }
 
+int Page::getLayoutWidth(int layout)
+{
+    currentLayout_ = layout;
+    return layoutWidth_[layout];
+}
+
+
+int Page::getLayoutHeight(int layout)
+{
+    currentLayout_ = layout;
+    return layoutHeight_[layout];
+}
+
+
+void Page::setLayoutWidth(int layout, int width)
+{
+    currentLayout_ = layout;
+    layoutWidth_[layout] = width;
+}
+
+
+void Page::setLayoutHeight(int layout, int height)
+{
+    currentLayout_ = layout;
+    layoutHeight_[layout] = height;
+}
 
 void Page::setJukebox()
 {
