@@ -360,7 +360,7 @@ void ReloadableMedia::reloadTexture()
         else if (typeLC == "position")
         {
             if (!selectedItem->collectionInfo->items.empty()) {
-                int position = page.getSelectedIndex() + 1;
+                size_t position = page.getSelectedIndex() + 1;
                 if (position == 1) {
                     basename = '1';
                 }
@@ -395,10 +395,8 @@ void ReloadableMedia::reloadTexture()
 
         // ability to randomly select image/video
         if (randomSelect_) {
-            int randImage = (rand() % randomSelect_);
-            if (randImage != 0) {
-                basename = basename + " - " + std::to_string(randImage);
-            }
+            int randImage = 1 + rand() % randomSelect_;
+            basename = basename + " - " + std::to_string(randImage);
         }
 
         if(systemMode_)
