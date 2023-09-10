@@ -235,7 +235,7 @@ Page *PageBuilder::buildPage( std::string collectionName, bool ignoreMainDefault
                 }
 
                 // add additional controls to replace others based on theme/layout
-                if (controls && controls->value() != "") {
+				if (controls && controls->value() && controls->value()[0] != '\0'){
                     std::string controlLayout = controls->value();
                     Logger::write(Logger::ZONE_INFO, "Layout", "Layout set custom control type " + controlLayout);
                     page->setControlsType(controlLayout);
@@ -475,8 +475,10 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
         xml_attribute<> *numLoopsXml = componentXml->first_attribute("numLoops");
         xml_attribute<> *idXml = componentXml->first_attribute("id");
         xml_attribute<> *monitorXml = componentXml->first_attribute("monitor");
+        xml_attribute<> *pauseOnScrollXml = componentXml->first_attribute("pauseOnScroll");
 
-        int numLoops = 0;
+
+
         int id = -1;
         if (idXml)
         {
@@ -495,13 +497,23 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
             config_.getProperty("layout", layoutName);
             std::string altVideoPath;
             altVideoPath = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName, std::string(srcXml->value()));
-            numLoops = numLoopsXml ? Utils::convertInt(numLoopsXml->value()) : 1;
+            int numLoops = numLoopsXml ? Utils::convertInt(numLoopsXml->value()) : 1;
             cMonitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor;
 
             // don't add videos if display doesn't exist
             if (cMonitor + 1 <= SDL::getScreenCount()) {
                 Video* c = new Video(videoPath, altVideoPath, numLoops, *page, cMonitor);
                 c->setId(id);
+                
+                xml_attribute<>* pauseOnScroll = componentXml->first_attribute("pauseOnScroll");
+                if (pauseOnScroll && 
+                    (Utils::toLower(pauseOnScrollXml->value()) == "false" ||
+                    Utils::toLower(pauseOnScrollXml->value()) == "no"))
+                {
+                    c->setPauseOnScroll(false);
+                }
+       
+                
                 xml_attribute<>* menuScrollReload = componentXml->first_attribute("menuScrollReload");
                 if (menuScrollReload &&
                     (Utils::toLower(menuScrollReload->value()) == "true" ||
@@ -510,6 +522,7 @@ bool PageBuilder::buildComponents(xml_node<> *layout, Page *page)
                     c->setMenuScrollReload(true);
                 }
                 xml_attribute<>* animationDoneRemove = componentXml->first_attribute("animationDoneRemove");
+                
                 if (animationDoneRemove &&
                     (Utils::toLower(animationDoneRemove->value()) == "true" ||
                         Utils::toLower(animationDoneRemove->value()) == "yes"))
@@ -1406,8 +1419,9 @@ void PageBuilder::buildViewInfo(xml_node<> *componentXml, ViewInfo &info, xml_no
     xml_attribute<> *containerHeight    = findAttribute(componentXml, "containerHeight", defaultXml);
     xml_attribute<> *monitor            = findAttribute(componentXml, "monitor", defaultXml);
     xml_attribute<> *volume             = findAttribute(componentXml, "volume", defaultXml);
-    xml_attribute<>* restart = findAttribute(componentXml, "restart", defaultXml);
-    xml_attribute<>* additive = findAttribute(componentXml, "additive", defaultXml);
+    xml_attribute<> *restart            = findAttribute(componentXml, "restart", defaultXml);
+    xml_attribute<> *additive           = findAttribute(componentXml, "additive", defaultXml);
+    xml_attribute<> *pauseOnScroll      = findAttribute(componentXml, "pauseOnScroll", defaultXml);
 
     info.X = getHorizontalAlignment(x, 0);
     info.Y = getVerticalAlignment(y, 0);
@@ -1450,12 +1464,19 @@ void PageBuilder::buildViewInfo(xml_node<> *componentXml, ViewInfo &info, xml_no
     info.ContainerHeight    = containerHeight    ? Utils::convertFloat(containerHeight->value())   : -1.f;
     info.Monitor            = monitor            ? Utils::convertInt(monitor->value())             : info.Monitor;
     info.Volume             = volume             ? Utils::convertFloat(volume->value())            : 1.f;
-    info.Restart = restart ? Utils::toLower(restart->value()) == "true" : false;
-    info.Additive = additive ? Utils::toLower(additive->value()) == "true" : false;
+    info.Restart            = restart            ? Utils::toLower(restart->value())     == "true" : false;
+    info.Additive           = additive           ? Utils::toLower(additive->value())    == "true" : false;
+    info.PauseOnScroll      = pauseOnScroll      ? (Utils::toLower(pauseOnScroll->value()) == "false" ? false : true) : true;
+
     bool disableVideoRestart;
     config_.getProperty("disableVideoRestart", disableVideoRestart);
     if (disableVideoRestart)
         info.Restart = false;
+    bool disablePauseOnScroll;
+    
+    config_.getProperty("disablePauseOnScroll", disablePauseOnScroll);
+    if (disablePauseOnScroll)
+        info.PauseOnScroll = false;
 
     if(fontColor)
     {

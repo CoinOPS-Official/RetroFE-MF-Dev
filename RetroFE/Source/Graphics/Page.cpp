@@ -467,7 +467,7 @@ void Page::setScrollOffsetIndex(unsigned int i)
 {
     if (!getAnActiveMenu()) return;
 
-    for(std::vector<ScrollingList *>::iterator it = activeMenu_.begin(); it != activeMenu_.end(); it++)
+    for(std::vector<ScrollingList *>::iterator it = activeMenu_.begin(); it != activeMenu_.end(); ++it)
     {
         if ((*it) && !(*it)->isPlaylist())
             (*it)->setScrollOffsetIndex(i);
@@ -500,7 +500,7 @@ std::string Page::controlsType()
     return controlsType_;
 }
 
-void Page::setControlsType(std::string type)
+void Page::setControlsType(const std::string& type)
 {
     controlsType_ = type;
 }
@@ -619,42 +619,33 @@ void Page::jukeboxJump()
     triggerEventOnAllMenus("jukeboxJump");
 }
 
-void Page::triggerEventOnAllMenus(std::string event)
+void Page::triggerEventOnAllMenus(const std::string& event)
 {
-    Item* item = selectedItem_;
+    if (!selectedItem_)
+        return;
 
-    if (!item) return;
-
-    unsigned int menuIndex = 0;
-
-    for (MenuVector_T::iterator it = menus_.begin(); it != menus_.end(); ++it, ++menuIndex)
+    for (size_t i = 0; i < menus_.size(); ++i)
     {
-        for (std::vector<ScrollingList*>::iterator it2 = it->begin(); it2 != it->end(); ++it2)
+        for (ScrollingList* menu : menus_[i])
         {
-            ScrollingList* menu = *it2;
+            unsigned int index = (menuDepth_ - 1 == i) ? MENU_INDEX_HIGH + menuDepth_ - 1 : menuDepth_ - 1;
 
-            if (menuDepth_ - 1 == menuIndex)
-            {
-                // Also trigger animations for index i for active menu
-                menu->triggerEvent(event, MENU_INDEX_HIGH + menuDepth_ - 1);
-                menu->triggerEventOnAll(event, MENU_INDEX_HIGH + menuDepth_ - 1);
-            }
-            else
-            {
-                menu->triggerEvent(event, menuDepth_ - 1);
-                menu->triggerEventOnAll(event, menuDepth_ - 1);
-            }
+            menu->triggerEvent(event, index);
+            menu->triggerEventOnAll(event, index);
         }
     }
 
-    for (std::vector<Component*>::iterator it = LayerComponents.begin(); it != LayerComponents.end(); ++it)
+    unsigned int index = menuDepth_ - 1;
+    for (Component* component : LayerComponents)
     {
-        (*it)->triggerEvent(event, menuDepth_ - 1);
+        if (component)
+            component->triggerEvent(event, index);
     }
 }
 
 
-void Page::triggerEvent( std::string action )
+
+void Page::triggerEvent( const std::string& action )
 {
     for(std::vector<Component *>::iterator it = LayerComponents.begin(); it != LayerComponents.end(); ++it)
     {
@@ -663,7 +654,7 @@ void Page::triggerEvent( std::string action )
 }
 
 
-void Page::setText( std::string text, int id )
+void Page::setText( const std::string& text, int id )
 {
     for(std::vector<Component *>::iterator it = LayerComponents.begin(); it != LayerComponents.end(); ++it)
     {
@@ -1061,7 +1052,6 @@ void Page::selectPlaylist(std::string playlist)
 void Page::updatePlaylistMenuPosition()
 {
     if (playlistMenu_) {
-        unsigned int i = 0;
         std::string name = getPlaylistName();
         if (name != "") {
             playlistMenu_->selectItemByName(name);
@@ -1260,7 +1250,8 @@ void Page::draw()
 
 void Page::removePlaylist()
 {
-    if(!selectedItem_) return;
+    if (!selectedItem_)
+        return;
 
     MenuInfo_S &info = collections_.back();
     CollectionInfo *collection = info.collection;
@@ -1268,16 +1259,17 @@ void Page::removePlaylist()
     std::vector<Item *> *items = collection->playlists["favorites"];
     std::vector<Item *>::iterator it = std::find(items->begin(), items->end(), selectedItem_);
 
-
-    if(it != items->end())
+    if (it != items->end())
     {
-        unsigned int index = NULL;
-        ScrollingList* amenu = NULL;
+        unsigned int index = 0;  // Initialize with 0 instead of NULL
+        ScrollingList* amenu = nullptr;  // Use nullptr for pointer types
         // get the deleted item's position
-        if (getPlaylistName() == "favorites") {
+        if (getPlaylistName() == "favorites")
+        {
             amenu = getAnActiveMenu();
-            if (amenu) {
-               index = amenu->getScrollOffsetIndex();
+            if (amenu)
+            {
+                index = amenu->getScrollOffsetIndex();
             }
         }
         items->erase(it);
@@ -1286,12 +1278,14 @@ void Page::removePlaylist()
         collection->saveRequest = true;
 
         // set to position to the old deleted position
-        if (amenu) {
+        if (amenu)
+        {
             amenu->setScrollOffsetIndex(index);
         }
     }
     collection->Save();
 }
+
 
 
 void Page::addPlaylist()

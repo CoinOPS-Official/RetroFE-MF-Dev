@@ -25,7 +25,7 @@
 class VideoComponent : public Component
 {
 public:
-    VideoComponent(IVideo *videoInst, Page &p, std::string videoFile);
+    VideoComponent(IVideo *videoInst, Page &p, const std::string& videoFile);
     virtual ~VideoComponent();
     bool update(float dt);
     void draw();
@@ -47,4 +47,5 @@ private:
     std::string name_;
     IVideo *videoInst_;
     bool isPlaying_;
+    bool hasPlayedOnce_;
 };
