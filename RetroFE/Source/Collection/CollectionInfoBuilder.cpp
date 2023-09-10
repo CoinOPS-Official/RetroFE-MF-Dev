@@ -471,12 +471,15 @@ void CollectionInfoBuilder::addPlaylists(CollectionInfo *info)
     // get playlist cycle
     std::string settingPrefix = "collections." + info->name + ".";
     std::string cycleString;
-    // check if collection has different setting
-    if (conf_.propertyExists(settingPrefix + "cyclePlaylist")) {
-        conf_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
-    }
-    else {
-        conf_.getProperty("cyclePlaylist", cycleString);
+    std::string firstCollection = "";
+    conf_.getProperty("firstCollection", firstCollection);
+    conf_.getProperty("cyclePlaylist", cycleString);
+    // use the global setting as overide if firstCollection == current
+    if (firstCollection != info->name) {
+        // check if collection has different setting
+        if (conf_.propertyExists(settingPrefix + "cyclePlaylist")) {
+            conf_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
+        }
     }
     std::vector<std::string> cycleVector;
     Utils::listToVector(cycleString, cycleVector, ',');
@@ -518,12 +521,15 @@ void CollectionInfoBuilder::loadPlaylistItems(CollectionInfo* info, std::map<std
     // get playlist cycle
     std::string settingPrefix = "collections." + info->name + ".";
     std::string cycleString;
-    // check if collection has different setting
-    if (conf_.propertyExists(settingPrefix + "cyclePlaylist")) {
-        conf_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
-    }
-    else {
-        conf_.getProperty("cyclePlaylist", cycleString);
+    std::string firstCollection = "";
+    conf_.getProperty("firstCollection", firstCollection);
+    conf_.getProperty("cyclePlaylist", cycleString);
+    // use the global setting as overide if firstCollection == current
+    if (firstCollection != info->name) {
+        // check if collection has different setting
+        if (conf_.propertyExists(settingPrefix + "cyclePlaylist")) {
+            conf_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
+        }
     }
     std::vector<std::string> cycleVector;
     Utils::listToVector(cycleString, cycleVector, ',');
