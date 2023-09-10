@@ -569,7 +569,7 @@ void CollectionInfoBuilder::loadPlaylistItems(CollectionInfo* info, std::map<std
 
                 Logger::write(Logger::ZONE_INFO, "RetroFE", "Loading playlist: " + basename);
 
-                std::map<std::string, Item*> playlistFilter;
+                std::vector<Item*> playlistFilter;
                 std::string playlistFile = Utils::combinePath(path, file);
                 ImportBasicList(info, playlistFile, playlistFilter);
 
@@ -585,10 +585,10 @@ void CollectionInfoBuilder::loadPlaylistItems(CollectionInfo* info, std::map<std
                 std::string sortType = Item::validSortType(basename) ? basename : "";
 
                 // add the playlist list 
-                for (std::map<std::string, Item*>::iterator itpf = playlistFilter.begin(); itpf != playlistFilter.end(); itpf++)
+                for (std::vector<Item*>::iterator itpf = playlistFilter.begin(); itpf != playlistFilter.end(); itpf++)
                 {
                     std::string collectionName = info->name;
-                    std::string itemName = itpf->first;
+                    std::string itemName = (*itpf)->name;
                     if (itemName.at(0) == '_') // name consists of _<collectionName>:<itemName>
                     {
                         itemName.erase(0, 1); // Remove _
@@ -605,23 +605,23 @@ void CollectionInfoBuilder::loadPlaylistItems(CollectionInfo* info, std::map<std
                     {
                         if (((*it)->name == itemName || itemName == "*") && (*it)->collectionInfo->name == collectionName)
                         {
-                            if (itpf->second->playCount) {
-                                (*it)->playCount = itpf->second->playCount;
-                                (*it)->lastPlayed = itpf->second->lastPlayed;
+                            if ((*itpf)->playCount) {
+                                (*it)->playCount = (*itpf)->playCount;
+                                (*it)->lastPlayed = (*itpf)->lastPlayed;
                             }
-                            info->playlists[basename]->push_back((*it));
                             if (basename == "favorites")
-                                (*it)->isFavorite = true;
+                                (*it)->isFavorite = true;                           
+                            info->playlists[basename]->push_back((*it));
+
+                            // if single item then break out and not add all of them
+                            if (itemName != "*") {
+                                break;
+                            }
                         }
                     }
                 }
                 // clean playlistFilter
-                while (playlistFilter.size() > 0)
-                {
-                    std::map<std::string, Item*>::iterator it = playlistFilter.begin();
-                    delete it->second;
-                    playlistFilter.erase(it->first);
-                }
+                playlistFilter.clear();
             }
         }
     }
