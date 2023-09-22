@@ -763,14 +763,14 @@ bool RetroFE::run( )
                     config_.getProperty( "layout", layoutName );
                     PageBuilder pb( layoutName, getLayoutFileName(), config_, &fontcache_ );
 
-                    bool ignoreDefaultLayout = false;
+                    bool defaultToCurrentLayout = false;
                     std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
-                    if (config_.propertyExists(settingPrefix + "ignoreDefaultLayout")) {
-                        config_.getProperty(settingPrefix + "ignoreDefaultLayout", ignoreDefaultLayout);
+                    if (config_.propertyExists(settingPrefix + "defaultToCurrentLayout")) {
+                        config_.getProperty(settingPrefix + "defaultToCurrentLayout", defaultToCurrentLayout);
                     }
 
                     // try collection name
-                    Page *page = pb.buildPage( nextPageItem_->name, ignoreDefaultLayout);
+                    Page *page = pb.buildPage( nextPageItem_->name, defaultToCurrentLayout);
                     if (page)
                     {
                         if (page->controlsType() != currentPage_->controlsType()) {
