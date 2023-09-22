@@ -67,6 +67,7 @@ void ReloadableMedia::enableTextFallback_(bool value)
 
 bool ReloadableMedia::update(float dt)
 {
+    Component* foundComponent = loadedComponent_;
     if (newItemSelected ||
        (newScrollItemSelected && getMenuScrollReload()) ||
         type_ == "isPaused" || 
@@ -74,22 +75,28 @@ bool ReloadableMedia::update(float dt)
         type_ == "playcount")
     {
 
-        reloadTexture();
+        foundComponent = reloadTexture();
         newItemSelected       = false;
         newScrollItemSelected = false;
     }
 
-    if(loadedComponent_)
+    if(foundComponent)
     {
 
         // video needs to run a frame to start getting size info
         if(baseViewInfo.ImageHeight == 0 && baseViewInfo.ImageWidth == 0)
         {
-            baseViewInfo.ImageWidth = loadedComponent_->baseViewInfo.ImageWidth;
-            baseViewInfo.ImageHeight = loadedComponent_->baseViewInfo.ImageHeight;
+            baseViewInfo.ImageWidth = foundComponent->baseViewInfo.ImageWidth;
+            baseViewInfo.ImageHeight = foundComponent->baseViewInfo.ImageHeight;
         }
 
-        loadedComponent_->update(dt);
+        foundComponent->update(dt);
+        // if found and it's not the same as loaded, then finnaly delete the loaded component
+        if (foundComponent != loadedComponent_) {
+            delete loadedComponent_;
+            loadedComponent_ = NULL;
+            loadedComponent_ = foundComponent;
+        }
     }
 
     // needs to be ran at the end to prevent the NewItemSelected flag from being detected
@@ -119,7 +126,7 @@ void ReloadableMedia::freeGraphicsMemory()
 }
 
 
-void ReloadableMedia::reloadTexture()
+Component *ReloadableMedia::reloadTexture()
 {
     std::string typeLC = Utils::toLower(type_);
     Item* selectedItem = page.getSelectedItem(displayOffset_);
@@ -134,7 +141,7 @@ void ReloadableMedia::reloadTexture()
         }
     }
 
-    if(!selectedItem) return;
+    if(!selectedItem) return NULL;
 
     config_.getProperty("currentCollection", currentCollection_);
 
@@ -477,12 +484,7 @@ void ReloadableMedia::reloadTexture()
         baseViewInfo.ImageHeight = foundComponent->baseViewInfo.ImageHeight;
     }
 
-    // if found and it's not the same as loaded, then finnaly delete the loaded component
-    if (foundComponent && foundComponent != loadedComponent_) {
-        delete loadedComponent_;
-        loadedComponent_ = NULL;
-        loadedComponent_ = foundComponent;
-    }
+    return foundComponent;
 }
 
 
