@@ -67,7 +67,6 @@ void ReloadableMedia::enableTextFallback_(bool value)
 
 bool ReloadableMedia::update(float dt)
 {
-    Component* foundComponent = loadedComponent_;
     if (newItemSelected ||
         (newScrollItemSelected && getMenuScrollReload()) ||
         type_ == "isPaused" ||
@@ -86,17 +85,11 @@ bool ReloadableMedia::update(float dt)
         // video needs to run a frame to start getting size info
         if (baseViewInfo.ImageHeight == 0 && baseViewInfo.ImageWidth == 0)
         {
-            baseViewInfo.ImageWidth = foundComponent->baseViewInfo.ImageWidth;
-            baseViewInfo.ImageHeight = foundComponent->baseViewInfo.ImageHeight;
+            baseViewInfo.ImageWidth = loadedComponent_->baseViewInfo.ImageWidth;
+            baseViewInfo.ImageHeight = loadedComponent_->baseViewInfo.ImageHeight;
         }
 
-        foundComponent->update(dt);
-        // if found and it's not the same as loaded, then finnaly delete the loaded component
-        if (foundComponent != loadedComponent_) {
-            delete loadedComponent_;
-            loadedComponent_ = NULL;
-            loadedComponent_ = foundComponent;
-        }
+        loadedComponent_->update(dt);
     }
 
     // needs to be ran at the end to prevent the NewItemSelected flag from being detected
@@ -126,15 +119,15 @@ void ReloadableMedia::freeGraphicsMemory()
 }
 
 
-Component *ReloadableMedia::reloadTexture()
+void ReloadableMedia::reloadTexture()
 {
     std::string typeLC = Utils::toLower(type_);
     Item* selectedItem = page.getSelectedItem(displayOffset_);
 
     if (loadedComponent_)
     {
-        // delete image/video/text if no selected Item
-        if (!selectedItem)
+        // delete image/video/text if no selected Item, or if not a playlist type or playlists are different
+        if (!selectedItem || !(typeLC.rfind("playlist", 0) == 0 && (page.getPlaylistName() == loadedComponent_->playlistName)))
         {
             delete loadedComponent_;
             loadedComponent_ = NULL;
@@ -190,11 +183,6 @@ Component *ReloadableMedia::reloadTexture()
     }
 
     names.push_back("default");
-    // if same playlist then use existing loaded component
-    Component* foundComponent = NULL;
-    if (loadedComponent_ != NULL && typeLC.rfind("playlist", 0) == 0 && (page.getPlaylistName() == loadedComponent_->playlistName)) {
-        foundComponent = loadedComponent_;
-    }
 
     if (isVideo_)
     {
@@ -210,14 +198,16 @@ Component *ReloadableMedia::reloadTexture()
 
             if (systemMode_)
             {
+
                 // check the master collection for the system artifact 
-                foundComponent = findComponent(collectionName, type_, type_, "", true, true);
+                loadedComponent_ = findComponent(collectionName, type_, type_, "", true, true);
 
                 // check the collection for the system artifact
                 if (!loadedComponent_)
                 {
                     loadedComponent_ = findComponent(selectedItem->collectionInfo->name, type_, type_, "", true, true);
                 }
+
             }
             else
             {
@@ -266,10 +256,10 @@ Component *ReloadableMedia::reloadTexture()
 
             if (loadedComponent_)
             {
-                foundComponent->playlistName = page.getPlaylistName();
-                foundComponent->allocateGraphicsMemory();
-                baseViewInfo.ImageWidth = foundComponent->baseViewInfo.ImageWidth;
-                baseViewInfo.ImageHeight = foundComponent->baseViewInfo.ImageHeight;
+                loadedComponent_->playlistName = page.getPlaylistName();
+                loadedComponent_->allocateGraphicsMemory();
+                baseViewInfo.ImageWidth = loadedComponent_->baseViewInfo.ImageWidth;
+                baseViewInfo.ImageHeight = loadedComponent_->baseViewInfo.ImageHeight;
             }
         }
     }
@@ -413,7 +403,7 @@ Component *ReloadableMedia::reloadTexture()
         {
 
             // check the master collection for the system artifact 
-            foundComponent = findComponent(collectionName, type, type, "", true, false);
+            loadedComponent_ = findComponent(collectionName, type, type, "", true, false);
 
             // check collection for the system artifact
             if (!loadedComponent_)
@@ -467,7 +457,7 @@ Component *ReloadableMedia::reloadTexture()
 
         }
 
-        if (foundComponent != NULL)
+        if (loadedComponent_ != NULL)
         {
             loadedComponent_->playlistName = page.getPlaylistName();
             loadedComponent_->allocateGraphicsMemory();
@@ -479,12 +469,10 @@ Component *ReloadableMedia::reloadTexture()
     // if image and artwork was not specified, fall back to displaying text
     if (!loadedComponent_ && textFallback_)
     {
-        foundComponent = new Text(selectedItem->fullTitle, page, FfntInst_, baseViewInfo.Monitor);
-        baseViewInfo.ImageWidth = foundComponent->baseViewInfo.ImageWidth;
-        baseViewInfo.ImageHeight = foundComponent->baseViewInfo.ImageHeight;
+        loadedComponent_ = new Text(selectedItem->fullTitle, page, FfntInst_, baseViewInfo.Monitor);
+        baseViewInfo.ImageWidth = loadedComponent_->baseViewInfo.ImageWidth;
+        baseViewInfo.ImageHeight = loadedComponent_->baseViewInfo.ImageHeight;
     }
-
-    return foundComponent;
 }
 
 
