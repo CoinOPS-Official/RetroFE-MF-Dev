@@ -57,6 +57,7 @@ ReloadableMedia::~ReloadableMedia()
     if (loadedComponent_ != NULL)
     {
         delete loadedComponent_;
+        loadedComponent_ = NULL;
     }
 }
 
@@ -67,36 +68,36 @@ void ReloadableMedia::enableTextFallback_(bool value)
 
 bool ReloadableMedia::update(float dt)
 {
-    Component* foundComponent = loadedComponent_;
     if (newItemSelected ||
        (newScrollItemSelected && getMenuScrollReload()) ||
         type_ == "isPaused" || 
         type_ == "playCount" || 
         type_ == "playcount")
     {
-
-        foundComponent = reloadTexture();
-        newItemSelected       = false;
+        newItemSelected = false;
         newScrollItemSelected = false;
-    }
-
-    if(foundComponent)
-    {
-
-        // video needs to run a frame to start getting size info
-        if(baseViewInfo.ImageHeight == 0 && baseViewInfo.ImageWidth == 0)
-        {
+        Component* foundComponent = reloadTexture();
+        if (foundComponent) {
+            foundComponent->playlistName = page.getPlaylistName();
+            foundComponent->allocateGraphicsMemory();
             baseViewInfo.ImageWidth = foundComponent->baseViewInfo.ImageWidth;
             baseViewInfo.ImageHeight = foundComponent->baseViewInfo.ImageHeight;
+            foundComponent->update(dt);
+            // if found and it's not the same as loaded, then finnaly delete the loaded component
+            if (foundComponent != loadedComponent_) {
+                delete loadedComponent_;
+                loadedComponent_ = foundComponent;
+            }
         }
-
-        foundComponent->update(dt);
-        // if found and it's not the same as loaded, then finnaly delete the loaded component
-        if (foundComponent != loadedComponent_) {
+        else {
+            // delete previous loaded item if none found
             delete loadedComponent_;
-            loadedComponent_ = NULL;
             loadedComponent_ = foundComponent;
         }
+    }
+    else if (loadedComponent_)
+    {
+        loadedComponent_->update(dt);
     }
 
     // needs to be ran at the end to prevent the NewItemSelected flag from being detected
@@ -193,7 +194,7 @@ Component *ReloadableMedia::reloadTexture()
     // if same playlist then use existing loaded component
     Component* foundComponent = NULL;
     if (loadedComponent_ != NULL && typeLC.rfind("playlist", 0) == 0 && (page.getPlaylistName() == loadedComponent_->playlistName)) {
-        foundComponent = loadedComponent_;
+        return loadedComponent_;
     }
 
     if(isVideo_)
@@ -266,10 +267,7 @@ Component *ReloadableMedia::reloadTexture()
 
             if(foundComponent)
             {
-                foundComponent->playlistName = page.getPlaylistName();
-                foundComponent->allocateGraphicsMemory();
-                baseViewInfo.ImageWidth = foundComponent->baseViewInfo.ImageWidth;
-                baseViewInfo.ImageHeight = foundComponent->baseViewInfo.ImageHeight;
+                return foundComponent;
             }
         }
     }
@@ -469,19 +467,14 @@ Component *ReloadableMedia::reloadTexture()
 
         if (foundComponent != NULL)
         {
-             foundComponent->playlistName = page.getPlaylistName();
-             foundComponent->allocateGraphicsMemory();
-             baseViewInfo.ImageWidth = foundComponent->baseViewInfo.ImageWidth;
-             baseViewInfo.ImageHeight = foundComponent->baseViewInfo.ImageHeight;
+            return foundComponent;
         }
     }
 
     // if image and artwork was not specified, fall back to displaying text
     if(!foundComponent && textFallback_)
     {
-        foundComponent = new Text(selectedItem->fullTitle, page, FfntInst_, baseViewInfo.Monitor);
-        baseViewInfo.ImageWidth = foundComponent->baseViewInfo.ImageWidth;
-        baseViewInfo.ImageHeight = foundComponent->baseViewInfo.ImageHeight;
+        return new Text(selectedItem->fullTitle, page, FfntInst_, baseViewInfo.Monitor);   
     }
 
     return foundComponent;
