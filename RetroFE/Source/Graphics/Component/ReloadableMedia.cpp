@@ -57,6 +57,7 @@ ReloadableMedia::~ReloadableMedia()
     if (loadedComponent_ != NULL)
     {
         delete loadedComponent_;
+        loadedComponent_ = NULL;
     }
 }
 
@@ -67,28 +68,36 @@ void ReloadableMedia::enableTextFallback_(bool value)
 
 bool ReloadableMedia::update(float dt)
 {
+    Component* foundComponent = loadedComponent_;
     if (newItemSelected ||
        (newScrollItemSelected && getMenuScrollReload()) ||
         type_ == "isPaused" || 
         type_ == "playCount" || 
         type_ == "playcount")
     {
-
-        reloadTexture();
-        newItemSelected       = false;
+        newItemSelected = false;
         newScrollItemSelected = false;
-    }
-
-    if(loadedComponent_)
-    {
-
-        // video needs to run a frame to start getting size info
-        if(baseViewInfo.ImageHeight == 0 && baseViewInfo.ImageWidth == 0)
-        {
-            baseViewInfo.ImageWidth = loadedComponent_->baseViewInfo.ImageWidth;
-            baseViewInfo.ImageHeight = loadedComponent_->baseViewInfo.ImageHeight;
+        Component* foundComponent = reloadTexture();
+        if (foundComponent) {
+            foundComponent->playlistName = page.getPlaylistName();
+            foundComponent->allocateGraphicsMemory();
+            baseViewInfo.ImageWidth = foundComponent->baseViewInfo.ImageWidth;
+            baseViewInfo.ImageHeight = foundComponent->baseViewInfo.ImageHeight;
+            foundComponent->update(dt);
+            // if found and it's not the same as loaded, then finnaly delete the loaded component
+            if (foundComponent != loadedComponent_) {
+                delete loadedComponent_;
+                loadedComponent_ = foundComponent;
+            }
         }
-
+        else {
+            // delete previous loaded item if none found
+            delete loadedComponent_;
+            loadedComponent_ = foundComponent;
+        }
+    }
+    else if (loadedComponent_)
+    {
         loadedComponent_->update(dt);
     }
 
@@ -119,22 +128,22 @@ void ReloadableMedia::freeGraphicsMemory()
 }
 
 
-void ReloadableMedia::reloadTexture()
+Component *ReloadableMedia::reloadTexture()
 {
     std::string typeLC = Utils::toLower(type_);
     Item* selectedItem = page.getSelectedItem(displayOffset_);
 
     if(loadedComponent_)
     {
-        // delete image/video/text if no selected Item, or if not a playlist type or playlists are different
-        if (!selectedItem || !(typeLC.rfind("playlist", 0) == 0 && (page.getPlaylistName() == loadedComponent_->playlistName)))
+        // delete image/video/text if no selected Item
+        if (!selectedItem)
         {
             delete loadedComponent_;
             loadedComponent_ = NULL;
         }
     }
 
-    if(!selectedItem) return;
+    if(!selectedItem) return NULL;
 
     config_.getProperty("currentCollection", currentCollection_);
 
@@ -183,10 +192,15 @@ void ReloadableMedia::reloadTexture()
     }
 
     names.push_back("default");
+    // if same playlist then use existing loaded component
+    Component* foundComponent = NULL;
+    if (loadedComponent_ != NULL && typeLC.rfind("playlist", 0) == 0 && (page.getPlaylistName() == loadedComponent_->playlistName)) {
+        return loadedComponent_;
+    }
 
     if(isVideo_)
     {
-        for(unsigned int n = 0; n < names.size() && !loadedComponent_; ++n)
+        for(unsigned int n = 0; n < names.size() && !foundComponent; ++n)
         {
             std::string basename = names[n];
 
@@ -198,16 +212,14 @@ void ReloadableMedia::reloadTexture()
 
             if(systemMode_)
             {
-
                 // check the master collection for the system artifact 
-                loadedComponent_ = findComponent(collectionName, type_, type_, "", true, true);
+                foundComponent = findComponent(collectionName, type_, type_, "", true, true);
 
                 // check the collection for the system artifact
-                if(!loadedComponent_)
+                if(!foundComponent)
                 {
-                  loadedComponent_ = findComponent(selectedItem->collectionInfo->name, type_, type_, "", true, true);
+                    foundComponent = findComponent(selectedItem->collectionInfo->name, type_, type_, "", true, true);
                 }
-
             }
             else
             {
@@ -217,18 +229,18 @@ void ReloadableMedia::reloadTexture()
                 {
 
                   // check the master collection for the artifact 
-                  loadedComponent_ = findComponent(collectionName, type_, basename, "", false, true);
+                    foundComponent = findComponent(collectionName, type_, basename, "", false, true);
 
                   // check the collection for the artifact
-                  if(!loadedComponent_)
+                  if(!foundComponent)
                   {
-                    loadedComponent_ = findComponent(selectedItem->collectionInfo->name, type_, basename, "", false, true);
+                      foundComponent = findComponent(selectedItem->collectionInfo->name, type_, basename, "", false, true);
                   }
 
                   // check the rom directory for the artifact
-                  if(!loadedComponent_)
+                  if(!foundComponent)
                   {
-                    loadedComponent_ = findComponent(selectedItem->collectionInfo->name, type_, type_, selectedItem->filepath, false, true);
+                      foundComponent = findComponent(selectedItem->collectionInfo->name, type_, type_, selectedItem->filepath, false, true);
                   }
 
                 }
@@ -236,36 +248,33 @@ void ReloadableMedia::reloadTexture()
                 {
 
                   // check the master collection for the artifact 
-                  loadedComponent_ = findComponent(collectionName, type_, basename, "", false, true);
+                    foundComponent = findComponent(collectionName, type_, basename, "", false, true);
 
                   // check the collection for the artifact
-                  if(!loadedComponent_)
+                  if(!foundComponent)
                   {
-                    loadedComponent_ = findComponent(selectedItem->collectionInfo->name, type_, basename, "", false, true);
+                      foundComponent = findComponent(selectedItem->collectionInfo->name, type_, basename, "", false, true);
                   }
 
                   // check the submenu collection for the system artifact
-                  if (!loadedComponent_)
+                  if (!foundComponent)
                   {
-                    loadedComponent_ = findComponent(selectedItem->name, type_, type_, "", true, true);
+                      foundComponent = findComponent(selectedItem->name, type_, type_, "", true, true);
                   } 
 
                 }
 
             }
 
-            if(loadedComponent_)
+            if(foundComponent)
             {
-                loadedComponent_->playlistName = page.getPlaylistName();
-                loadedComponent_->allocateGraphicsMemory();
-                baseViewInfo.ImageWidth = loadedComponent_->baseViewInfo.ImageWidth;
-                baseViewInfo.ImageHeight = loadedComponent_->baseViewInfo.ImageHeight;
+                return foundComponent;
             }
         }
     }
 
     // check for images, also if video could not be found (and was specified)
-    for(unsigned int n = 0; n < names.size() && !loadedComponent_; ++n)
+    for(unsigned int n = 0; n < names.size() && !foundComponent; ++n)
     {
         std::string basename = names[n];
         bool        defined  = false;
@@ -403,12 +412,12 @@ void ReloadableMedia::reloadTexture()
         {
 
             // check the master collection for the system artifact 
-            loadedComponent_ = findComponent(collectionName, type, type, "", true, false);
+            foundComponent = findComponent(collectionName, type, type, "", true, false);
 
             // check collection for the system artifact
-            if(!loadedComponent_)
+            if(!foundComponent)
             {
-              loadedComponent_ = findComponent(selectedItem->collectionInfo->name, type, type, "", true, false);
+                foundComponent = findComponent(selectedItem->collectionInfo->name, type, type, "", true, false);
             }
 
         }
@@ -420,18 +429,18 @@ void ReloadableMedia::reloadTexture()
             {
 
               // check the master collection for the artifact 
-              loadedComponent_ = findComponent(collectionName, type, basename, "", false, false);
+                foundComponent = findComponent(collectionName, type, basename, "", false, false);
 
               // check the collection for the artifact
-              if(!loadedComponent_)
+              if(!foundComponent)
               {
-                loadedComponent_ = findComponent(selectedItem->collectionInfo->name, type, basename, "", false, false);
+                  foundComponent = findComponent(selectedItem->collectionInfo->name, type, basename, "", false, false);
               }
 
               // check the rom directory for the artifact
-              if(!loadedComponent_)
+              if(!foundComponent)
               {
-                loadedComponent_ = findComponent(selectedItem->collectionInfo->name, type, type, selectedItem->filepath, false, false);
+                  foundComponent = findComponent(selectedItem->collectionInfo->name, type, type, selectedItem->filepath, false, false);
               }
 
             }
@@ -439,40 +448,37 @@ void ReloadableMedia::reloadTexture()
             {
 
               // check the master collection for the artifact 
-              loadedComponent_ = findComponent(collectionName, type, basename, "", false, false);
+                foundComponent = findComponent(collectionName, type, basename, "", false, false);
 
               // check the collection for the artifact
-              if(!loadedComponent_)
+              if(!foundComponent)
               {
-                loadedComponent_ = findComponent(selectedItem->collectionInfo->name, type, basename, "", false, false);
+                  foundComponent = findComponent(selectedItem->collectionInfo->name, type, basename, "", false, false);
               }
 
               // check the submenu collection for the system artifact
-              if (!loadedComponent_)
+              if (!foundComponent)
               {
-                loadedComponent_ = findComponent(selectedItem->name, type, type, "", true, false);
+                  foundComponent = findComponent(selectedItem->name, type, type, "", true, false);
               } 
 
             }
 
         }
 
-        if (loadedComponent_ != NULL)
+        if (foundComponent != NULL)
         {
-             loadedComponent_->playlistName = page.getPlaylistName();
-             loadedComponent_->allocateGraphicsMemory();
-             baseViewInfo.ImageWidth = loadedComponent_->baseViewInfo.ImageWidth;
-             baseViewInfo.ImageHeight = loadedComponent_->baseViewInfo.ImageHeight;
+            return foundComponent;
         }
     }
 
     // if image and artwork was not specified, fall back to displaying text
-    if(!loadedComponent_ && textFallback_)
+    if(!foundComponent && textFallback_)
     {
-        loadedComponent_ = new Text(selectedItem->fullTitle, page, FfntInst_, baseViewInfo.Monitor);
-        baseViewInfo.ImageWidth = loadedComponent_->baseViewInfo.ImageWidth;
-        baseViewInfo.ImageHeight = loadedComponent_->baseViewInfo.ImageHeight;
+        return new Text(selectedItem->fullTitle, page, FfntInst_, baseViewInfo.Monitor);   
     }
+
+    return foundComponent;
 }
 
 
@@ -522,9 +528,9 @@ Component *ReloadableMedia::findComponent(const std::string& collection, const s
     if(isVideo)
     {
         if ( jukebox_ )
-            component = videoBuild.createVideo(imagePath, page, basename, baseViewInfo.Monitor, type=="video", jukeboxNumLoops_);
+            component = videoBuild.createVideo(imagePath, page, basename, baseViewInfo.Monitor, jukeboxNumLoops_);
         else
-            component = videoBuild.createVideo(imagePath, page, basename, baseViewInfo.Monitor, type=="video");
+            component = videoBuild.createVideo(imagePath, page, basename, baseViewInfo.Monitor);
     }
     else
     {
