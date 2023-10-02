@@ -68,6 +68,7 @@ void ReloadableMedia::enableTextFallback_(bool value)
 
 bool ReloadableMedia::update(float dt)
 {
+    Component* foundComponent = loadedComponent_;
     if (newItemSelected ||
        (newScrollItemSelected && getMenuScrollReload()) ||
         type_ == "isPaused" || 
