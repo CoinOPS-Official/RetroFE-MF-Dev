@@ -763,7 +763,7 @@ bool RetroFE::run( )
                     // Load new layout if available
                     // check if collection's assets are in a different theme
                     std::string layoutName;
-                    config_.getProperty("collections." + currentPage_->getCollectionName() + ".layout", layoutName);
+                    config_.getProperty("collections." + nextPageItem_->name + ".layout", layoutName);
                     if (layoutName == "") {
                         config_.getProperty("layout", layoutName);
                     }
