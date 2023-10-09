@@ -492,9 +492,9 @@ Component *ReloadableMedia::findComponent(const std::string& collection, const s
     VideoBuilder videoBuild;
     ImageBuilder imageBuild;
 
-    if (filepath != "")
+    if (filepath != "") {
         imagePath = filepath; 
-    else {
+    } else {
         // check the system folder
         if (layoutMode_)
         {
@@ -521,7 +521,7 @@ Component *ReloadableMedia::findComponent(const std::string& collection, const s
         {
             if (commonMode_)
             {
-                imagePath = Utils::combinePath(Configuration::absolutePath, "collections", "_common");
+                imagePath = Utils::combinePath(Configuration::absolutePath, "collections", "_common" );
                 if (systemMode)
                     imagePath = Utils::combinePath(imagePath, "system_artwork");
                 else
@@ -529,7 +529,18 @@ Component *ReloadableMedia::findComponent(const std::string& collection, const s
             }
             else
             {
-                config_.getMediaPropertyAbsolutePath(collection, type, systemMode, imagePath);
+                if (commonMode_)
+                {
+                    imagePath = Utils::combinePath(Configuration::absolutePath, "collections", "_common");
+                    if (systemMode)
+                        imagePath = Utils::combinePath(imagePath, "system_artwork");
+                    else
+                        imagePath = Utils::combinePath(imagePath, "medium_artwork", type);
+                }
+                else
+                {
+                    config_.getMediaPropertyAbsolutePath(collection, type, systemMode, imagePath);
+                }
             }
         }
     }
