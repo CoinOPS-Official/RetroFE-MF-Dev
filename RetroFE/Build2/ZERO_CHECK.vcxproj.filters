@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Build2\CMakeFiles\59358072b82946d8b50e24d37bb9814d\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{A42CD09B-3C1B-3953-815F-510C84B5287E}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

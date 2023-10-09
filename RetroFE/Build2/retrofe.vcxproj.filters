@@ -1,0 +1,315 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Collection\CollectionInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Collection\CollectionInfoBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Collection\Item.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Collection\MenuParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Control\UserInput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Control\JoyAxisHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Control\JoyButtonHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Control\JoyHatHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Control\KeyboardHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Control\MouseButtonHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Database\Configuration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Database\DB.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Database\MetadataDatabase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Execute\AttractMode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Execute\Launcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Font.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\FontCache.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\PageBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Page.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\ViewInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Animate\Animation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Animate\AnimationEvents.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Animate\Tween.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Animate\TweenSet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\ComponentItemBindingBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\ComponentItemBinding.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\Container.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\Component.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\Image.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\ImageBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\Text.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\ReloadableMedia.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\ReloadableText.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\ReloadableScrollingText.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\ScrollingList.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\VideoBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\VideoComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\Video.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Menu\Menu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Sound\Sound.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Utility\Log.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Utility\Utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Video\GStreamerVideo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Video\VideoFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\RetroFE.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\SDL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Version.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\ThirdParty\sqlite3\sqlite3.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Collection\CollectionInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Collection\CollectionInfoBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Collection\Item.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Collection\MenuParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Control\UserInput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Control\InputHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Control\JoyAxisHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Control\JoyButtonHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Control\JoyHatHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Control\KeyboardHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Control\MouseButtonHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Database\Configuration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Database\DB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Database\MetadataDatabase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Execute\AttractMode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Execute\Launcher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Animate\Tween.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Animate\TweenTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Animate\TweenSet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Animate\Animation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Animate\AnimationEvents.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\ComponentItemBinding.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\Container.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\Component.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\Image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\ImageBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\ReloadableMedia.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\ReloadableText.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\ReloadableScrollingText.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\ScrollingList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\Text.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\VideoComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\VideoBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Component\Video.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Font.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\FontCache.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\PageBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\Page.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Menu\Menu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Sound\Sound.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Utility\Log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Utility\Utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Video\IVideo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Video\GStreamerVideo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Video\VideoFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\ComponentItemBindingBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Graphics\ViewInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\RetroFE.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\SDL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\Version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\tobia\source\RetroFE-MF-Dev\RetroFE\Source\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{62FF4D4D-15B1-3B14-810B-8EC1051610BA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{2C6AA465-411B-33DE-AE87-C04DCAF8C64E}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

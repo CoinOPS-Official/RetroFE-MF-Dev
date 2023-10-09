@@ -1,0 +1,3 @@
+C:/Users/tobia/source/RetroFE-MF-Dev/RetroFE/Build2/CMakeFiles/retrofe.dir
+C:/Users/tobia/source/RetroFE-MF-Dev/RetroFE/Build2/CMakeFiles/ALL_BUILD.dir
+C:/Users/tobia/source/RetroFE-MF-Dev/RetroFE/Build2/CMakeFiles/ZERO_CHECK.dir
