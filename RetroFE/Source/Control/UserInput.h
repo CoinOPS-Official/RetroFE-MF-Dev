@@ -77,6 +77,9 @@ public:
         KeyCodeCycleCollection,
         KeyCodePrevCycleCollection,
         KeyCodeMax,
+        KeyCodeToggleGameInfo,
+        KeyCodeToggleCollectionInfo,
+        KeyCodeToggleBuildInfo,
     };
 
     UserInput(Configuration &c);

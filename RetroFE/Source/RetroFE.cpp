@@ -73,6 +73,9 @@ RetroFE::RetroFE( Configuration &c )
     , reboot_(false)
     , kioskLock_(false)
     , paused_(false)
+    , gameInfo_(false)
+    , collectionInfo_(false)
+    , buildInfo_(false)
 {
     menuMode_                            = false;
     attractMode_                         = false;
@@ -2068,6 +2071,20 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
                 state = RETROFE_PLAYLIST_ENTER;
             }
 	    }
+        else if (input_.keystate(UserInput::KeyCodeToggleGameInfo))
+        {
+            attract_.reset();
+            page->rememberSelectedItem();
+            if (gameInfo_) {
+                currentPage_->gameInfoExit();
+                gameInfo_ = false;
+            }
+            else {
+                currentPage_->gameInfoEnter();
+                gameInfo_ = true;
+            }
+            state = RETROFE_PLAYLIST_ENTER;
+        }
 
         else if ( input_.keystate(UserInput::KeyCodeSkipForward) )
         {

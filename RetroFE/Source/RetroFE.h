@@ -157,6 +157,9 @@ private:
 	bool               reboot_;
     bool               kioskLock_;
     bool               paused_;
+    bool                buildInfo_;
+    bool                collectionInfo_;
+    bool                gameInfo_;
 	std::string        firstPlaylist_;
     std::map<std::string, bool> lkupAttractModeSkipPlaylist_;
     std::map<std::string, unsigned int> lastMenuOffsets_;
