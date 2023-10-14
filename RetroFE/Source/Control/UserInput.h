@@ -76,10 +76,11 @@ public:
         KeyCodeQuitCombo2,
         KeyCodeCycleCollection,
         KeyCodePrevCycleCollection,
-        KeyCodeMax,
         KeyCodeToggleGameInfo,
         KeyCodeToggleCollectionInfo,
         KeyCodeToggleBuildInfo,
+        // leave KeyCodeMax at the end
+        KeyCodeMax,
     };
 
     UserInput(Configuration &c);
