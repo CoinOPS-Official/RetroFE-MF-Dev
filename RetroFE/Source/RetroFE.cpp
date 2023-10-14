@@ -2087,6 +2087,38 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             }
             state = RETROFE_PLAYLIST_ENTER;// RETROFE_IDLE;
         }
+        else if (input_.keystate(UserInput::KeyCodeToggleCollectionInfo))
+        {
+            attract_.reset();
+            input_.resetStates();
+            keyLastTime_ = currentTime_;
+
+            if (collectionInfo_) {
+                currentPage_->collectionInfoExit();
+                collectionInfo_ = false;
+            }
+            else {
+                currentPage_->collectionInfoEnter();
+                collectionInfo_ = true;
+            }
+            state = RETROFE_PLAYLIST_ENTER;// RETROFE_IDLE;
+        }
+        else if (input_.keystate(UserInput::KeyCodeToggleBuildInfo))
+        {
+            attract_.reset();
+            input_.resetStates();
+            keyLastTime_ = currentTime_;
+
+            if (buildInfo_) {
+                currentPage_->buildInfoExit();
+                buildInfo_ = false;
+            }
+            else {
+                currentPage_->buildInfoEnter();
+                buildInfo_ = true;
+            }
+            state = RETROFE_PLAYLIST_ENTER;// RETROFE_IDLE;
+        }
 
         else if ( input_.keystate(UserInput::KeyCodeSkipForward) )
         {
