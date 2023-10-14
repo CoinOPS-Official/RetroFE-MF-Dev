@@ -2074,7 +2074,9 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
         else if (input_.keystate(UserInput::KeyCodeToggleGameInfo))
         {
             attract_.reset();
-            page->rememberSelectedItem();
+            input_.resetStates();
+            keyLastTime_ = currentTime_;
+
             if (gameInfo_) {
                 currentPage_->gameInfoExit();
                 gameInfo_ = false;
@@ -2083,7 +2085,7 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
                 currentPage_->gameInfoEnter();
                 gameInfo_ = true;
             }
-            state = RETROFE_PLAYLIST_ENTER;
+            state = RETROFE_PLAYLIST_ENTER;// RETROFE_IDLE;
         }
 
         else if ( input_.keystate(UserInput::KeyCodeSkipForward) )
@@ -2493,4 +2495,11 @@ std::string RetroFE::getLayoutFileName()
     }
 
     return layoutName;
+}
+
+void RetroFE::resetInfoToggle()
+{
+    gameInfo_ = false;
+    collectionInfo_ = false;
+    buildInfo_ = false;
 }

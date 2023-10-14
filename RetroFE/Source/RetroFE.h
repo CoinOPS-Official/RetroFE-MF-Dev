@@ -135,6 +135,7 @@ private:
     CollectionInfo *getMenuCollection( std::string collectionName );
 	void            saveRetroFEState( );
     std::string getLayoutFileName();
+    void resetInfoToggle();
 
 
     Configuration     &config_;
