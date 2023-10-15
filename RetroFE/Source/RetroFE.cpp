@@ -623,6 +623,17 @@ bool RetroFE::run( )
             state = RETROFE_PLAYLIST_ENTER;
             break;
 
+        case RETROFE_PLAYLIST_NEXT:
+            currentPage_->nextPlaylist();
+            state = RETROFE_PLAYLIST_REQUEST;
+            break;
+
+        case RETROFE_PLAYLIST_PREV:
+            currentPage_->playlistPrevEnter();
+            currentPage_->prevPlaylist();
+            state = RETROFE_PLAYLIST_REQUEST;
+            break;
+
         case RETROFE_PLAYLIST_PREV_CYCLE:
             config_.getProperty("firstCollection", firstCollection);
             config_.getProperty("cyclePlaylist", cycleString);
@@ -671,6 +682,7 @@ bool RetroFE::run( )
             currentPage_->playlistExit( );
             currentPage_->resetScrollPeriod( );
             currentPage_->setScrolling(Page::ScrollDirectionIdle);
+
             state = RETROFE_PLAYLIST_EXIT;
             break;
 
@@ -2060,19 +2072,18 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
                  (input_.keystate(UserInput::KeyCodePlaylistDown)  &&  page->isHorizontalScroll( )) ||
                  (input_.keystate(UserInput::KeyCodePlaylistRight) && !page->isHorizontalScroll( ))))
         {
+            resetInfoToggle();
             attract_.reset( );
-            page->nextPlaylist( );
-            state = RETROFE_PLAYLIST_REQUEST;
+            state = RETROFE_PLAYLIST_NEXT;
         }
 
         else if (!kioskLock_ && (input_.keystate(UserInput::KeyCodePrevPlaylist) ||
                  (input_.keystate(UserInput::KeyCodePlaylistUp)   &&  page->isHorizontalScroll( )) ||
                  (input_.keystate(UserInput::KeyCodePlaylistLeft) && !page->isHorizontalScroll( ))))
         {
+            resetInfoToggle();
             attract_.reset( );
-            page->playlistPrevEnter();
-            page->prevPlaylist( );
-            state = RETROFE_PLAYLIST_REQUEST;
+            state = RETROFE_PLAYLIST_PREV;
         }
 
         else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeRemovePlaylist))
