@@ -670,7 +670,7 @@ void ScrollingList::triggerCollectionInfoExit(int menuIndex)
 
 void ScrollingList::triggerBuildInfoEnter(int menuIndex)
 {
-    triggerEventOnAll("attbuildInfoEnterractExit", menuIndex);
+    triggerEventOnAll("buildInfoEnter", menuIndex);
 }
 void ScrollingList::triggerBuildInfoExit(int menuIndex)
 {
