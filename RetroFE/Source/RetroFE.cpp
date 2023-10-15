@@ -456,6 +456,11 @@ bool RetroFE::run( )
             break;
         }
 
+        std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
+        std::string cycleString;
+        std::string firstCollection = "";
+        std::vector<std::string> cycleVector;
+
         switch(state)
         {
 
@@ -587,30 +592,70 @@ bool RetroFE::run( )
                 }
             }
             break;
+
         case RETROFE_GAMEINFO_ENTER:
             currentPage_->gameInfoEnter();
             state = RETROFE_PLAYLIST_ENTER;
             break;
+
         case RETROFE_GAMEINFO_EXIT:
             currentPage_->gameInfoExit();
             state = RETROFE_PLAYLIST_ENTER;
             break;
+
         case RETROFE_COLLECTIONINFO_ENTER:
             currentPage_->collectionInfoEnter();
             state = RETROFE_PLAYLIST_ENTER;
             break;
+
         case RETROFE_COLLECIONINFO_EXIT:
             currentPage_->collectionInfoExit();
             state = RETROFE_PLAYLIST_ENTER;
             break;
+
         case RETROFE_BUILDINFO_ENTER:
             currentPage_->buildInfoEnter();
             state = RETROFE_PLAYLIST_ENTER;
             break;
+
         case RETROFE_BUILDINFO_EXIT:
             currentPage_->buildInfoExit();
             state = RETROFE_PLAYLIST_ENTER;
             break;
+
+        case RETROFE_PLAYLIST_PREV_CYCLE:
+            config_.getProperty("firstCollection", firstCollection);
+            config_.getProperty("cyclePlaylist", cycleString);
+            // use the global setting as overide if firstCollection == current
+            if (cycleString == "" || firstCollection != currentPage_->getCollectionName()) {
+                // check if collection has different setting
+                if (config_.propertyExists(settingPrefix + "cyclePlaylist")) {
+                    config_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
+                }
+            }
+            Utils::listToVector(cycleString, cycleVector, ',');
+            currentPage_->playlistPrevEnter();
+            currentPage_->prevCyclePlaylist(cycleVector);
+
+            state = RETROFE_PLAYLIST_REQUEST;
+            break;
+
+        case RETROFE_PLAYLIST_NEXT_CYCLE:
+            config_.getProperty("firstCollection", firstCollection);
+            config_.getProperty("cyclePlaylist", cycleString);
+            // use the global setting as overide if firstCollection == current
+            if (cycleString == "" || firstCollection != currentPage_->getCollectionName()) {
+                // check if collection has different setting
+                if (config_.propertyExists(settingPrefix + "cyclePlaylist")) {
+                    config_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
+                }
+            }
+            Utils::listToVector(cycleString, cycleVector, ',');
+            currentPage_->nextCyclePlaylist(cycleVector);
+
+            state = RETROFE_PLAYLIST_REQUEST;
+            break;
+
         // Switch playlist; start onHighlightExit animation
         case RETROFE_PLAYLIST_REQUEST:
             inputClear = false;
@@ -1880,26 +1925,11 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
         ){
             if (!isStandalonePlaylist(currentPage_->getPlaylistName()))
             {
+                resetInfoToggle();
                 attract_.reset();
-                std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
-                std::string cycleString;
-                std::string firstCollection = "";
-                config_.getProperty("firstCollection", firstCollection);
-                config_.getProperty("cyclePlaylist", cycleString);
-                // use the global setting as overide if firstCollection == current
-                if (cycleString == "" || firstCollection != currentPage_->getCollectionName()) {
-                    // check if collection has different setting
-                    if (config_.propertyExists(settingPrefix + "cyclePlaylist")) {
-                        config_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
-                    }
-                }
-
-                std::vector<std::string> cycleVector;
-                Utils::listToVector(cycleString, cycleVector, ',');
-                page->nextCyclePlaylist(cycleVector);
-                
                 keyLastTime_ = currentTime_;
-                return RETROFE_PLAYLIST_REQUEST;
+
+                return RETROFE_PLAYLIST_NEXT_CYCLE;
 
             }
         }
@@ -1907,27 +1937,11 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
         {
             if (!isStandalonePlaylist(currentPage_->getPlaylistName()))
             {
+                resetInfoToggle();
                 attract_.reset();
-                std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
-                std::string cycleString;
-                std::string firstCollection = "";
-                config_.getProperty("firstCollection", firstCollection);
-                config_.getProperty("cyclePlaylist", cycleString);
-                // use the global setting as overide if firstCollection == current
-                if (cycleString == "" || firstCollection != currentPage_->getCollectionName()) {
-                    // check if collection has different setting
-                    if (config_.propertyExists(settingPrefix + "cyclePlaylist")) {
-                        config_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
-                    }
-                }
-                std::vector<std::string> cycleVector;
-                Utils::listToVector(cycleString, cycleVector, ',');
-                page->playlistPrevEnter();
-                page->prevCyclePlaylist(cycleVector);
-                
                 keyLastTime_ = currentTime_;
 
-                return RETROFE_PLAYLIST_REQUEST;
+                return RETROFE_PLAYLIST_PREV_CYCLE;
             }
         }
         else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeBack))
