@@ -633,7 +633,7 @@ void Page::collectionInfoExit()
 
 void Page::buildInfoEnter()
 {
-    triggerEventOnAllMenus("attbuildInfoEnterractExit");
+    triggerEventOnAllMenus("buildInfoEnter");
 }
 void Page::buildInfoExit()
 {
