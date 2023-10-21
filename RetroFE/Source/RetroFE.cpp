@@ -540,7 +540,6 @@ bool RetroFE::run( )
                 std::string firstCollection = "Main";
                 config_.getProperty("firstCollection", firstCollection);
                 currentPage_ = loadPage(firstCollection);
-                currentPage_->setLocked(kioskLock_);
                 splashMode = false;
                 if ( currentPage_ )
                 {
@@ -633,7 +632,24 @@ bool RetroFE::run( )
             currentPage_->prevPlaylist();
             state = RETROFE_PLAYLIST_REQUEST;
             break;
-
+        case RETROFE_SCROLL_FORWARD:
+            if (currentPage_->isIdle())
+            {
+                currentPage_->setScrolling(Page::ScrollDirectionForward);
+                currentPage_->scroll(true);
+                currentPage_->updateScrollPeriod();
+            }
+            state = RETROFE_IDLE;
+            break;
+        case RETROFE_SCROLL_BACK:
+            if (currentPage_->isIdle())
+            {
+                currentPage_->setScrolling(Page::ScrollDirectionBack);
+                currentPage_->scroll(false);
+                currentPage_->updateScrollPeriod();
+            }
+            state = RETROFE_IDLE;
+            break;
         case RETROFE_PLAYLIST_PREV_CYCLE:
             config_.getProperty("firstCollection", firstCollection);
             config_.getProperty("cyclePlaylist", cycleString);
@@ -1779,6 +1795,10 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
 {
     bool screensaver = false;
     config_.getProperty("screensaver", screensaver);
+
+    bool infoExitOnScroll = false;
+    config_.getProperty("infoExitOnScroll", infoExitOnScroll);
+
     std::map<unsigned int, bool> ssExitInputs = {
         {SDL_MOUSEMOTION,true},
         {SDL_KEYDOWN,true},
@@ -1818,37 +1838,37 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
         if (input_.keystate(UserInput::KeyCodeRight))
         {
             attract_.reset( );
-            page->setScrolling(Page::ScrollDirectionForward);
-            page->scroll(true);
-            page->updateScrollPeriod( );
-            return state;
+            if (infoExitOnScroll) {
+                resetInfoToggle();
+            }
+            return RETROFE_SCROLL_FORWARD;
         }
         else if (input_.keystate(UserInput::KeyCodeLeft))
         {
             attract_.reset( );
-            page->setScrolling(Page::ScrollDirectionBack);
-            page->scroll(false);
-            page->updateScrollPeriod( );
-            return state;
+            if (infoExitOnScroll) {
+                resetInfoToggle();
+            }
+            return RETROFE_SCROLL_BACK;
         }
     }
     else
     {
         if (input_.keystate(UserInput::KeyCodeDown))
         {
-            attract_.reset( );
-            page->setScrolling(Page::ScrollDirectionForward);
-            page->scroll(true);
-            page->updateScrollPeriod( );
-            return state;
+           attract_.reset();
+            if (infoExitOnScroll) {
+                resetInfoToggle();
+            }
+            return RETROFE_SCROLL_FORWARD;
         }
         else if (input_.keystate(UserInput::KeyCodeUp))
         {
-            attract_.reset( );
-            page->setScrolling(Page::ScrollDirectionBack);
-            page->scroll(false);
-            page->updateScrollPeriod( );
-            return state;
+            attract_.reset();
+            if (infoExitOnScroll) {
+                resetInfoToggle();
+            }
+            return RETROFE_SCROLL_BACK;
         }
     }
     
