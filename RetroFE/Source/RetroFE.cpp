@@ -564,6 +564,9 @@ bool RetroFE::run( )
                     }
                     currentPage_->pushCollection(info);
 
+                    if (currentPage_->getCollectionName() == "Favorites") {
+                        firstPlaylist_ = "favorites";
+                    }
                     config_.getProperty("firstPlaylist", firstPlaylist_);
                     // use the global setting as overide if firstCollection == current
                     if (firstPlaylist_ == "" || firstCollection != currentPage_->getCollectionName()) {
