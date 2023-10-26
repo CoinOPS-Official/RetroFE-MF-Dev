@@ -564,9 +564,6 @@ bool RetroFE::run( )
                     }
                     currentPage_->pushCollection(info);
 
-                    if (currentPage_->getCollectionName() == "Favorites") {
-                        firstPlaylist_ = "favorites";
-                    }
                     config_.getProperty("firstPlaylist", firstPlaylist_);
                     // use the global setting as overide if firstCollection == current
                     if (firstPlaylist_ == "" || firstCollection != currentPage_->getCollectionName()) {
@@ -575,6 +572,10 @@ bool RetroFE::run( )
                         if (config_.propertyExists(settingPrefix + "firstPlaylist")) {
                             config_.getProperty(settingPrefix + "firstPlaylist", firstPlaylist_);
                         }
+                    }
+
+                    if (currentPage_->getCollectionName() == "Favorites") {
+                        firstPlaylist_ = "favorites";
                     }
 
                     currentPage_->selectPlaylist( firstPlaylist_ );
@@ -913,7 +914,10 @@ bool RetroFE::run( )
                     config_.getProperty("autoPlaylist", autoPlaylist);
                 }
 
-                config_.getProperty( "autoPlaylist", autoPlaylist );
+                if (currentPage_->getCollectionName() == "Favorites") {
+                    autoPlaylist = "favorites";
+                }
+
                 bool returnToRememberedPlaylist = rememberMenu && lastMenuPlaylists_.find(nextPageName) != lastMenuPlaylists_.end();
                 if (returnToRememberedPlaylist)
                 {
@@ -1053,7 +1057,20 @@ bool RetroFE::run( )
                 config_.getProperty( "rememberMenu", rememberMenu );
 
                 std::string autoPlaylist = "all";
-                config_.getProperty( "autoPlaylist", autoPlaylist );
+
+                // check collection for setting
+                std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
+                if (config_.propertyExists(settingPrefix + "autoPlaylist")) {
+                    config_.getProperty(settingPrefix + "autoPlaylist", autoPlaylist);
+                }
+                else {
+                    config_.getProperty("autoPlaylist", autoPlaylist);
+                }
+
+                if (currentPage_->getCollectionName() == "Favorites") {
+                    autoPlaylist = "favorites";
+                }
+
                 bool returnToRememberedPlaylist = rememberMenu && lastMenuPlaylists_.find(collectionName) != lastMenuPlaylists_.end();
                 if (returnToRememberedPlaylist)
                 {
@@ -1263,7 +1280,20 @@ bool RetroFE::run( )
                 config_.getProperty( "rememberMenu", rememberMenu );
 
                 std::string autoPlaylist = "all";
-                config_.getProperty( "autoPlaylist", autoPlaylist );
+
+                // check collection for setting
+                std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
+                if (config_.propertyExists(settingPrefix + "autoPlaylist")) {
+                    config_.getProperty(settingPrefix + "autoPlaylist", autoPlaylist);
+                }
+                else {
+                    config_.getProperty("autoPlaylist", autoPlaylist);
+                }
+
+                if (currentPage_->getCollectionName() == "Favorites") {
+                    autoPlaylist = "favorites";
+                }
+
                 bool returnToRememberedPlaylist = rememberMenu && lastMenuPlaylists_.find(collectionName) != lastMenuPlaylists_.end();
                 if (returnToRememberedPlaylist)
                 {
@@ -1472,7 +1502,20 @@ bool RetroFE::run( )
                 config_.getProperty( "rememberMenu", rememberMenu );
 
                 std::string autoPlaylist = "all";
-                config_.getProperty( "autoPlaylist", autoPlaylist );
+                
+                // check collection for setting
+                std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
+                if (config_.propertyExists(settingPrefix + "autoPlaylist")) {
+                    config_.getProperty(settingPrefix + "autoPlaylist", autoPlaylist);
+                }
+                else {
+                    config_.getProperty("autoPlaylist", autoPlaylist);
+                }
+
+                if (currentPage_->getCollectionName() == "Favorites") {
+                    autoPlaylist = "favorites";
+                }
+
                 bool returnToRememberedPlaylist = rememberMenu && lastMenuPlaylists_.find(collectionName) != lastMenuPlaylists_.end();
                 if (returnToRememberedPlaylist)
                 {
