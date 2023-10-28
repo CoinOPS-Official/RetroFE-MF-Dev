@@ -198,6 +198,8 @@ void RetroFE::launchExit( )
     }
     input_.resetStates( );
     attract_.reset( );
+    currentPage_->updateReloadables(0);
+    currentPage_->reallocateMenuSpritePoints(false); // skip updating playlist menu
 
     // Restore time settings
     currentTime_ = static_cast<float>( SDL_GetTicks( ) ) / 1000;
@@ -1689,8 +1691,13 @@ bool RetroFE::run( )
                     {
                         if ( !attractMode_ && attract_.isSet( ) )
                         {
-                            currentPage_->attractEnter( );
-                            l.LEDBlinky( 5 );
+                            // hide toggle before attract mode
+                            if (buildInfo_ || collectionInfo_ || gameInfo_) {
+                                resetInfoToggle();
+                            } else {
+                                currentPage_->attractEnter( );
+                                l.LEDBlinky( 5 );
+                            }
                         }
                         else if ( attractMode_ && !attract_.isSet( ) )
                         {
