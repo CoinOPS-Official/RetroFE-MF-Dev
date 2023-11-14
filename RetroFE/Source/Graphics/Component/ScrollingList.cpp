@@ -107,10 +107,10 @@ const std::vector<Item*>& ScrollingList::getItems() const
 
 void ScrollingList::setItems( std::vector<Item *> *items )
 {
-    size_t size = items_->size();
     items_ = items;
     if (items_)
     {
+        size_t size = items_->size();
         itemIndex_ = loopDecrement(size, selectedOffsetIndex_, size);
     }
 }
