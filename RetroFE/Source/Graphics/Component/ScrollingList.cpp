@@ -124,10 +124,11 @@ std::vector<Item*> ScrollingList::getItems()
 
 void ScrollingList::setItems( std::vector<Item *> *items )
 {
+    size_t size = items_->size();
     items_ = items;
     if (items_)
     {
-        itemIndex_ = loopDecrement(0, selectedOffsetIndex_, items_->size());
+        itemIndex_ = loopDecrement(size, selectedOffsetIndex_, size);
     }
 }
 
@@ -161,15 +162,16 @@ std::string ScrollingList::getSelectedItemName()
 unsigned int ScrollingList::loopIncrement(size_t offset, size_t index, size_t size )
 {
     if ( size == 0 ) return 0;
+
     return static_cast<int>((offset + index) % size);
 }
 
 
 unsigned int ScrollingList::loopDecrement(size_t offset, size_t index, size_t size)
 {
-    if (size == 0) return 0;
-    size_t result = offset + size - index;
-    return static_cast<unsigned int>(result % size);
+    if (size == 0 || offset + size <= index) return 0;
+
+    return static_cast<unsigned int>((offset + size - index) % size);
 }
 
 
