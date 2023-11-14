@@ -1282,15 +1282,6 @@ void Page::removePlaylist()
     MenuInfo_S &info = collections_.back();
     CollectionInfo *collection = info.collection;
 
-    bool globalFavLast = false;
-    (void)config_.getProperty("globalFavLast", globalFavLast);
-    if (globalFavLast && collection->name != "Favorites") {
-        collection->saveRequest = true;
-        collection->saveFavorites(selectedItem_);
-
-        return;
-    }
-
     std::vector<Item *> *items = collection->playlists["favorites"];
     auto it = std::find(items->begin(), items->end(), selectedItem_);
 
@@ -1318,6 +1309,15 @@ void Page::removePlaylist()
             amenu->setScrollOffsetIndex(index);
         }
     }
+    bool globalFavLast = false;
+    (void)config_.getProperty("globalFavLast", globalFavLast);
+    if (globalFavLast && collection->name != "Favorites") {
+        collection->saveRequest = true;
+        collection->saveFavorites(selectedItem_);
+
+        return;
+    }
+
     collection->saveFavorites();
 }
 
