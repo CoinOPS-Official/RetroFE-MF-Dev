@@ -92,6 +92,7 @@ bool UserInput::initialize()
     MapKey("toggleGameInfo", KeyCodeToggleGameInfo, false);
     MapKey("toggleCollectionInfo", KeyCodeToggleCollectionInfo, false);
     MapKey("toggleBuildInfo", KeyCodeToggleBuildInfo, false);
+    MapKey("settings", KeyCodeSettings, false);
 
     bool retVal = true;
 
