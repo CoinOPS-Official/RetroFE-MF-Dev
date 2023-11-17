@@ -22,6 +22,8 @@ v0.10.34.3
     - fixed adding and removing from global playlist; fixed starting on favorite playlist on faorites collection (monkofthefunk)
     - added randomStart to start on random game (monkofthefunk)
     - added animateDuringGame to turn off animated marquee animation during game launch (monkofthefunk)
+    - fixed case where 3 games in a menu with 4 each side of selected would dysync from selected relodables (monkofthefunk)
+    - fixed global favorites adding and removing and how it affects current collection's favorites list (monkofthefunk)
 
 v0.10.34.2
     - update version *.2 (monkofthefunk)
