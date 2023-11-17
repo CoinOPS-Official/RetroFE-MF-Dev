@@ -675,24 +675,20 @@ bool RetroFE::run( )
                 break;
             }
            
-            // todo if already in settings, go back
             if (currentPage_->getCollectionName() == settingsCollection && currentPage_->getPlaylistName() == settingsPlaylist) {
-                state = RETROFE_BACK_REQUEST;
+                nextPageItem_ = new Item();
+                config_.getProperty("lastCollection", nextPageItem_->name);
+                state = RETROFE_NEXT_PAGE_REQUEST;
                 break;
             }
 
             info = getCollection(settingsCollection);
-
             if (info == nullptr) {
                 state = RETROFE_IDLE;
                 break;
             }
-            currentPage_->pushCollection(info);
-            currentPage_->selectPlaylist(settingsPlaylist);
-            currentPage_->onNewItemSelected();
-            currentPage_->reallocateMenuSpritePoints();
 
-            state = RETROFE_LOAD_ART;
+            state = RETROFE_SETTINGS_PAGE_REQUEST;
             break;
         case RETROFE_PLAYLIST_PREV_CYCLE:
             config_.getProperty("firstCollection", firstCollection);
@@ -873,6 +869,62 @@ bool RetroFE::run( )
             }
             break;
 
+        case RETROFE_SETTINGS_PAGE_REQUEST:
+            currentPage_->exitMenu();
+            state = RETROFE_SETTINGS_PAGE_MENU_EXIT;
+            break;
+        case RETROFE_SETTINGS_PAGE_MENU_EXIT:
+            if (currentPage_->isIdle())
+            {
+                std::string collectionName = currentPage_->getCollectionName();
+                lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
+                lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName();
+                config_.setProperty("lastCollection", collectionName);
+
+                if (settingsCollection != collectionName)
+                {
+                    config_.setProperty("currentCollection", settingsCollection);
+                    // Load new layout if available
+                    // check if collection's assets are in a different theme
+                    std::string layoutName;
+                    config_.getProperty("collections." + settingsCollection + ".layout", layoutName);
+                    if (layoutName == "") {
+                        config_.getProperty("layout", layoutName);
+                    }
+                    PageBuilder pb(layoutName, getLayoutFileName(), config_, &fontcache_);
+
+                    bool defaultToCurrentLayout = false;
+                    if (std::string settingPrefix = "collections." + currentPage_->getCollectionName() + "."; config_.propertyExists(settingPrefix + "defaultToCurrentLayout")) {
+                        config_.getProperty(settingPrefix + "defaultToCurrentLayout", defaultToCurrentLayout);
+                    }
+
+                    // try collection name
+                    Page* page = pb.buildPage(settingsCollection, defaultToCurrentLayout);
+                    if (page)
+                    {
+                        if (page->controlsType() != currentPage_->controlsType()) {
+                            updatePageControls(page->controlsType());
+                        }
+                        currentPage_->freeGraphicsMemory();
+                        pages_.push(currentPage_);
+                        currentPage_ = page;
+                        currentPage_->setLocked(kioskLock_);
+                        CollectionInfo* info;
+                        info = getCollection(settingsCollection);
+                        currentPage_->pushCollection(info);
+                    }
+                    else {
+                        Logger::write(Logger::ZONE_ERROR, "RetroFE", "Could not create page");
+                    }
+                }
+
+                currentPage_->selectPlaylist(settingsPlaylist);
+                currentPage_->onNewItemSelected();
+                currentPage_->reallocateMenuSpritePoints(); // update playlist menu
+
+                state = RETROFE_NEXT_PAGE_MENU_LOAD_ART;
+            }
+            break;
         // Next page; start onMenuExit animation
         case RETROFE_NEXT_PAGE_REQUEST:
             currentPage_->exitMenu( );
@@ -883,12 +935,15 @@ bool RetroFE::run( )
         case RETROFE_NEXT_PAGE_MENU_EXIT:
             if ( currentPage_->isIdle( ) )
             {
+                std::string nextPageName = nextPageItem_->name;
                 std::string collectionName = currentPage_->getCollectionName();
                 if ( currentPage_->getSelectedItem( ) )
                     l.LEDBlinky( 8, currentPage_->getSelectedItem( )->name, currentPage_->getSelectedItem( ) );
-                lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
-                lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName( );
-                std::string nextPageName = nextPageItem_->name;
+                // don't overwrite last saved remeber playlist
+                if (collectionName != nextPageName) {
+                    lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
+                    lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName();
+                }
                 CollectionInfo* info;
                 if (menuMode_)
                     info = getMenuCollection(nextPageName);
