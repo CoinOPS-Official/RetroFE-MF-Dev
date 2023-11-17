@@ -418,6 +418,18 @@ bool RetroFE::run( )
     l.startScript();
     config_.getProperty("kiosk", kioskLock_);
 
+    // settings button
+    CollectionInfo* info = nullptr;
+    std::string settingsCollection = "";
+    std::string settingsPlaylist = "";
+    std::string settingsCollectionPlaylist;
+    config_.getProperty("settingsCollectionPlaylist", settingsCollectionPlaylist);
+    size_t position = settingsCollectionPlaylist.find(":");
+    if (position != std::string::npos) {
+        settingsCollection = settingsCollectionPlaylist.substr(0, position);
+        settingsPlaylist = settingsCollectionPlaylist.erase(0, position + 1);
+    }
+
     while ( running )
     {
 
@@ -658,19 +670,9 @@ bool RetroFE::run( )
             state = RETROFE_IDLE;
             break;
         case RETROFE_SETTINGS_REQUEST:
-
-            std::string settingsCollectionPlaylist;
-            config_.getProperty("settingsCollectionPlaylist", settingsCollectionPlaylist);
             if (settingsCollectionPlaylist == "") {
                 state = RETROFE_IDLE;
                 break;
-            }
-            std::string settingsCollection = "";
-            std::string settingsPlaylist = "";
-            size_t position = settingsCollectionPlaylist.find(":");
-            if (position != std::string::npos) {
-                settingsCollection = settingsCollectionPlaylist.substr(0, position);
-                settingsPlaylist = settingsCollectionPlaylist.erase(0, position + 1);
             }
            
             // todo if already in settings, go back
@@ -679,7 +681,7 @@ bool RetroFE::run( )
                 break;
             }
 
-            CollectionInfo *info = getCollection(settingsCollection);
+            info = getCollection(settingsCollection);
 
             if (info == nullptr) {
                 state = RETROFE_IDLE;
