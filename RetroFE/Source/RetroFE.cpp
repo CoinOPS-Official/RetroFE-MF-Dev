@@ -657,6 +657,41 @@ bool RetroFE::run( )
             }
             state = RETROFE_IDLE;
             break;
+        case RETROFE_SETTINGS_REQUEST:
+
+            std::string settingsCollectionPlaylist;
+            config_.getProperty("settingsCollectionPlaylist", settingsCollectionPlaylist);
+            if (settingsCollectionPlaylist == "") {
+                state = RETROFE_IDLE;
+                break;
+            }
+            std::string settingsCollection = "";
+            std::string settingsPlaylist = "";
+            size_t position = settingsCollectionPlaylist.find(":");
+            if (position != std::string::npos) {
+                settingsCollection = settingsCollectionPlaylist.substr(0, position);
+                settingsPlaylist = settingsCollectionPlaylist.erase(0, position + 1);
+            }
+           
+            // todo if already in settings, go back
+            if (currentPage_->getCollectionName() == settingsCollection && currentPage_->getPlaylistName() == settingsPlaylist) {
+                state = RETROFE_BACK_REQUEST;
+                break;
+            }
+
+            CollectionInfo *info = getCollection(settingsCollection);
+
+            if (info == nullptr) {
+                state = RETROFE_IDLE;
+                break;
+            }
+            currentPage_->pushCollection(info);
+            currentPage_->selectPlaylist(settingsPlaylist);
+            currentPage_->onNewItemSelected();
+            currentPage_->reallocateMenuSpritePoints();
+
+            state = RETROFE_LOAD_ART;
+            break;
         case RETROFE_PLAYLIST_PREV_CYCLE:
             config_.getProperty("firstCollection", firstCollection);
             config_.getProperty("cyclePlaylist", cycleString);
@@ -2134,6 +2169,13 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             attract_.reset( );
             page->favPlaylist( );
             state = RETROFE_PLAYLIST_REQUEST;
+        }
+
+        else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeSettings))
+        {
+            attract_.reset();
+            resetInfoToggle();
+            state = RETROFE_SETTINGS_REQUEST;
         }
 
         else if (!kioskLock_ && (input_.keystate(UserInput::KeyCodeNextPlaylist) ||
