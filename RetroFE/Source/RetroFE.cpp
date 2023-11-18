@@ -421,13 +421,14 @@ bool RetroFE::run( )
     // settings button
     CollectionInfo* info = nullptr;
     std::string settingsCollection = "";
-    std::string settingsPlaylist = "";
+    std::string settingsPlaylist = "settings";
     std::string settingsCollectionPlaylist;
     config_.getProperty("settingsCollectionPlaylist", settingsCollectionPlaylist);
     size_t position = settingsCollectionPlaylist.find(":");
     if (position != std::string::npos) {
         settingsCollection = settingsCollectionPlaylist.substr(0, position);
         settingsPlaylist = settingsCollectionPlaylist.erase(0, position + 1);
+        config_.setProperty("settingsPlaylist", settingsPlaylist);
     }
 
     while ( running )
@@ -669,22 +670,13 @@ bool RetroFE::run( )
             }
             state = RETROFE_IDLE;
             break;
-        case RETROFE_SETTINGS_REQUEST:
-            if (settingsCollectionPlaylist == "") {
-                state = RETROFE_IDLE;
-                break;
-            }
-           
-            if (currentPage_->getCollectionName() == settingsCollection && currentPage_->getPlaylistName() == settingsPlaylist) {
+        case RETROFE_SETTINGS_REQUEST:           
+            if ((settingsCollection == "" || currentPage_->getCollectionName() == settingsCollection) && 
+                currentPage_->getPlaylistName() == settingsPlaylist
+            ) {
                 nextPageItem_ = new Item();
                 config_.getProperty("lastCollection", nextPageItem_->name);
                 state = RETROFE_NEXT_PAGE_REQUEST;
-                break;
-            }
-
-            info = getCollection(settingsCollection);
-            if (info == nullptr) {
-                state = RETROFE_IDLE;
                 break;
             }
 
@@ -870,19 +862,16 @@ bool RetroFE::run( )
             break;
 
         case RETROFE_SETTINGS_PAGE_REQUEST:
-            currentPage_->exitMenu();
-            state = RETROFE_SETTINGS_PAGE_MENU_EXIT;
-            break;
-        case RETROFE_SETTINGS_PAGE_MENU_EXIT:
             if (currentPage_->isIdle())
             {
                 std::string collectionName = currentPage_->getCollectionName();
                 lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
                 lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName();
                 config_.setProperty("lastCollection", collectionName);
-
-                if (settingsCollection != collectionName)
+                state = RETROFE_PLAYLIST_REQUEST;
+                if (settingsCollection != "" && settingsCollection != collectionName)
                 {
+                    state = RETROFE_NEXT_PAGE_MENU_LOAD_ART;
                     config_.setProperty("currentCollection", settingsCollection);
                     // Load new layout if available
                     // check if collection's assets are in a different theme
@@ -909,20 +898,20 @@ bool RetroFE::run( )
                         pages_.push(currentPage_);
                         currentPage_ = page;
                         currentPage_->setLocked(kioskLock_);
-                        CollectionInfo* info;
-                        info = getCollection(settingsCollection);
+                        CollectionInfo* info = getCollection(settingsCollection);
+                        if (info == nullptr) {
+                            state = RETROFE_BACK_MENU_LOAD_ART;
+                            break;
+                        }
                         currentPage_->pushCollection(info);
                     }
                     else {
                         Logger::write(Logger::ZONE_ERROR, "RetroFE", "Could not create page");
                     }
                 }
-
                 currentPage_->selectPlaylist(settingsPlaylist);
                 currentPage_->onNewItemSelected();
                 currentPage_->reallocateMenuSpritePoints(); // update playlist menu
-
-                state = RETROFE_NEXT_PAGE_MENU_LOAD_ART;
             }
             break;
         // Next page; start onMenuExit animation
@@ -940,22 +929,24 @@ bool RetroFE::run( )
                 if ( currentPage_->getSelectedItem( ) )
                     l.LEDBlinky( 8, currentPage_->getSelectedItem( )->name, currentPage_->getSelectedItem( ) );
                 // don't overwrite last saved remeber playlist
+                info = currentPage_->getCollection();
                 if (collectionName != nextPageName) {
                     lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
                     lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName();
-                }
-                CollectionInfo* info;
-                if (menuMode_)
-                    info = getMenuCollection(nextPageName);
-                else
-                    info = getCollection(nextPageName);
+                
+                    // don't load collection unless it's different the current collection
+                    CollectionInfo* info;
+                    if (menuMode_)
+                        info = getMenuCollection(nextPageName);
+                    else
+                        info = getCollection(nextPageName);
 
-                if (!info) {
-                    Logger::write(Logger::ZONE_ERROR, "RetroFE", "Collection not found with Name " + nextPageName);
-                    state = RETROFE_BACK_MENU_LOAD_ART;
-                    break;
+                    if (!info) {
+                        Logger::write(Logger::ZONE_ERROR, "RetroFE", "Collection not found with Name " + nextPageName);
+                        state = RETROFE_BACK_MENU_LOAD_ART;
+                        break;
+                    }
                 }
-
                 if ( !menuMode_ )
                 {
                     // Load new layout if available
@@ -988,7 +979,6 @@ bool RetroFE::run( )
                         Logger::write(Logger::ZONE_ERROR, "RetroFE", "Could not create page");
                     }
                 }
-
                 config_.setProperty("currentCollection", nextPageName);
                 currentPage_->pushCollection(info);
 

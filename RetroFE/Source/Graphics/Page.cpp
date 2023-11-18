@@ -1091,6 +1091,9 @@ void Page::nextCyclePlaylist(std::vector<std::string> list)
     // Empty list
     if (list.empty())
         return;
+    
+    std::string settingsPlaylist = "";
+    config_.getProperty("settingsPlaylist", settingsPlaylist);
 
     // Find the current playlist in the list
     auto it = list.begin();
@@ -1104,7 +1107,7 @@ void Page::nextCyclePlaylist(std::vector<std::string> list)
     {
         for (auto it2 = list.begin(); it2 != list.end(); ++it2)
         {
-            if (playlistExists(*it2)) {
+            if (*it2 != settingsPlaylist && playlistExists(*it2)) {
                 selectPlaylist(*it2);
                 break;
             }
@@ -1119,7 +1122,7 @@ void Page::nextCyclePlaylist(std::vector<std::string> list)
             if (it == list.end()) 
                 it = list.begin(); // wrap
 
-            if (playlistExists(*it)) {
+            if (*it != settingsPlaylist && playlistExists(*it)) {
                 selectPlaylist(*it);
                 break;
             }
@@ -1135,6 +1138,9 @@ void Page::prevCyclePlaylist(std::vector<std::string> list)
     if (list.empty())
         return;
 
+    std::string settingsPlaylist = "";
+    config_.getProperty("settingsPlaylist", settingsPlaylist);
+
     // Find the current playlist in the list
     auto it = list.begin();
     while (it != list.end() && *it != getPlaylistName())
@@ -1145,7 +1151,7 @@ void Page::prevCyclePlaylist(std::vector<std::string> list)
     {
         for (auto it2 = list.begin(); it2 != list.end(); ++it2)
         {
-            if (playlistExists(*it2)) {
+            if (*it2 != settingsPlaylist && playlistExists(*it2)) {
                 selectPlaylist(*it2);
                 break;
             }
@@ -1159,7 +1165,7 @@ void Page::prevCyclePlaylist(std::vector<std::string> list)
             if (it == list.begin()) 
                 it = list.end(); // wrap
             --it;
-            if (playlistExists(*it)) {
+            if (*it != settingsPlaylist && playlistExists(*it)) {
                 selectPlaylist(*it);
                 break;
             }
