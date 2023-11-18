@@ -670,17 +670,71 @@ bool RetroFE::run( )
             }
             state = RETROFE_IDLE;
             break;
-        case RETROFE_SETTINGS_REQUEST:           
-            if ((settingsCollection == "" || currentPage_->getCollectionName() == settingsCollection) && 
-                currentPage_->getPlaylistName() == settingsPlaylist
-            ) {
-                nextPageItem_ = new Item();
-                config_.getProperty("lastCollection", nextPageItem_->name);
-                state = RETROFE_NEXT_PAGE_REQUEST;
-                break;
-            }
+        case RETROFE_SETTINGS_REQUEST:
+            currentPage_->playlistExit();
+            currentPage_->resetScrollPeriod();
+            currentPage_->setScrolling(Page::ScrollDirectionIdle);
+            state = RETROFE_SETTINGS_PAGE_MENU_EXIT;
+            break;
+        case RETROFE_SETTINGS_PAGE_MENU_EXIT:
+            if (currentPage_->isIdle())
+            {
+                if ((settingsCollection == "" || currentPage_->getCollectionName() == settingsCollection) &&
+                    currentPage_->getPlaylistName() == settingsPlaylist
+                 ) {
+                    nextPageItem_ = new Item();
+                    config_.getProperty("lastCollection", nextPageItem_->name);
+                    if (currentPage_->getCollectionName() != nextPageItem_->name) {
+                        state = RETROFE_NEXT_PAGE_MENU_EXIT;
+                    }
+                    else {
+                        state = RETROFE_PLAYLIST_REQUEST;
+                        // return to last playlist
+                        // todo move to function for re-use
+                        bool rememberMenu = false;
+                        config_.getProperty("rememberMenu", rememberMenu);
 
-            state = RETROFE_SETTINGS_PAGE_REQUEST;
+                        std::string autoPlaylist = "all";
+
+                        if (std::string settingPrefix = "collections." + currentPage_->getCollectionName() + "."; config_.propertyExists(settingPrefix + "autoPlaylist")) {
+                            config_.getProperty(settingPrefix + "autoPlaylist", autoPlaylist);
+                        }
+                        else {
+                            config_.getProperty("autoPlaylist", autoPlaylist);
+                        }
+
+                        if (currentPage_->getCollectionName() == "Favorites") {
+                            autoPlaylist = "favorites";
+                        }
+
+                        bool returnToRememberedPlaylist = rememberMenu && lastMenuPlaylists_.find(nextPageItem_->name) != lastMenuPlaylists_.end();
+                        if (returnToRememberedPlaylist)
+                        {
+                            currentPage_->selectPlaylist(lastMenuPlaylists_[nextPageItem_->name]); // Switch to last playlist
+                        }
+                        else
+                        {
+                            currentPage_->selectPlaylist(autoPlaylist);
+                            if (currentPage_->getPlaylistName() != autoPlaylist)
+                                currentPage_->selectPlaylist("all");
+                        }
+
+                        if (returnToRememberedPlaylist)
+                        {
+                            if (lastMenuOffsets_.size() && lastMenuPlaylists_.find(nextPageItem_->name) != lastMenuPlaylists_.end()) {
+                                currentPage_->setScrollOffsetIndex(lastMenuOffsets_[nextPageItem_->name]);
+                            }
+                        }
+
+                        currentPage_->onNewItemSelected();
+                        currentPage_->reallocateMenuSpritePoints(); // update playlist menu
+                        //
+                    }
+                    break;
+                }
+
+                state = RETROFE_SETTINGS_PAGE_REQUEST;
+            }
             break;
         case RETROFE_PLAYLIST_PREV_CYCLE:
             config_.getProperty("firstCollection", firstCollection);
@@ -924,6 +978,7 @@ bool RetroFE::run( )
         case RETROFE_NEXT_PAGE_MENU_EXIT:
             if ( currentPage_->isIdle( ) )
             {
+                state = RETROFE_NEXT_PAGE_MENU_LOAD_ART;
                 std::string nextPageName = nextPageItem_->name;
                 std::string collectionName = currentPage_->getCollectionName();
                 if ( currentPage_->getSelectedItem( ) )
@@ -1020,8 +1075,6 @@ bool RetroFE::run( )
 
                 currentPage_->onNewItemSelected();
                 currentPage_->reallocateMenuSpritePoints(); // update playlist menu
-
-                state = RETROFE_NEXT_PAGE_MENU_LOAD_ART;
 
                 // Check if we've entered an empty collection and need to go back automatically
                 if (currentPage_->getCollectionSize() == 0)
