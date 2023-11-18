@@ -70,9 +70,8 @@ bool VideoComponent::update(float dt)
                         Logger::write(Logger::ZONE_DEBUG, "VideoComponent", "Resumed " + Utils::getFileName(videoFile_));
                     }
                 }
-                videoInst_->setVolume(baseViewInfo.Volume);
             }
-
+            videoInst_->setVolume(baseViewInfo.Volume);
             videoInst_->update(dt);
 
             // video needs to run a frame to start getting size info
