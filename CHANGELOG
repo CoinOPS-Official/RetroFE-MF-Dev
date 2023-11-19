@@ -26,6 +26,7 @@ v0.10.34.3
     - fixed global favorites adding and removing and how it affects current collection's favorites list (monkofthefunk)
     - fixed using mp3 in video element (monkofthefunk)
     - added settings control toggle and settingsCollectionPlaylist to determine what collection/playlist it's in (monkofthefunk)
+    - added random playlist to randomStart (monkofthefunk)
 
 v0.10.34.2
     - update version *.2 (monkofthefunk)

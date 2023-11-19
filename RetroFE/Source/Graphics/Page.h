@@ -79,6 +79,7 @@ public:
     size_t getCollectionSize();
     unsigned int getSelectedIndex();
     void selectRandom();
+    void selectRandomPlaylist(CollectionInfo* collection);
     void start();
     void stop();
     void setCurrentLayout(int layout);

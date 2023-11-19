@@ -26,6 +26,7 @@
 #include "PageBuilder.h"
 #include <algorithm>
 #include <sstream>
+#include "../Utility/Utils.h"
 
 
 Page::Page(Configuration &config, int layoutWidth, int layoutHeight)
@@ -761,6 +762,31 @@ void Page::selectRandom()
     }
 }
 
+void Page::selectRandomPlaylist(CollectionInfo* collection)
+{
+    size_t size = collection->playlists.size();
+    if (size == 0) return;
+
+    int index = rand() % size;
+    int i = 0;
+    std::string playlistName;
+    std::string settingsPlaylist = "settings";
+    config_.setProperty("settingsPlaylist", settingsPlaylist);
+    std::string cycleString;
+    std::vector<std::string> cycleVector;
+    config_.getProperty("cyclePlaylist", cycleString);
+    Utils::listToVector(cycleString, cycleVector, ',');
+    for (auto it = collection->playlists.begin(); it != collection->playlists.end(); it++)
+    {
+        if (i == index && it->first != settingsPlaylist && std::find(cycleVector.begin(), cycleVector.end(), it->first) != cycleVector.end()) {
+            playlistName = it->first;
+            break;
+        }
+        i++;
+    }
+    if (playlistName != "")
+        selectPlaylist(playlistName);
+}
 
 void Page::letterScroll(ScrollDirection direction)
 {
@@ -983,7 +1009,6 @@ void Page::favPlaylist()
     }
     return;
 }
-
 
 void Page::nextPlaylist()
 {

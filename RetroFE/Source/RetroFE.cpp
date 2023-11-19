@@ -597,6 +597,7 @@ bool RetroFE::run( )
                     bool randomStart = false;
                     config_.getProperty("randomStart", randomStart);
                     if (screensaver || randomStart) {
+                        currentPage_->selectRandomPlaylist(info);
                         currentPage_->selectRandom();
                     }
 
