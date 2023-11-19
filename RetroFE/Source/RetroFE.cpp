@@ -677,64 +677,57 @@ bool RetroFE::run( )
             state = RETROFE_SETTINGS_PAGE_MENU_EXIT;
             break;
         case RETROFE_SETTINGS_PAGE_MENU_EXIT:
-            if (currentPage_->isIdle())
-            {
-                if ((settingsCollection == "" || currentPage_->getCollectionName() == settingsCollection) &&
-                    currentPage_->getPlaylistName() == settingsPlaylist
-                 ) {
-                    nextPageItem_ = new Item();
-                    config_.getProperty("lastCollection", nextPageItem_->name);
-                    if (currentPage_->getCollectionName() != nextPageItem_->name) {
-                        state = RETROFE_NEXT_PAGE_MENU_EXIT;
+            if ((settingsCollection == "" || currentPage_->getCollectionName() == settingsCollection) &&
+                currentPage_->getPlaylistName() == settingsPlaylist
+                ) {
+                nextPageItem_ = new Item();
+                config_.getProperty("lastCollection", nextPageItem_->name);
+                if (currentPage_->getCollectionName() != nextPageItem_->name) {
+                    state = RETROFE_NEXT_PAGE_MENU_EXIT;
+                }
+                else {
+                    state = RETROFE_PLAYLIST_REQUEST;
+                    // return to last playlist
+                    // todo move to function for re-use
+                    bool rememberMenu = false;
+                    config_.getProperty("rememberMenu", rememberMenu);
+
+                    std::string autoPlaylist = "all";
+
+                    if (std::string settingPrefix = "collections." + currentPage_->getCollectionName() + "."; config_.propertyExists(settingPrefix + "autoPlaylist")) {
+                        config_.getProperty(settingPrefix + "autoPlaylist", autoPlaylist);
                     }
                     else {
-                        state = RETROFE_PLAYLIST_REQUEST;
-                        // return to last playlist
-                        // todo move to function for re-use
-                        bool rememberMenu = false;
-                        config_.getProperty("rememberMenu", rememberMenu);
-
-                        std::string autoPlaylist = "all";
-
-                        if (std::string settingPrefix = "collections." + currentPage_->getCollectionName() + "."; config_.propertyExists(settingPrefix + "autoPlaylist")) {
-                            config_.getProperty(settingPrefix + "autoPlaylist", autoPlaylist);
-                        }
-                        else {
-                            config_.getProperty("autoPlaylist", autoPlaylist);
-                        }
-
-                        if (currentPage_->getCollectionName() == "Favorites") {
-                            autoPlaylist = "favorites";
-                        }
-
-                        bool returnToRememberedPlaylist = rememberMenu && lastMenuPlaylists_.find(nextPageItem_->name) != lastMenuPlaylists_.end();
-                        if (returnToRememberedPlaylist)
-                        {
-                            currentPage_->selectPlaylist(lastMenuPlaylists_[nextPageItem_->name]); // Switch to last playlist
-                        }
-                        else
-                        {
-                            currentPage_->selectPlaylist(autoPlaylist);
-                            if (currentPage_->getPlaylistName() != autoPlaylist)
-                                currentPage_->selectPlaylist("all");
-                        }
-
-                        if (returnToRememberedPlaylist)
-                        {
-                            if (lastMenuOffsets_.size() && lastMenuPlaylists_.find(nextPageItem_->name) != lastMenuPlaylists_.end()) {
-                                currentPage_->setScrollOffsetIndex(lastMenuOffsets_[nextPageItem_->name]);
-                            }
-                        }
-
-                        currentPage_->onNewItemSelected();
-                        currentPage_->reallocateMenuSpritePoints(); // update playlist menu
-                        //
+                        config_.getProperty("autoPlaylist", autoPlaylist);
                     }
-                    break;
-                }
 
-                state = RETROFE_SETTINGS_PAGE_REQUEST;
+                    if (currentPage_->getCollectionName() == "Favorites") {
+                        autoPlaylist = "favorites";
+                    }
+
+                    bool returnToRememberedPlaylist = rememberMenu && lastMenuPlaylists_.find(nextPageItem_->name) != lastMenuPlaylists_.end();
+                    if (returnToRememberedPlaylist)
+                    {
+                        currentPage_->selectPlaylist(lastMenuPlaylists_[nextPageItem_->name]); // Switch to last playlist
+                    }
+                    else
+                    {
+                        currentPage_->selectPlaylist(autoPlaylist);
+                        if (currentPage_->getPlaylistName() != autoPlaylist)
+                            currentPage_->selectPlaylist("all");
+                    }
+
+                    if (returnToRememberedPlaylist)
+                    {
+                        if (lastMenuOffsets_.size() && lastMenuPlaylists_.find(nextPageItem_->name) != lastMenuPlaylists_.end()) {
+                            currentPage_->setScrollOffsetIndex(lastMenuOffsets_[nextPageItem_->name]);
+                        }
+                    }
+                }
+                break;
             }
+
+            state = RETROFE_SETTINGS_PAGE_REQUEST;
             break;
         case RETROFE_PLAYLIST_PREV_CYCLE:
             config_.getProperty("firstCollection", firstCollection);
@@ -916,7 +909,7 @@ bool RetroFE::run( )
             break;
 
         case RETROFE_SETTINGS_PAGE_REQUEST:
-            if (currentPage_->isIdle())
+            if (currentPage_->getCollectionName() != "")
             {
                 std::string collectionName = currentPage_->getCollectionName();
                 lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
@@ -964,8 +957,6 @@ bool RetroFE::run( )
                     }
                 }
                 currentPage_->selectPlaylist(settingsPlaylist);
-                currentPage_->onNewItemSelected();
-                currentPage_->reallocateMenuSpritePoints(); // update playlist menu
             }
             break;
         // Next page; start onMenuExit animation
