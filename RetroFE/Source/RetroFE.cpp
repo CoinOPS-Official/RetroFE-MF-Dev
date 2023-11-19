@@ -990,7 +990,6 @@ bool RetroFE::run( )
                     lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName();
                 
                     // don't load collection unless it's different the current collection
-                    CollectionInfo* info;
                     if (menuMode_)
                         info = getMenuCollection(nextPageName);
                     else
