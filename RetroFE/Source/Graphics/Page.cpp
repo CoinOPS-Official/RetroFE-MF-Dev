@@ -772,6 +772,7 @@ void Page::selectRandomPlaylist(CollectionInfo* collection, std::vector<std::str
     std::string playlistName;
     std::string settingsPlaylist = "settings";
     config_.setProperty("settingsPlaylist", settingsPlaylist);
+
     for (auto it = collection->playlists.begin(); it != collection->playlists.end(); it++)
     {
         if (i == index && it->first != settingsPlaylist && std::find(cycleVector.begin(), cycleVector.end(), it->first) != cycleVector.end()) {
