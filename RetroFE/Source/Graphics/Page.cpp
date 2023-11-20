@@ -762,7 +762,7 @@ void Page::selectRandom()
     }
 }
 
-void Page::selectRandomPlaylist(CollectionInfo* collection)
+void Page::selectRandomPlaylist(CollectionInfo* collection, std::vector<std::string> cycleVector)
 {
     size_t size = collection->playlists.size();
     if (size == 0) return;
@@ -772,10 +772,6 @@ void Page::selectRandomPlaylist(CollectionInfo* collection)
     std::string playlistName;
     std::string settingsPlaylist = "settings";
     config_.setProperty("settingsPlaylist", settingsPlaylist);
-    std::string cycleString;
-    std::vector<std::string> cycleVector;
-    config_.getProperty("cyclePlaylist", cycleString);
-    Utils::listToVector(cycleString, cycleVector, ',');
     for (auto it = collection->playlists.begin(); it != collection->playlists.end(); it++)
     {
         if (i == index && it->first != settingsPlaylist && std::find(cycleVector.begin(), cycleVector.end(), it->first) != cycleVector.end()) {
@@ -1385,7 +1381,6 @@ void Page::togglePlaylist()
             addPlaylist();
     }
 }
-
 
 std::string Page::getCollectionName()
 {

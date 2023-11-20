@@ -76,6 +76,7 @@ RetroFE::RetroFE( Configuration &c )
     , buildInfo_(false)
     , collectionInfo_(false)
     , gameInfo_(false)
+    , playlistCycledOnce_(false)
 {
     menuMode_                            = false;
     attractMode_                         = false;
@@ -431,11 +432,14 @@ bool RetroFE::run( )
         config_.setProperty("settingsPlaylist", settingsPlaylist);
     }
 
+    float lastTime = 0;
+    float deltaTime = 0;
+
     while ( running )
     {
 
-        float lastTime = 0;
-        float deltaTime = 0;
+        lastTime = 0;
+        deltaTime = 0;
 
         // Exit splash mode when an active key is pressed
         if (SDL_Event e;  splashMode && (SDL_PollEvent( &e )))
@@ -469,11 +473,6 @@ bool RetroFE::run( )
             running = false;
             break;
         }
-
-        std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
-        std::string cycleString;
-        std::string firstCollection = "";
-        std::vector<std::string> cycleVector;
 
         switch(state)
         {
@@ -597,7 +596,7 @@ bool RetroFE::run( )
                     bool randomStart = false;
                     config_.getProperty("randomStart", randomStart);
                     if (screensaver || randomStart) {
-                        currentPage_->selectRandomPlaylist(info);
+                        currentPage_->selectRandomPlaylist(info, getPlaylistCycle());
                         currentPage_->selectRandom();
                     }
 
@@ -731,34 +730,18 @@ bool RetroFE::run( )
             state = RETROFE_SETTINGS_PAGE_REQUEST;
             break;
         case RETROFE_PLAYLIST_PREV_CYCLE:
-            config_.getProperty("firstCollection", firstCollection);
-            config_.getProperty("cyclePlaylist", cycleString);
-            // use the global setting as overide if firstCollection == current
-            if (cycleString == "" || firstCollection != currentPage_->getCollectionName()) {
-                // check if collection has different setting
-                if (config_.propertyExists(settingPrefix + "cyclePlaylist")) {
-                    config_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
-                }
-            }
-            Utils::listToVector(cycleString, cycleVector, ',');
             currentPage_->playlistPrevEnter();
-            currentPage_->prevCyclePlaylist(cycleVector);
+            currentPage_->prevCyclePlaylist(getPlaylistCycle());
+            // random highlight on first playlist cycle
+            selectRandomOnFirstCycle();
 
             state = RETROFE_PLAYLIST_REQUEST;
             break;
 
         case RETROFE_PLAYLIST_NEXT_CYCLE:
-            config_.getProperty("firstCollection", firstCollection);
-            config_.getProperty("cyclePlaylist", cycleString);
-            // use the global setting as overide if firstCollection == current
-            if (cycleString == "" || firstCollection != currentPage_->getCollectionName()) {
-                // check if collection has different setting
-                if (config_.propertyExists(settingPrefix + "cyclePlaylist")) {
-                    config_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
-                }
-            }
-            Utils::listToVector(cycleString, cycleVector, ',');
-            currentPage_->nextCyclePlaylist(cycleVector);
+            currentPage_->nextCyclePlaylist(getPlaylistCycle());
+            // random highlight on first playlist cycle
+            selectRandomOnFirstCycle();
 
             state = RETROFE_PLAYLIST_REQUEST;
             break;
@@ -1813,16 +1796,10 @@ bool RetroFE::run( )
                             if (config_.propertyExists(settingPrefix + "attractModeCyclePlaylist")) {
                                 config_.getProperty(settingPrefix + "attractModeCyclePlaylist", cyclePlaylist);
                             }
-                            if (config_.propertyExists(settingPrefix + "cyclePlaylist")) {
-                                config_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
-                            }
                         }
 
-                        // go to next playlist in cycle or from all found playlists
-                        std::vector<std::string> cycleVector;
-                        Utils::listToVector(cycleString, cycleVector, ',');
                         if (cyclePlaylist)
-                            currentPage_->nextCyclePlaylist(cycleVector);
+                            currentPage_->nextCyclePlaylist(getPlaylistCycle());
                         else
                             currentPage_->nextPlaylist();
 
@@ -1830,7 +1807,7 @@ bool RetroFE::run( )
                         if (isInAttractModeSkipPlaylist(currentPage_->getPlaylistName()))
                         {
                             if (cyclePlaylist) {
-                                goToNextAttractModePlaylistByCycle(cycleVector);
+                                goToNextAttractModePlaylistByCycle(getPlaylistCycle());
                             }
                             else {
                                 // todo perform smarter playlist skipping
@@ -1886,6 +1863,42 @@ bool RetroFE::run( )
     return reboot_;
 }
 
+std::vector<std::string> RetroFE::getPlaylistCycle()
+{
+    if (cycleVector_.empty()) {
+        std::string collectionName = currentPage_->getCollectionName();
+        std::string settingPrefix = "collections." + collectionName + ".";
+
+        bool cyclePlaylist = true;
+        std::string firstCollection = "";
+        std::string cycleString = "";
+        config_.getProperty("firstCollection", firstCollection);
+        config_.getProperty("cyclePlaylist", cycleString);
+        // use the global setting as overide if firstCollection == current
+        if (cycleString == "" || firstCollection != collectionName) {
+            // check if collection has different setting
+            if (config_.propertyExists(settingPrefix + "cyclePlaylist")) {
+                config_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
+            }
+        }
+        Utils::listToVector(cycleString, cycleVector_, ',');
+    }
+
+    return cycleVector_;
+}
+
+void RetroFE::selectRandomOnFirstCycle()
+{
+    // random highlight on first playlist cycle
+    if (!playlistCycledOnce_) {
+        playlistCycledOnce_ = true;
+        bool randomStart = false;
+        config_.getProperty("randomStart", randomStart);
+        if (randomStart) {
+            currentPage_->selectRandom();
+        }
+    }
+}
 
 // Check if we can go back a page or quite RetroFE
 bool RetroFE::back(bool &exit)

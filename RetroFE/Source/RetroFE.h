@@ -53,6 +53,8 @@ public:
     void     allocateGraphicsMemory( );
     void     launchEnter( );
     void     launchExit( );
+    std::vector<std::string>     getPlaylistCycle();
+    void selectRandomOnFirstCycle();
 
 
 private:
@@ -177,8 +179,10 @@ private:
     bool                buildInfo_;
     bool                collectionInfo_;
     bool                gameInfo_;
+    bool playlistCycledOnce_;
 	std::string        firstPlaylist_;
     std::map<std::string, bool> lkupAttractModeSkipPlaylist_;
     std::map<std::string, unsigned int> lastMenuOffsets_;
     std::map<std::string, std::string>  lastMenuPlaylists_;
+    std::vector<std::string> cycleVector_;
 };
