@@ -1782,23 +1782,9 @@ bool RetroFE::run( )
                     if (!kioskLock_ && attractReturn == 1) // Change playlist
                     {
                         attract_.reset( attract_.isSet( ) );
-                        std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
 
-                        bool cyclePlaylist = true;
-                        std::string firstCollection = "";
-                        std::string cycleString = "";
-                        config_.getProperty("firstCollection", firstCollection);
-                        config_.getProperty("attractModeCyclePlaylist", cyclePlaylist);
-                        config_.getProperty("cyclePlaylist", cycleString);
-                        // use the global setting as overide if firstCollection == current
-                        if (cycleString == "" || firstCollection != currentPage_->getCollectionName()) {
-                            // check if collection has different setting
-                            if (config_.propertyExists(settingPrefix + "attractModeCyclePlaylist")) {
-                                config_.getProperty(settingPrefix + "attractModeCyclePlaylist", cyclePlaylist);
-                            }
-                        }
-
-                        if (cyclePlaylist)
+                        bool attractModeCyclePlaylist = getAttractModeCyclePlaylist();
+                        if (attractModeCyclePlaylist)
                             currentPage_->nextCyclePlaylist(getPlaylistCycle());
                         else
                             currentPage_->nextPlaylist();
@@ -1806,7 +1792,7 @@ bool RetroFE::run( )
                         // if that next playlist is one to skip for attract, then find one that isn't
                         if (isInAttractModeSkipPlaylist(currentPage_->getPlaylistName()))
                         {
-                            if (cyclePlaylist) {
+                            if (attractModeCyclePlaylist) {
                                 goToNextAttractModePlaylistByCycle(getPlaylistCycle());
                             }
                             else {
@@ -1861,6 +1847,26 @@ bool RetroFE::run( )
         }
     }
     return reboot_;
+}
+
+bool RetroFE::getAttractModeCyclePlaylist()
+{
+    bool attractModeCyclePlaylist = true;
+    std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
+    std::string firstCollection = "";
+    std::string cycleString = "";
+    config_.getProperty("firstCollection", firstCollection);
+    config_.getProperty("attractModeCyclePlaylist", attractModeCyclePlaylist);
+    config_.getProperty("cyclePlaylist", cycleString);
+    // use the global setting as overide if firstCollection == current
+    if (cycleString == "" || firstCollection != currentPage_->getCollectionName()) {
+        // check if collection has different setting
+        if (config_.propertyExists(settingPrefix + "attractModeCyclePlaylist")) {
+            config_.getProperty(settingPrefix + "attractModeCyclePlaylist", attractModeCyclePlaylist);
+        }
+    }
+
+    return attractModeCyclePlaylist;
 }
 
 std::vector<std::string> RetroFE::getPlaylistCycle()

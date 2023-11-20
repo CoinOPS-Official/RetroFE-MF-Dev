@@ -55,6 +55,7 @@ public:
     void     launchExit( );
     std::vector<std::string>     getPlaylistCycle();
     void selectRandomOnFirstCycle();
+    bool getAttractModeCyclePlaylist();
 
 
 private:
