@@ -24,9 +24,9 @@ Component::Component(Page &p)
 : page(p)
 {
     tweens_                   = nullptr;
-    backgroundTexture_        = nullptr;
     menuScrollReload_         = false;
     animationDoneRemove_      = false;
+    backgroundTexture_ = nullptr;
     freeGraphicsMemory();
     id_                       = -1;
 }
@@ -35,8 +35,8 @@ Component::Component(const Component &copy)
     : page(copy.page)
 {
     tweens_ = nullptr;
-    backgroundTexture_ = nullptr;
     freeGraphicsMemory();
+    backgroundTexture_ = nullptr;
 
     if ( copy.tweens_ )
     {
@@ -65,7 +65,14 @@ void Component::freeGraphicsMemory()
     currentTweenIndex_    = 0;
     currentTweenComplete_ = true;
     elapsedTweenTime_     = 0;
-
+    tweens_ = nullptr;
+    SDL_LockMutex(SDL::getMutex());
+    if (backgroundTexture_ != nullptr)
+    {
+        SDL_DestroyTexture(backgroundTexture_);
+        backgroundTexture_ = nullptr;
+    }
+    SDL_UnlockMutex(SDL::getMutex());
 }
 
 // used to draw lines in the layout using <container>

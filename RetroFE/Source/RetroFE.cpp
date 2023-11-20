@@ -420,7 +420,6 @@ bool RetroFE::run( )
     config_.getProperty("kiosk", kioskLock_);
 
     // settings button
-    CollectionInfo* info = nullptr;
     std::string settingsCollection = "";
     std::string settingsPlaylist = "settings";
     std::string settingsCollectionPlaylist;
@@ -557,7 +556,6 @@ bool RetroFE::run( )
                 if ( currentPage_ )
                 {
                     currentPage_->setLocked(kioskLock_);
-                    CollectionInfo* info;
 
                     // add collections to cycle
                     std::string cycleString;
@@ -566,7 +564,7 @@ bool RetroFE::run( )
                     collectionCycleIt_ = collectionCycle_.begin();
 
                     config_.setProperty( "currentCollection", firstCollection );
-                    info = getCollection(firstCollection);
+                    CollectionInfo* info = getCollection(firstCollection);
 
                     if (info == nullptr) {
                         state = RETROFE_QUIT_REQUEST;
@@ -574,6 +572,7 @@ bool RetroFE::run( )
                         break;
                     }
                     currentPage_->pushCollection(info);
+                    cycleVector_.clear();
 
                     config_.getProperty("firstPlaylist", firstPlaylist_);
                     // use the global setting as overide if firstCollection == current
@@ -935,6 +934,7 @@ bool RetroFE::run( )
                             break;
                         }
                         currentPage_->pushCollection(info);
+                        cycleVector_.clear();
                     }
                     else {
                         Logger::write(Logger::ZONE_ERROR, "RetroFE", "Could not create page");
@@ -959,7 +959,7 @@ bool RetroFE::run( )
                 if ( currentPage_->getSelectedItem( ) )
                     l.LEDBlinky( 8, currentPage_->getSelectedItem( )->name, currentPage_->getSelectedItem( ) );
                 // don't overwrite last saved remeber playlist
-                info = currentPage_->getCollection();
+                CollectionInfo* info = currentPage_->getCollection();
                 if (collectionName != nextPageName) {
                     lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
                     lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName();
@@ -1010,6 +1010,7 @@ bool RetroFE::run( )
                 }
                 config_.setProperty("currentCollection", nextPageName);
                 currentPage_->pushCollection(info);
+                cycleVector_.clear();
 
                 bool rememberMenu = false;
                 config_.getProperty( "rememberMenu", rememberMenu );
@@ -1251,11 +1252,10 @@ bool RetroFE::run( )
         case RETROFE_COLLECTION_DOWN_SCROLL:
             if ( currentPage_->isMenuIdle( ) )
             {
-                Item const* currentPageItem = currentPage_->getSelectedItem();
                 std::string attractModeSkipCollection = "";
                 config_.getProperty( "attractModeSkipCollection", attractModeSkipCollection );
                 // Check if we need to skip this collection in attract mode or if we can select it
-                if ( attractMode_ && currentPageItem->name == attractModeSkipCollection )
+                if ( attractMode_ && currentPage_->getSelectedItem()->name == attractModeSkipCollection )
                 {
                     currentPage_->setScrolling(Page::ScrollDirectionForward);
                     currentPage_->scroll(true);
@@ -1700,8 +1700,8 @@ bool RetroFE::run( )
                     Logger::write(Logger::ZONE_ERROR, "RetroFE", "Could not create page");
                 }
                 config_.setProperty( "currentCollection", "menu" );
-                CollectionInfo *info = getMenuCollection( "menu" );
-                currentPage_->pushCollection(info);
+                currentPage_->pushCollection(getMenuCollection("menu"));
+                cycleVector_.clear();
                 currentPage_->onNewItemSelected();
                 currentPage_->reallocateMenuSpritePoints(); // update playlist menu
                 state = RETROFE_MENUMODE_START_LOAD_ART;
