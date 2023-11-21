@@ -28,6 +28,7 @@ v0.10.34.3
     - added settings control toggle and settingsCollectionPlaylist to determine what collection/playlist it's in (monkofthefunk)
     - added random playlist to randomStart (monkofthefunk)
     - added random highlight on first playlist scroll if randomStart (monkofthefunk)
+    - fixed collection animation crash due to memleak overfix (monkofthefunk)
 
 v0.10.34.2
     - update version *.2 (monkofthefunk)
