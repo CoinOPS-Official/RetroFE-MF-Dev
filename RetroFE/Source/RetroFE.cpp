@@ -2315,8 +2315,7 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
 
             // don't trigger playlist change events but refresh item states
             currentPage_->reallocateMenuSpritePoints(); // update playlist menu
-
-            state = RETROFE_PLAYLIST_ENTER;
+            state = RETROFE_PLAYLIST_REQUEST;
         }
 
         else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeAddPlaylist) )

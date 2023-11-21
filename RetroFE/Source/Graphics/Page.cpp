@@ -1334,7 +1334,7 @@ void Page::removePlaylist()
         // set to position to the old deleted position
         if (amenu)
         {
-            amenu->setScrollOffsetIndex(index);
+            amenu->setScrollOffsetIndex(index+1);
         }
     }
     bool globalFavLast = false;
