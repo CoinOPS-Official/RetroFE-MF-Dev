@@ -65,7 +65,6 @@ void Component::freeGraphicsMemory()
     currentTweenIndex_    = 0;
     currentTweenComplete_ = true;
     elapsedTweenTime_     = 0;
-    tweens_ = nullptr;
     SDL_LockMutex(SDL::getMutex());
     if (backgroundTexture_ != nullptr)
     {

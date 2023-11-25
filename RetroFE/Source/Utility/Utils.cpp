@@ -101,7 +101,7 @@ bool Utils::isFileInCache(const std::filesystem::path& baseDir, const std::strin
         const auto& files = baseDirIt->second;
         if (files.find(filename) != files.end()) {
             // Logging cache hit
-            LOG_DEBUG("File Cache", "Hit:  " + baseDir.string() + " contains " + filename);
+            LOG_DEBUG("File Cache", "Hit:  " + removeAbsolutePath(baseDir.string()) + " contains " + filename);
             return true;
         }
     }
@@ -124,7 +124,7 @@ bool Utils::findMatchingFile(const std::string& prefix, const std::vector<std::s
 
         // Check if the directory is known to not exist
         if (nonExistingDirectories.find(baseDir) != nonExistingDirectories.end()) {
-            LOG_DEBUG("File Cache", "Skipping non-existing directory: " + baseDir.string());
+            LOG_DEBUG("File Cache", "Skipping non-existing directory: " + removeAbsolutePath(baseDir.string()));
             return false; // Directory was previously found not to exist
         }
 
@@ -152,7 +152,7 @@ bool Utils::findMatchingFile(const std::string& prefix, const std::vector<std::s
 
         if (!foundInCache) {
             // Log cache miss only once per directory after checking all extensions
-            LOG_DEBUG("File Cache", "Miss: " + baseDir.string() + " does not contain file '" + baseFileName + "'");
+            LOG_DEBUG("File Cache", "Miss: " + removeAbsolutePath(baseDir.string()) + " does not contain file '" + baseFileName + "'");
         }
 
         return foundInCache;
@@ -306,4 +306,15 @@ std::string Utils::trim(std::string& str)
     str.erase(str.find_last_not_of(' ') + 1);         //suffixing spaces
     str.erase(0, str.find_first_not_of(' '));       //prefixing spaces
     return str;
+}
+
+std::string Utils::removeAbsolutePath(const std::string& fullPath) {
+    std::string rootPath = Configuration::absolutePath; // Get the absolute path
+    std::size_t found = fullPath.find(rootPath);
+
+    if (found != std::string::npos) {
+        // Remove the rootPath part from fullPath
+        return fullPath.substr(0, found) + "." + fullPath.substr(found + rootPath.length());
+    }
+    return fullPath; // Return the original path if root is not found
 }

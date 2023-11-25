@@ -35,8 +35,8 @@ public:
 
     };
     static bool initialize(std::string file, Configuration* config);
-    static bool isLevelEnabled(Zone zone);
-    static void write(Zone zone, std::string component, std::string message);
+    static void write(Zone zone, const std::string& component, const std::string& message);
+    static bool isLevelEnabled(const std::string& zone);
     static void deInitialize();
 private:
 	static std::string zoneToString(Zone zone);
@@ -47,21 +47,21 @@ private:
 };
 
 #define LOG_DEBUG(component, message) \
-    if (Logger::isLevelEnabled(Logger::ZONE_DEBUG)) \
+    if (Logger::isLevelEnabled("DEBUG")) \
         Logger::write(Logger::ZONE_DEBUG, component, message)
 
 #define LOG_INFO(component, message) \
-    if (Logger::isLevelEnabled(Logger::ZONE_INFO)) \
+    if (Logger::isLevelEnabled("INFO")) \
         Logger::write(Logger::ZONE_INFO, component, message)
 
 #define LOG_NOTICE(component, message) \
-    if (Logger::isLevelEnabled(Logger::ZONE_NOTICE)) \
+    if (Logger::isLevelEnabled("NOTICE")) \
         Logger::write(Logger::ZONE_NOTICE, component, message)
 
 #define LOG_WARNING(component, message) \
-    if (Logger::isLevelEnabled(Logger::ZONE_WARNING)) \
+    if (Logger::isLevelEnabled("WARNING")) \
         Logger::write(Logger::ZONE_WARNING, component, message)
 
 #define LOG_ERROR(component, message) \
-    if (Logger::isLevelEnabled(Logger::ZONE_ERROR)) \
+    if (Logger::isLevelEnabled("ERROR")) \
         Logger::write(Logger::ZONE_ERROR, component, message)

@@ -336,7 +336,7 @@ void GStreamerVideo::processNewBuffer(GstElement const */* fakesink */, GstBuffe
 
         // If height and width are now set, and the video buffer hasn't been set yet, proceed.
         if (video->width_ > 0 && video->height_ > 0 && !video->videoBuffer_) {
-            if (SDL_LockMutex(SDL::getMutex()) == 0) { // Lock the mutex, check for success.
+           if (SDL_LockMutex(SDL::getMutex()) == 0) { // Lock the mutex, check for success.
                 video->videoBuffer_ = gst_buffer_ref(buf);
                 if (!video->videoBuffer_) {
                     LOG_ERROR("Video", "Failed to ref buffer.");
@@ -391,7 +391,6 @@ void GStreamerVideo::update(float /* dt */)
             {
                 bufferLayout_ = CONTIGUOUS;
                 // Calculate total size of the contiguous Y + UV data
-                totalSize_ = width_ * height_ + (width_ * (height_ / 2)); // Y plane + UV plane
                 LOG_DEBUG("Video", "Buffer is Contiguous");
             }
         }
@@ -405,25 +404,41 @@ void GStreamerVideo::update(float /* dt */)
 
         switch (bufferLayout_)
         {
-        case CONTIGUOUS:
-        {
-            // Directly lock the texture for the entire area
-            Uint8* texture_pixels = nullptr;
-            int texture_pitch;
-            if (SDL_LockTexture(texture_, nullptr, (void**)&texture_pixels, &texture_pitch) < 0) {
-                LOG_ERROR("Video", "Unable to lock texture");
+            case CONTIGUOUS:
+            {
+                // Directly lock the texture for the entire area
+                Uint8* texture_pixels;
+                int texture_pitch;
+                if (SDL_LockTexture(texture_, NULL, (void**)&texture_pixels, &texture_pitch) < 0) {
+                    Logger::write(Logger::ZONE_ERROR, "Video", "Unable to lock texture");
+                    break;
+                }
+
+                // Pointers to Y and UV planes in the source buffer
+                const auto* src_y = (const Uint8*)bufInfo.data;
+                const Uint8* src_uv = src_y + GST_ROUND_UP_4(width_) * height_;
+
+                // Pointers to Y and UV planes in the texture
+                Uint8* dst_y = texture_pixels;
+                Uint8* dst_uv = dst_y + texture_pitch * height_;
+
+                // Y plane copying
+                for (int i = 0; i < height_; i++) {
+                    SDL_memcpy(dst_y, src_y, width_);
+                    src_y += GST_ROUND_UP_4(width_);
+                    dst_y += texture_pitch;
+                    // UV plane copying (NV12 specific)
+                    if (i % 2 == 0) {
+                        // This assumes the UV plane is exactly half the height of the Y plane.
+                        SDL_memcpy(dst_uv, src_uv, GST_ROUND_UP_4(width_));
+                        src_uv += GST_ROUND_UP_4(width_);
+                        dst_uv += texture_pitch;
+                    }
+                }
+
+                SDL_UnlockTexture(texture_);
                 break;
             }
-
-            // Assuming src_y points to a contiguous block of Y and UV data
-            const Uint8* src_y = (const Uint8*)bufInfo.data;
-
-            // Perform a single SDL_memcpy operation
-            SDL_memcpy(texture_pixels, src_y, totalSize_);
-
-            SDL_UnlockTexture(texture_);
-            break;
-        }
 
 
             case NON_CONTIGUOUS:
