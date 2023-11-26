@@ -29,6 +29,7 @@ v0.10.34.3
     - added random playlist to randomStart (monkofthefunk)
     - added random highlight on first playlist scroll if randomStart (monkofthefunk)
     - fixed collection animation crash due to memleak overfix (monkofthefunk)
+    - fixed clearing runtime playlist cycle cache upon collection change (monkofthefunk)
 
 v0.10.34.2
     - update version *.2 (monkofthefunk)
