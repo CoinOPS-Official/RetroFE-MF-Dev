@@ -964,7 +964,7 @@ bool RetroFE::run( )
                 std::string collectionName = currentPage_->getCollectionName();
                 if ( currentPage_->getSelectedItem( ) )
                     l.LEDBlinky( 8, currentPage_->getSelectedItem( )->name, currentPage_->getSelectedItem( ) );
-                // don't overwrite last saved remeber playlist
+                // don't overwrite last saved remember playlist
                 CollectionInfo* info = currentPage_->getCollection();
                 if (collectionName != nextPageName) {
                     lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
@@ -1147,7 +1147,7 @@ bool RetroFE::run( )
         case RETROFE_COLLECTION_DOWN_EXIT:
             if ( currentPage_->isIdle( ) )
             {
-                // remeber current collection and playlist 
+                // remember current collection and playlist 
                 std::string collectionName = currentPage_->getCollectionName();
                 lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
                 lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName( );
@@ -1369,7 +1369,7 @@ bool RetroFE::run( )
         case RETROFE_COLLECTION_UP_EXIT:
             if ( currentPage_->isIdle( ) )
             {
-                // remeber current collection and playlist 
+                // remember current collection and playlist 
                 std::string collectionName = currentPage_->getCollectionName();
                 lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
                 lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName( );
@@ -1586,7 +1586,7 @@ bool RetroFE::run( )
         case RETROFE_BACK_MENU_EXIT:
             if ( currentPage_->isIdle( ) )
             {
-                // remeber current collection and playlist 
+                // remember current collection and playlist 
                 std::string collectionName = currentPage_->getCollectionName();
                 lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
                 lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName( );
