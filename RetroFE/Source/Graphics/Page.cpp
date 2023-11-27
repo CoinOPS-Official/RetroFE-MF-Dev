@@ -1334,7 +1334,7 @@ void Page::removePlaylist()
         // set to position to the old deleted position
         if (amenu)
         {
-            amenu->setScrollOffsetIndex(index);
+            setScrollOffsetIndex(index);
         }
     }
     bool globalFavLast = false;
@@ -1347,6 +1347,7 @@ void Page::removePlaylist()
     }
 
     collection->saveFavorites();
+    onNewItemSelected();
 }
 
 
