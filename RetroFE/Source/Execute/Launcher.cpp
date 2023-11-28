@@ -287,18 +287,26 @@ bool Launcher::execute(std::string executable, std::string args, std::string cur
 #ifdef WIN32
         // lower priority
         SetPriorityClass(GetCurrentProcess(), BELOW_NORMAL_PRIORITY_CLASS);
-
 		if ( wait )
 		{
-			while(WAIT_OBJECT_0 != MsgWaitForMultipleObjects(1, &processInfo.hProcess, FALSE, INFINITE, QS_ALLINPUT))
-			{
-				MSG msg;
-				while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
-				{
-					DispatchMessage(&msg);
-                    
-				}
-			}
+            MSG msg;
+            while (true) {
+                switch (MsgWaitForMultipleObjects(1, &processInfo.hProcess, FALSE, INFINITE, QS_ALLINPUT)) {                
+                    case !WAIT_OBJECT_0:
+                        if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+                            TranslateMessage(&msg);
+                            DispatchMessage(&msg);
+                        }
+                        break;
+                    case WAIT_OBJECT_0:
+                        wait = false;
+                        break;
+                }
+
+                if (!wait) {
+                    break;
+                }
+            }
         }
 
         //resume priority
