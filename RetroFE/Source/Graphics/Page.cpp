@@ -1227,15 +1227,28 @@ void Page::update(float dt)
         textStatusComponent_->setText(status);
     }
 
-    for(auto it = LayerComponents.begin(); it != LayerComponents.end(); ++it)
+    for (auto it = LayerComponents.begin(); it != LayerComponents.end();)
     {
-        if (*it) 
+        if (*it)
         {
             (*it)->playlistName = playlistName;
-            if ((*it)->update(dt) && (*it)->getAnimationDoneRemove()) 
+            if ((*it)->update(dt) && (*it)->getAnimationDoneRemove())
             {
+                // Free resources if needed
                 (*it)->freeGraphicsMemory();
+                delete* it;  // Delete the object (if dynamically allocated)
+
+                // Erase the element from the container and get the next iterator
+                it = LayerComponents.erase(it);
             }
+            else
+            {
+                ++it;  // Only increment if the element was not erased
+            }
+        }
+        else
+        {
+            ++it;  // Increment iterator if the element is null
         }
     }
 }
@@ -1334,7 +1347,7 @@ void Page::removePlaylist()
         // set to position to the old deleted position
         if (amenu)
         {
-            amenu->setScrollOffsetIndex(index);
+            setScrollOffsetIndex(index);
         }
     }
     bool globalFavLast = false;
@@ -1347,6 +1360,7 @@ void Page::removePlaylist()
     }
 
     collection->saveFavorites();
+    onNewItemSelected();
 }
 
 
