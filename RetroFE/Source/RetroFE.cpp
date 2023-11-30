@@ -946,6 +946,8 @@ bool RetroFE::run( )
                     }
                 }
                 currentPage_->selectPlaylist(settingsPlaylist);
+                currentPage_->onNewItemSelected();
+                currentPage_->reallocateMenuSpritePoints(); // update menu
             }
             break;
         // Next page; start onMenuExit animation
