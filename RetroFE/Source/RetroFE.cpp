@@ -30,7 +30,6 @@
 #include "Graphics/PageBuilder.h"
 #include "Graphics/Page.h"
 #include "Graphics/Component/ScrollingList.h"
-#include "Graphics/Component/Video.h"
 #include <gst/gst.h>
 #include "Video/VideoFactory.h"
 #include <algorithm>
@@ -56,7 +55,7 @@
 #endif
 
 
-RetroFE::RetroFE( Configuration &c )
+RetroFE::RetroFE(Configuration& c)
     : initialized(false)
     , initializeError(false)
     , initializeThread(NULL)
@@ -78,75 +77,76 @@ RetroFE::RetroFE( Configuration &c )
     , gameInfo_(false)
     , playlistCycledOnce_(false)
 {
-    menuMode_                            = false;
-    attractMode_                         = false;
+    menuMode_ = false;
+    attractMode_ = false;
     attractModePlaylistCollectionNumber_ = 0;
-    firstPlaylist_                       = "all"; // todo
+    firstPlaylist_ = "all"; // todo
 }
 
-RetroFE::~RetroFE( )
+RetroFE::~RetroFE()
 {
-    deInitialize( );
+    deInitialize();
 }
 
 
 // Render the current page to the screen
-void RetroFE::render( )
+void RetroFE::render()
 {
 
-    SDL_LockMutex( SDL::getMutex( ) );
-    for ( int i = 0; i < SDL::getScreenCount( ); ++i )
+    SDL_LockMutex(SDL::getMutex());
+    for (int i = 0; i < SDL::getScreenCount(); ++i)
     {
-        SDL_SetRenderDrawColor( SDL::getRenderer( i ), 0x0, 0x0, 0x00, 0xFF );
-        SDL_RenderClear( SDL::getRenderer( i ) );
+        SDL_SetRenderDrawColor(SDL::getRenderer(i), 0x0, 0x0, 0x00, 0xFF);
+        SDL_RenderClear(SDL::getRenderer(i));
     }
 
-    if ( currentPage_ )
+    if (currentPage_)
     {
-        currentPage_->draw( );
+        currentPage_->draw();
     }
 
-    for ( int i = 0; i < SDL::getScreenCount( ); ++i )
+    for (int i = 0; i < SDL::getScreenCount(); ++i)
     {
-        SDL_RenderPresent( SDL::getRenderer( i ) );
+        SDL_RenderPresent(SDL::getRenderer(i));
     }
-    SDL_UnlockMutex( SDL::getMutex( ) );
+    SDL_UnlockMutex(SDL::getMutex());
 
 }
 
 
 // Initialize the configuration and database
-int RetroFE::initialize( void *context )
+int RetroFE::initialize(void* context)
 {
 
-    auto *instance = static_cast<RetroFE *>(context);
+    auto* instance = static_cast<RetroFE*>(context);
 
     LOG_INFO("RetroFE", "Initializing");
 
-    if ( !instance->input_.initialize( ) )
+    if (!instance->input_.initialize())
     {
         LOG_ERROR("RetroFE", "Could not initialize user controls");
         instance->initializeError = true;
         return -1;
     }
 
-    instance->db_ = new DB( Utils::combinePath( Configuration::absolutePath, "meta.db" ) );
+    instance->db_ = new DB(Utils::combinePath(Configuration::absolutePath, "meta.db"));
 
-    if ( !instance->db_->initialize( ) )
+    if (!instance->db_->initialize())
     {
         LOG_ERROR("RetroFE", "Could not initialize database");
         instance->initializeError = true;
         return -1;
     }
 
-    instance->metadb_ = new MetadataDatabase( *(instance->db_), instance->config_ );
+    instance->metadb_ = new MetadataDatabase(*(instance->db_), instance->config_);
 
-    if ( !instance->metadb_->initialize( ) )
+    if (!instance->metadb_->initialize())
     {
         LOG_ERROR("RetroFE", "Could not initialize meta database");
         instance->initializeError = true;
         return -1;
     }
+
 
     instance->initialized = true;
     return 0;
@@ -352,7 +352,6 @@ bool RetroFE::run( )
     config_.getProperty( "videoLoop", videoLoop );
     VideoFactory::setEnabled( videoEnable );
     VideoFactory::setNumLoops( videoLoop );
-    Video::setEnabled( videoEnable );
 
     initializeThread = SDL_CreateThread( initialize, "RetroFEInit", (void *)this );
 
@@ -564,6 +563,8 @@ bool RetroFE::run( )
                     Utils::listToVector(cycleString, collectionCycle_, ',');
                     collectionCycleIt_ = collectionCycle_.begin();
 
+                    // update new current collection
+                    cycleVector_.clear();
                     config_.setProperty( "currentCollection", firstCollection );
                     CollectionInfo* info = getCollection(firstCollection);
 
@@ -573,7 +574,6 @@ bool RetroFE::run( )
                         break;
                     }
                     currentPage_->pushCollection(info);
-                    cycleVector_.clear();
 
                     config_.getProperty("firstPlaylist", firstPlaylist_);
                     // use the global setting as overide if firstCollection == current
@@ -903,7 +903,11 @@ bool RetroFE::run( )
                 if (settingsCollection != "" && settingsCollection != collectionName)
                 {
                     state = RETROFE_NEXT_PAGE_MENU_LOAD_ART;
+
+                    // update new current collection
+                    cycleVector_.clear();
                     config_.setProperty("currentCollection", settingsCollection);
+
                     // Load new layout if available
                     // check if collection's assets are in a different theme
                     std::string layoutName;
@@ -961,7 +965,7 @@ bool RetroFE::run( )
                 std::string collectionName = currentPage_->getCollectionName();
                 if ( currentPage_->getSelectedItem( ) )
                     l.LEDBlinky( 8, currentPage_->getSelectedItem( )->name, currentPage_->getSelectedItem( ) );
-                // don't overwrite last saved remeber playlist
+                // don't overwrite last saved remember playlist
                 CollectionInfo* info = currentPage_->getCollection();
                 if (collectionName != nextPageName) {
                     lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
@@ -1011,16 +1015,13 @@ bool RetroFE::run( )
                         LOG_ERROR("RetroFE", "Could not create page");
                     }
                 }
+
+                // update new current collection
+                cycleVector_.clear();
                 config_.setProperty("currentCollection", nextPageName);
                 currentPage_->pushCollection(info);
-                cycleVector_.clear();
-
-                bool rememberMenu = false;
-                config_.getProperty( "rememberMenu", rememberMenu );
-
-                std::string autoPlaylist = "all";
-
                 // check collection for setting
+                std::string autoPlaylist = "all";
                 if (std::string settingPrefix = "collections." + currentPage_->getCollectionName() + "."; config_.propertyExists(settingPrefix + "autoPlaylist")) {
                     config_.getProperty(settingPrefix + "autoPlaylist", autoPlaylist);
                 }
@@ -1032,6 +1033,8 @@ bool RetroFE::run( )
                     autoPlaylist = "favorites";
                 }
 
+                bool rememberMenu = false;
+                config_.getProperty("rememberMenu", rememberMenu);
                 bool returnToRememberedPlaylist = rememberMenu && lastMenuPlaylists_.find(nextPageName) != lastMenuPlaylists_.end();
                 if (returnToRememberedPlaylist)
                 {
@@ -1145,7 +1148,7 @@ bool RetroFE::run( )
         case RETROFE_COLLECTION_DOWN_EXIT:
             if ( currentPage_->isIdle( ) )
             {
-                // remeber current collection and playlist 
+                // remember current collection and playlist 
                 std::string collectionName = currentPage_->getCollectionName();
                 lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
                 lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName( );
@@ -1162,15 +1165,13 @@ bool RetroFE::run( )
                 {
                     currentPage_->popCollection( );
                 }
+
+                // update new current collection
+                cycleVector_.clear();
                 collectionName = currentPage_->getCollectionName();
                 config_.setProperty( "currentCollection", collectionName );
-
-                bool rememberMenu = false;
-                config_.getProperty( "rememberMenu", rememberMenu );
-
-                std::string autoPlaylist = "all";
-
                 // check collection for setting
+                std::string autoPlaylist = "all";
                 if (std::string settingPrefix = "collections." + currentPage_->getCollectionName() + "."; config_.propertyExists(settingPrefix + "autoPlaylist")) {
                     config_.getProperty(settingPrefix + "autoPlaylist", autoPlaylist);
                 }
@@ -1182,6 +1183,8 @@ bool RetroFE::run( )
                     autoPlaylist = "favorites";
                 }
 
+                bool rememberMenu = false;
+                config_.getProperty("rememberMenu", rememberMenu);
                 bool returnToRememberedPlaylist = rememberMenu && lastMenuPlaylists_.find(collectionName) != lastMenuPlaylists_.end();
                 if (returnToRememberedPlaylist)
                 {
@@ -1367,6 +1370,7 @@ bool RetroFE::run( )
         case RETROFE_COLLECTION_UP_EXIT:
             if ( currentPage_->isIdle( ) )
             {
+                // remember current collection and playlist 
                 std::string collectionName = currentPage_->getCollectionName();
                 lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
                 lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName( );
@@ -1383,15 +1387,14 @@ bool RetroFE::run( )
                 {
                     currentPage_->popCollection( );
                 }
+
+                // update new current collection
+                cycleVector_.clear();
                 collectionName = currentPage_->getCollectionName();
                 config_.setProperty( "currentCollection", collectionName );
 
-                bool rememberMenu = false;
-                config_.getProperty( "rememberMenu", rememberMenu );
-
-                std::string autoPlaylist = "all";
-
                 // check collection for setting
+                std::string autoPlaylist = "all";
                 if (std::string settingPrefix = "collections." + currentPage_->getCollectionName() + "."; config_.propertyExists(settingPrefix + "autoPlaylist")) {
                     config_.getProperty(settingPrefix + "autoPlaylist", autoPlaylist);
                 }
@@ -1403,6 +1406,8 @@ bool RetroFE::run( )
                     autoPlaylist = "favorites";
                 }
 
+                bool rememberMenu = false;
+                config_.getProperty("rememberMenu", rememberMenu);
                 bool returnToRememberedPlaylist = rememberMenu && lastMenuPlaylists_.find(collectionName) != lastMenuPlaylists_.end();
                 if (returnToRememberedPlaylist)
                 {
@@ -1582,6 +1587,7 @@ bool RetroFE::run( )
         case RETROFE_BACK_MENU_EXIT:
             if ( currentPage_->isIdle( ) )
             {
+                // remember current collection and playlist 
                 std::string collectionName = currentPage_->getCollectionName();
                 lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
                 lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName( );
@@ -1604,15 +1610,14 @@ bool RetroFE::run( )
                 {
                     currentPage_->popCollection( );
                 }
+
+                // update new current collection
+                cycleVector_.clear();
                 collectionName = currentPage_->getCollectionName();
                 config_.setProperty( "currentCollection", collectionName );
-
-                bool rememberMenu = false;
-                config_.getProperty( "rememberMenu", rememberMenu );
-
-                std::string autoPlaylist = "all";
-                
+        
                 // check collection for setting
+                std::string autoPlaylist = "all";
                 if (std::string settingPrefix = "collections." + currentPage_->getCollectionName() + "."; config_.propertyExists(settingPrefix + "autoPlaylist")) {
                     config_.getProperty(settingPrefix + "autoPlaylist", autoPlaylist);
                 }
@@ -1624,6 +1629,8 @@ bool RetroFE::run( )
                     autoPlaylist = "favorites";
                 }
 
+                bool rememberMenu = false;
+                config_.getProperty("rememberMenu", rememberMenu);
                 bool returnToRememberedPlaylist = rememberMenu && lastMenuPlaylists_.find(collectionName) != lastMenuPlaylists_.end();
                 if (returnToRememberedPlaylist)
                 {
@@ -1702,11 +1709,15 @@ bool RetroFE::run( )
                 else {
                     LOG_ERROR("RetroFE", "Could not create page");
                 }
+
+                // update new current collection
+                cycleVector_.clear();
                 config_.setProperty( "currentCollection", "menu" );
                 currentPage_->pushCollection(getMenuCollection("menu"));
-                cycleVector_.clear();
+
                 currentPage_->onNewItemSelected();
                 currentPage_->reallocateMenuSpritePoints(); // update playlist menu
+
                 state = RETROFE_MENUMODE_START_LOAD_ART;
             }
             break;
