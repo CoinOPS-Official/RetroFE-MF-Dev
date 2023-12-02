@@ -24,8 +24,14 @@
 
 #ifdef WIN32
     #define NOMINMAX
-    #include <windows.h>
+    #include <Windows.h>
 #endif
+
+struct PathHash {
+    auto operator()(const std::filesystem::path& p) const noexcept {
+        return std::filesystem::hash_value(p);
+    }
+};
 
 class Utils
 {
@@ -69,8 +75,8 @@ public:
 #endif
 
 private:
-    static std::unordered_map<std::filesystem::path, std::unordered_set<std::string>> fileCache;
-    static std::unordered_set<std::filesystem::path> nonExistingDirectories; // Cache for non-existing directories
+    static std::unordered_map<std::filesystem::path, std::unordered_set<std::string>, PathHash> fileCache;
+    static std::unordered_set<std::filesystem::path, PathHash> nonExistingDirectories; // Cache for non-existing directories
     static void populateCache(const std::filesystem::path& directory);
     static bool isFileInCache(const std::filesystem::path& directory, const std::string& filename);
     static bool isFileCachePopulated(const std::filesystem::path& directory);

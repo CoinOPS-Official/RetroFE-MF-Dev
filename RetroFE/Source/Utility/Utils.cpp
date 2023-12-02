@@ -20,7 +20,6 @@
 #include <algorithm>
 #include <sstream>
 #include <fstream>
-#include <dirent.h>
 #include <locale>
 #include <list>
 #include <filesystem>
@@ -31,8 +30,9 @@
     #include <Windows.h>
 #endif
 
-std::unordered_map<std::filesystem::path, std::unordered_set<std::string>> Utils::fileCache;
-std::unordered_set<std::filesystem::path> Utils::nonExistingDirectories;
+std::unordered_map<std::filesystem::path, std::unordered_set<std::string>, PathHash> Utils::fileCache;
+std::unordered_set<std::filesystem::path, PathHash> Utils::nonExistingDirectories;
+
 
 Utils::Utils() = default;
 
@@ -166,6 +166,9 @@ std::string Utils::replace(
     const std::string& search,
     const std::string& replace)
 {
+    if (search.empty())
+        return subject; // Early exit if search string is empty
+
     size_t pos = 0;
     while ((pos = subject.find(search, pos)) != std::string::npos)
     {
