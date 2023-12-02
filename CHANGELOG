@@ -39,6 +39,7 @@ v0.10.34.3
 	- removed dependency on dirent.h (inigomontoya)
 	- reworked xml metadata import function, should be quicker (inigomontoya)
     - fixed settings collection asset refresh (monkofthefunk)
+    - fixed manual sort after refactor (monkofthefunk)
 
 v0.10.34.2
     - update version *.2 (monkofthefunk)
