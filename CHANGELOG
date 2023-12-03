@@ -40,6 +40,7 @@ v0.10.34.3
 	- reworked xml metadata import function, should be quicker (inigomontoya)
     - fixed settings collection asset refresh (monkofthefunk)
     - fixed manual sort after refactor (monkofthefunk)
+    - fix setting jump blip when within same collection; while not breaking menu reload upon new collection (monkofthefunk)
 
 v0.10.34.2
     - update version *.2 (monkofthefunk)
