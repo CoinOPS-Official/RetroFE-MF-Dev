@@ -52,6 +52,7 @@ bool MenuParser::buildMenuItems(CollectionInfo *collection, bool sort)
 
 bool MenuParser::buildTextMenu(CollectionInfo* collection, bool sort)
 {
+    collection->menusort = sort;
     std::string menuFile = Utils::combinePath(Configuration::absolutePath, "collections", collection->name, "menu.txt");
     std::vector<Item*> menuItems;
 
@@ -118,8 +119,6 @@ bool MenuParser::buildTextMenu(CollectionInfo* collection, bool sort)
             }
         }
     }
-
-    collection->menusort = sort;
     collection->items.insert(collection->items.begin(), menuItems.begin(), menuItems.end());
 
     return true;

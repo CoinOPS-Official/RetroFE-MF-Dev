@@ -582,6 +582,7 @@ void CollectionInfoBuilder::loadPlaylistItems(CollectionInfo* info, std::map<std
                 playlistItem->leaf = false;
                 playlistItem->collectionInfo = info;
                 playlistItems->insert({ basename, playlistItem });
+                std::string sortType = Item::validSortType(basename) ? basename : "";
 
                 for (Item const* pfItem : playlistFilter) {
                     std::string collectionName = info->name;
