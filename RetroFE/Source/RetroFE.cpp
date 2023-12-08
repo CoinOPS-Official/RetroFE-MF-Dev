@@ -685,7 +685,7 @@ bool RetroFE::run( )
                 nextPageItem_ = new Item();
                 config_.getProperty("lastCollection", nextPageItem_->name);
                 if (currentPage_->getCollectionName() != nextPageItem_->name) {
-                    state = RETROFE_NEXT_PAGE_MENU_EXIT;
+                    state = RETROFE_BACK_MENU_EXIT;
                 }
                 else {
                     state = RETROFE_PLAYLIST_REQUEST;
