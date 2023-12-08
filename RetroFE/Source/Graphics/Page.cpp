@@ -1736,9 +1736,9 @@ void Page::skipBackwardp( )
 
 void Page::pause( )
 {
-    for(auto it = LayerComponents.begin(); it != LayerComponents.end(); ++it)
+    for (auto it = LayerComponents.begin(); it != LayerComponents.end(); ++it)
     {
-        (*it)->pause( );
+        (*it)->pause();
     }
 }
 

@@ -680,7 +680,7 @@ bool RetroFE::run( )
             break;
         case RETROFE_SETTINGS_PAGE_MENU_EXIT:
             if ((settingsCollection == "" || currentPage_->getCollectionName() == settingsCollection) &&
-                currentPage_->getPlaylistName() == settingsPlaylist
+                (currentPage_->getPlaylistName() == settingsPlaylist || currentPage_->getPlaylistName() == "all")
                 ) {
                 nextPageItem_ = new Item();
                 config_.getProperty("lastCollection", nextPageItem_->name);
@@ -728,7 +728,7 @@ bool RetroFE::run( )
                 }
                 break;
             }
-
+            resetInfoToggle();
             state = RETROFE_SETTINGS_PAGE_REQUEST;
             break;
         case RETROFE_PLAYLIST_PREV_CYCLE:
@@ -895,7 +895,7 @@ bool RetroFE::run( )
             break;
 
         case RETROFE_SETTINGS_PAGE_REQUEST:
-            if (currentPage_->getCollectionName() != "")
+            if (currentPage_->isIdle() && currentPage_->getCollectionName() != "")
             {
                 std::string collectionName = currentPage_->getCollectionName();
                 lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
@@ -2300,7 +2300,6 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
         else if (!kioskLock_ && input_.keystate(UserInput::KeyCodeSettings))
         {
             attract_.reset();
-            resetInfoToggle();
             state = RETROFE_SETTINGS_REQUEST;
         }
 
