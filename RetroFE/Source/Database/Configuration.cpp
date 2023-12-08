@@ -141,11 +141,16 @@ bool Configuration::import(const std::string& collection, const std::string& key
 
         return false;
     }
-
-    while (std::getline (ifs, line))
+   
+    while (std::getline(ifs, line))
     {
         lineCount++;
         retVal = retVal && parseLine(collection, keyPrefix, line, lineCount);
+
+        // Check if the line contains the log level setting
+        if (properties_.find("log") != properties_.end()) {
+            StartLogging(this); // Start logging with the specified level
+        }
     }
 
     ifs.close();
@@ -191,10 +196,6 @@ bool Configuration::parseLine(const std::string& collection, std::string keyPref
         }
 
         properties_[key] = value;
-
-        if (key == "log" && value != "") {
-            StartLogging(this);
-        }
 
         std::stringstream ss;
         ss << "Dump: "  << "\"" << key << "\" = \"" << value << "\"";

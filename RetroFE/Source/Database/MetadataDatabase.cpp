@@ -265,10 +265,10 @@ bool MetadataDatabase::importHyperlist(const std::string& hyperlistFile, const s
 
     std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     buffer.push_back('\0'); // Null-terminate the buffer
-    rapidxml::xml_document<> doc;
 
+    rapidxml::xml_document<> doc;
     try {
-        doc.parse<0>(&buffer[0]);
+        doc.parse<0>(buffer.data());
         rapidxml::xml_node<>* root = doc.first_node("menu");
         if (!root) {
             LOG_ERROR("Metadata", "Does not appear to be a HyperList file (missing <menu> tag)");
@@ -278,7 +278,6 @@ bool MetadataDatabase::importHyperlist(const std::string& hyperlistFile, const s
         sqlite3* handle = db_.handle;
         sqlite3_exec(handle, "BEGIN IMMEDIATE TRANSACTION;", nullptr, nullptr, &error);
 
-        // Prepare SQL Statement outside of loop
         sqlite3_stmt* stmt;
         const char* sql = "INSERT OR REPLACE INTO Meta (name, title, year, manufacturer, developer, genre, players, ctrltype, buttons, joyways, cloneOf, collectionName, rating, score) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         if (sqlite3_prepare_v2(handle, sql, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -287,12 +286,10 @@ bool MetadataDatabase::importHyperlist(const std::string& hyperlistFile, const s
         }
 
         for (auto* game = root->first_node("game"); game; game = game->next_sibling("game")) {
-            // Fetch values directly in place
-            std::string name = game->first_attribute("name") ? game->first_attribute("name")->value() : "";
-            if (name.empty()) continue;
-
-            // Bind values to prepared statement directly
-            sqlite3_bind_text(stmt, 1, name.c_str(), -1, SQLITE_TRANSIENT);
+            const char* name = game->first_attribute("name") ? game->first_attribute("name")->value() : "";
+            if (name[0] == '\0') continue;  
+            
+            sqlite3_bind_text(stmt, 1, name, -1, SQLITE_TRANSIENT);
             sqlite3_bind_text(stmt, 2, game->first_node("description") ? game->first_node("description")->value() : "", -1, SQLITE_TRANSIENT);
             sqlite3_bind_text(stmt, 3, game->first_node("year") ? game->first_node("year")->value() : "", -1, SQLITE_TRANSIENT);
             sqlite3_bind_text(stmt, 4, game->first_node("manufacturer") ? game->first_node("manufacturer")->value() : "", -1, SQLITE_TRANSIENT);
@@ -307,14 +304,12 @@ bool MetadataDatabase::importHyperlist(const std::string& hyperlistFile, const s
             sqlite3_bind_text(stmt, 13, game->first_node("rating") ? game->first_node("rating")->value() : "", -1, SQLITE_TRANSIENT);
             sqlite3_bind_text(stmt, 14, game->first_node("score") ? game->first_node("score")->value() : "", -1, SQLITE_TRANSIENT);
 
-            // Execute the statement
             if (sqlite3_step(stmt) != SQLITE_DONE) {
                 LOG_ERROR("Metadata", "SQL Error executing statement");
                 sqlite3_finalize(stmt);
                 return false;
             }
             sqlite3_reset(stmt); // Reset the prepared statement for reuse
-
         }
 
         sqlite3_finalize(stmt);
@@ -334,7 +329,6 @@ bool MetadataDatabase::importHyperlist(const std::string& hyperlistFile, const s
         std::string what = e.what();
         LOG_ERROR("Metadata", "Could not parse hyperlist file. Reason: " + what);
     }
-
     return false;
 }
 

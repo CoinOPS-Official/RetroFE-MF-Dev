@@ -31,8 +31,8 @@ public:
         ZONE_INFO,
         ZONE_NOTICE,
         ZONE_WARNING,
-        ZONE_ERROR
-
+        ZONE_ERROR,
+        ZONE_FILECACHE
     };
     static bool initialize(std::string file, Configuration* config);
     static void write(Zone zone, const std::string& component, const std::string& message);
@@ -65,3 +65,7 @@ private:
 #define LOG_ERROR(component, message) \
     if (Logger::isLevelEnabled("ERROR")) \
         Logger::write(Logger::ZONE_ERROR, component, message)
+
+#define LOG_FILECACHE(component, message) \
+    if (Logger::isLevelEnabled("FILECACHE")) \
+        Logger::write(Logger::ZONE_FILECACHE, component, message)

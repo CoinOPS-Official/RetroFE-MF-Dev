@@ -269,6 +269,10 @@ bool SDL::initialize( Configuration &config )
             }
             else
             {
+                if (screenNum == mainScreen) {
+                    // Move the mouse to the top right corner of the primary window
+                    SDL_WarpMouseInWindow(window_[screenNum], windowWidth_[screenNum], 0);
+                }
                 bool vSync = false;
 				config.getProperty("vSync", vSync);
                 if (!renderer_[screenNum]) {
@@ -305,6 +309,8 @@ bool SDL::initialize( Configuration &config )
             }
         }
     }
+
+
 
     if (bool minimize_on_focus_loss_;  config.getProperty( "minimize_on_focus_loss", minimize_on_focus_loss_ ) )
     {
@@ -344,6 +350,15 @@ bool SDL::deInitialize( )
     std::string error = SDL_GetError( );
     LOG_INFO("SDL", "DeInitializing" );
 
+    if (window_[0] != NULL) {
+        int windowCenterX = windowWidth_[0] / 2;
+        int windowCenterY = windowHeight_[0] / 2;
+        SDL_WarpMouseInWindow(window_[0], windowCenterX, windowCenterY);
+    }
+    else {
+        LOG_WARNING("SDL", "Window 0 is NULL, cannot center mouse within it");
+    }
+
     Mix_CloseAudio( );
     Mix_Quit( );
 
@@ -353,6 +368,7 @@ bool SDL::deInitialize( )
         mutex_ = nullptr;
     }
 
+    
     for ( int i = 0; i < screenCount_; ++i )
     {
         if ( !renderer_.empty() )

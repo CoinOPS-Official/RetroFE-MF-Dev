@@ -946,10 +946,10 @@ bool RetroFE::run( )
                     else {
                         LOG_ERROR("RetroFE", "Could not create page");
                     }
+                    currentPage_->reallocateMenuSpritePoints(); // update menu
                 }
                 currentPage_->selectPlaylist(settingsPlaylist);
                 currentPage_->onNewItemSelected();
-                currentPage_->reallocateMenuSpritePoints(); // update menu
             }
             break;
         // Next page; start onMenuExit animation
