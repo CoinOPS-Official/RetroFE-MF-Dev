@@ -42,6 +42,7 @@ v0.10.34.3
     - fixed manual sort after refactor (monkofthefunk)
     - fixed setting jump blip when within same collection; while not breaking menu reload upon new collection (monkofthefunk)
     - fixed toggling close the info upon going to settings; fixed toggling back to last from settings in different collection (monkofhefunk)
+    - fixed random start playlist to exclude favorites and lastplayed (monkofthefunk)
 
 v0.10.34.2
     - update version *.2 (monkofthefunk)
