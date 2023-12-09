@@ -775,7 +775,12 @@ void Page::selectRandomPlaylist(CollectionInfo* collection, std::vector<std::str
 
     for (auto it = collection->playlists.begin(); it != collection->playlists.end(); it++)
     {
-        if (i == index && it->first != settingsPlaylist && std::find(cycleVector.begin(), cycleVector.end(), it->first) != cycleVector.end()) {
+        if (i == index && 
+            it->first != settingsPlaylist && 
+            it->first != "favorites" &&
+            it->first != "lastplayed" &&
+            std::find(cycleVector.begin(), cycleVector.end(), it->first) != cycleVector.end()
+        ) {
             playlistName = it->first;
             break;
         }
