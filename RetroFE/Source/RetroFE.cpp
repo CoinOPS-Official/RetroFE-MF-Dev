@@ -679,9 +679,9 @@ bool RetroFE::run( )
             state = RETROFE_SETTINGS_PAGE_MENU_EXIT;
             break;
         case RETROFE_SETTINGS_PAGE_MENU_EXIT:
-            if ((settingsCollection == "" || currentPage_->getCollectionName() == settingsCollection) &&
-                (currentPage_->getPlaylistName() == settingsPlaylist || currentPage_->getPlaylistName() == "all")
-                ) {
+            if ((settingsCollection == "" || currentPage_->getCollectionName() == settingsCollection) && 
+                (settingsPlaylist == "" || currentPage_->getPlaylistName() == settingsPlaylist)
+            ) {
                 nextPageItem_ = new Item();
                 config_.getProperty("lastCollection", nextPageItem_->name);
                 if (currentPage_->getCollectionName() != nextPageItem_->name) {
@@ -948,8 +948,19 @@ bool RetroFE::run( )
                     }
                     currentPage_->reallocateMenuSpritePoints(); // update menu
                 }
+                if (settingsPlaylist == "") {
+                    std::string autoPlaylist = "settings";
+                    if (std::string settingPrefix = "collections." + currentPage_->getCollectionName() + "."; config_.propertyExists(settingPrefix + "autoPlaylist")) {
+                        config_.getProperty(settingPrefix + "autoPlaylist", autoPlaylist);
+                    }
+                    else {
+                        config_.getProperty("autoPlaylist", autoPlaylist);
+                    }
+                    settingsPlaylist = autoPlaylist;
+                }
                 currentPage_->selectPlaylist(settingsPlaylist);
                 currentPage_->onNewItemSelected();
+                currentPage_->reallocateMenuSpritePoints();
             }
             break;
         // Next page; start onMenuExit animation
@@ -1593,7 +1604,7 @@ bool RetroFE::run( )
                 std::string collectionName = currentPage_->getCollectionName();
                 lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
                 lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName( );
-                if (currentPage_->getMenuDepth( ) == 1)
+                if (currentPage_->getMenuDepth( ) == 1 && !pages_.empty())
                 {
                     Page* page = pages_.top();
                     pages_.pop();
