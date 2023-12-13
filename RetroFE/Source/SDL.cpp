@@ -18,7 +18,11 @@
 #include "SDL.h"
 #include "Database/Configuration.h"
 #include "Utility/Log.h"
-#include <SDL2/SDL_mixer.h>
+#if (__APPLE__)
+    #include <SDL2_mixer/SDL_mixer.h>
+#else
+    #include <SDL2/SDL_mixer.h>
+#endif
 #include "Utility/Utils.h"
 
 std::vector<SDL_Window *>   SDL::window_;
@@ -212,6 +216,8 @@ bool SDL::initialize( Configuration &config )
             {
 #ifdef WIN32
                 windowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+#elif defined(__APPLE__)
+                windowFlags |= SDL_WINDOW_BORDERLESS;
 #else
                 windowFlags |= SDL_WINDOW_FULLSCREEN;
 #endif

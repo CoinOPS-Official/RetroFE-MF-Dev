@@ -51,7 +51,7 @@ UserInput::~UserInput()
 
 bool UserInput::initialize()
 {
-
+    
     // Optional keys
     MapKey("playlistUp", KeyCodePlaylistUp, false );
     MapKey("playlistDown", KeyCodePlaylistDown, false );
@@ -93,9 +93,9 @@ bool UserInput::initialize()
     MapKey("toggleCollectionInfo", KeyCodeToggleCollectionInfo, false);
     MapKey("toggleBuildInfo", KeyCodeToggleBuildInfo, false);
     MapKey("settings", KeyCodeSettings, false);
-
+    
     bool retVal = true;
-
+    
     // At least have controls for either a vertical or horizontal menu
     if(!MapKey("up", KeyCodeUp))
     {
@@ -113,19 +113,28 @@ bool UserInput::initialize()
     {
         retVal = MapKey("down", KeyCodeRight ) && retVal;
     }
-
+    
     // These keys are mandatory
     retVal = MapKey("select", KeyCodeSelect) && retVal;
     retVal = MapKey("back",   KeyCodeBack) && retVal;
     retVal = MapKey("quit",   KeyCodeQuit) && retVal;
-
+    
     // set quit combo
     unsigned int button;
     int joyNum = -1;
-
+    
     std::map<KeyCode_E, std::string> quitCombo;
-    quitCombo.insert(std::pair<KeyCode_E, std::string>(KeyCodeQuitCombo1, "joyButton6"));
-    quitCombo.insert(std::pair<KeyCode_E, std::string>(KeyCodeQuitCombo2, "joyButton7"));
+    //    MacOS uses keycode 4 for select, Windows uses keycode 7
+    {
+    #ifdef __APPLE__
+        quitCombo.insert(std::pair<KeyCode_E, std::string>(KeyCodeQuitCombo1, "joyButton6"));
+        quitCombo.insert(std::pair<KeyCode_E, std::string>(KeyCodeQuitCombo2, "joyButton4"));
+    #else
+        quitCombo.insert(std::pair<KeyCode_E, std::string>(KeyCodeQuitCombo1, "joyButton6"));
+        quitCombo.insert(std::pair<KeyCode_E, std::string>(KeyCodeQuitCombo2, "joyButton7"));
+    #endif
+    }
+    
     for (auto qcI = quitCombo.begin(); qcI != quitCombo.end(); qcI++) {
         button = Utils::convertInt(Utils::replace(Utils::toLower(qcI->second), "joybutton", ""));
         keyHandlers_.push_back(std::pair<InputHandler*, KeyCode_E>(new JoyButtonHandler(joyNum, button), qcI->first));
