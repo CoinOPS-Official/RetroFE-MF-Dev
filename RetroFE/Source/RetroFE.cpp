@@ -946,8 +946,9 @@ bool RetroFE::run( )
                     else {
                         LOG_ERROR("RetroFE", "Could not create page");
                     }
-                    currentPage_->reallocateMenuSpritePoints(); // update menu
+                    //currentPage_->reallocateMenuSpritePoints(); // update menu
                 }
+                std::string selectPlaylist = settingsPlaylist;
                 if (settingsPlaylist == "") {
                     std::string autoPlaylist = "settings";
                     if (std::string settingPrefix = "collections." + currentPage_->getCollectionName() + "."; config_.propertyExists(settingPrefix + "autoPlaylist")) {
@@ -956,9 +957,9 @@ bool RetroFE::run( )
                     else {
                         config_.getProperty("autoPlaylist", autoPlaylist);
                     }
-                    settingsPlaylist = autoPlaylist;
+                    selectPlaylist = autoPlaylist;
                 }
-                currentPage_->selectPlaylist(settingsPlaylist);
+                currentPage_->selectPlaylist(selectPlaylist);
                 currentPage_->onNewItemSelected();
                 //refresh menu if in different collection
                 if (settingsCollection != "" && settingsCollection != collectionName) {
@@ -1905,7 +1906,6 @@ std::vector<std::string> RetroFE::getPlaylistCycle()
         std::string collectionName = currentPage_->getCollectionName();
         std::string settingPrefix = "collections." + collectionName + ".";
 
-        bool cyclePlaylist = true;
         std::string firstCollection = "";
         std::string cycleString = "";
         config_.getProperty("firstCollection", firstCollection);
