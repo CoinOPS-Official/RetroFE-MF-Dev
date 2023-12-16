@@ -286,6 +286,8 @@ bool CollectionInfoBuilder::ImportDirectory(CollectionInfo *info, const std::str
     bool romHierarchy = false;
     bool emuarc       = false;
  
+    // todo load and add launcher file to info
+
     if (mergedCollectionName != "")
     {
         

@@ -2699,9 +2699,33 @@ CollectionInfo *RetroFE::getCollection(const std::string& collectionName)
         collection->sortItems();
     }
 
-    // build collection menu if menu.txt exists
+    //todo check if setting menuFromCollectionLaunchers=t
     MenuParser mp;
-    mp.buildMenuItems(collection, menuSort);
+    bool menuFromCollectionLaunchers = true;
+    config_.getProperty("collections." + collectionName + ".menuFromCollectionLaunchers", menuFromCollectionLaunchers);
+    if (menuFromCollectionLaunchers) {
+        // build menu out of all found collections that have launcherfiles
+        std::string collectionLaunchers = "collectionLaunchers";
+        std::string launchers = "";
+        config_.getProperty(collectionLaunchers, launchers);
+        if (launchers != "") {
+            std::vector<std::string> launcherVector;
+            std::stringstream ss(launchers);
+            while (ss.good())
+            {
+                std::string substr;
+                getline(ss, substr, ',');
+                launcherVector.push_back(substr);
+            }
+            mp.buildMenuFromCollectionLaunchers(collection, launcherVector);
+        }
+        else {
+            // todo log error
+        }
+    } else {
+        // build collection menu if menu.txt exists
+        mp.buildMenuItems(collection, menuSort);
+    }
 
     // adds items to "all" list except those found in "exclude_all.txt"
     cib.addPlaylists(collection);

@@ -235,6 +235,16 @@ static bool ImportConfiguration(Configuration* c)
             {
                 LOG_ERROR("RetroFE", "Could not import any collection settings for " + collection);
             }
+
+            // record which collections have launcher files
+            std::string prefix = "launchers." + collection;
+            std::string importFile = Utils::combinePath(collectionsPath, collection, "launcher.conf");
+            if (c->import(collection, prefix, importFile, false)) {
+                std::string collectionLaunchers = "collectionLaunchers";
+                std::string launchers = "";
+                c->getProperty(collectionLaunchers, launchers);
+                c->setProperty(collectionLaunchers, launchers + collection + ",");
+            }
         }
     }
 

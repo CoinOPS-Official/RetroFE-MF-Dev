@@ -48,6 +48,7 @@ bool Launcher::run(std::string collection, Item *collectionItem, Page *currentPa
     std::string matchedExtension;
     std::string args;
 
+    // check if launcher has overide for the particular rom
     std::string launcherFile = Utils::combinePath( Configuration::absolutePath, "collections", collectionItem->collectionInfo->name, "launchers", collectionItem->name + ".conf" );
     if (std::ifstream launcherStream( launcherFile.c_str( ) ); launcherStream.good( )) // Launcher file found
     {
