@@ -45,10 +45,14 @@ Depending on your version of OS X the GUI will read user defined Environment var
 
 
 ## Mac download and compile RetroFE from source code ##
-If you don't use Homebrew you will need to download and install the same dependencies as given in the linux instuctions.
-You may need to export the libs with $LIBRARY_PATH and or supply the include folders with $CPATH before building.
 
-	export LIBRARY_PATH=/usr/local/opt/gst-plugins-base/lib:/usr/local/opt/gstreamer/lib:/usr/local/lib:/usr/local/opt/glib/lib:/usr/local/opt/gettext/lib
+For a universal binary, download precompiled; sdl2 sdl2_image sdl2_mixer sdl2_ttf gstreamer
+Place all .framework in /ThirdPartyMac
+Open Xcodeproj and build
+
+For single arch binaries use homebrew [brew.sh](https://brew.sh)
+
+	brew install sdl2 sdl2_image sdl2_mixer sdl2_ttf gstreamer
 
 Download the source code:
 
@@ -57,7 +61,7 @@ Download the source code:
 Generate your gcc make files:
 
 	cd retrofe
-	cmake RetroFE/Source -BRetroFE/Build -DVERSION_MAJOR=0 -DVERSION_MINOR=0 -DVERSION_BUILD=0
+	cmake RetroFE/Source -BRetroFE/Build
 
 Compile RetroFE and create a full environment (ensure --os=mac !): 
 

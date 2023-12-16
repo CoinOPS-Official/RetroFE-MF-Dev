@@ -224,7 +224,10 @@ std::string Launcher::replaceVariables(std::string str,
     str = Utils::replace(str, "%RETROFE_PATH%", Configuration::absolutePath);
 #ifdef WIN32
     str = Utils::replace(str, "%RETROFE_EXEC_PATH%", Utils::combinePath(Configuration::absolutePath, "retrofe", "RetroFE.exe"));
-    str = Utils::replace(str, "%CMD%", std::getenv("COMSPEC"));
+    const char* comspec = std::getenv("COMSPEC");
+    if (comspec) {
+        str = Utils::replace(str, "%CMD%", std::string(comspec));
+    }
 #else
     str = Utils::replace(str, "%RETROFE_EXEC_PATH%", Utils::combinePath(Configuration::absolutePath, "RetroFE"));
 #endif

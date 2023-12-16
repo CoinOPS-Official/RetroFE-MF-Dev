@@ -39,7 +39,11 @@
 #include <tuple>
 #include <vector>
 #include <filesystem>
-#include <SDL2/SDL_ttf.h>
+#if (__APPLE__)
+    #include <SDL2_ttf/SDL_ttf.h>
+#else
+    #include <SDL2/SDL_ttf.h>
+#endif
 
 #if defined(__linux) || defined(__APPLE__)
 #include <sys/stat.h>
@@ -679,9 +683,9 @@ bool RetroFE::run( )
             state = RETROFE_SETTINGS_PAGE_MENU_EXIT;
             break;
         case RETROFE_SETTINGS_PAGE_MENU_EXIT:
-            if ((settingsCollection == "" || currentPage_->getCollectionName() == settingsCollection) &&
-                (currentPage_->getPlaylistName() == settingsPlaylist || currentPage_->getPlaylistName() == "all")
-                ) {
+            if ((settingsCollection == "" || currentPage_->getCollectionName() == settingsCollection) && 
+                (settingsPlaylist == "" || currentPage_->getPlaylistName() == settingsPlaylist)
+            ) {
                 nextPageItem_ = new Item();
                 config_.getProperty("lastCollection", nextPageItem_->name);
                 if (currentPage_->getCollectionName() != nextPageItem_->name) {
@@ -946,10 +950,25 @@ bool RetroFE::run( )
                     else {
                         LOG_ERROR("RetroFE", "Could not create page");
                     }
-                    currentPage_->reallocateMenuSpritePoints(); // update menu
+                    //currentPage_->reallocateMenuSpritePoints(); // update menu
                 }
-                currentPage_->selectPlaylist(settingsPlaylist);
+                std::string selectPlaylist = settingsPlaylist;
+                if (settingsPlaylist == "") {
+                    std::string autoPlaylist = "settings";
+                    if (std::string settingPrefix = "collections." + currentPage_->getCollectionName() + "."; config_.propertyExists(settingPrefix + "autoPlaylist")) {
+                        config_.getProperty(settingPrefix + "autoPlaylist", autoPlaylist);
+                    }
+                    else {
+                        config_.getProperty("autoPlaylist", autoPlaylist);
+                    }
+                    selectPlaylist = autoPlaylist;
+                }
+                currentPage_->selectPlaylist(selectPlaylist);
                 currentPage_->onNewItemSelected();
+                //refresh menu if in different collection
+                if (settingsCollection != "" && settingsCollection != collectionName) {
+                    currentPage_->reallocateMenuSpritePoints();
+                }
             }
             break;
         // Next page; start onMenuExit animation
@@ -1593,7 +1612,7 @@ bool RetroFE::run( )
                 std::string collectionName = currentPage_->getCollectionName();
                 lastMenuOffsets_[collectionName] = currentPage_->getScrollOffsetIndex();
                 lastMenuPlaylists_[collectionName] = currentPage_->getPlaylistName( );
-                if (currentPage_->getMenuDepth( ) == 1)
+                if (currentPage_->getMenuDepth( ) == 1 && !pages_.empty())
                 {
                     Page* page = pages_.top();
                     pages_.pop();
@@ -1891,7 +1910,6 @@ std::vector<std::string> RetroFE::getPlaylistCycle()
         std::string collectionName = currentPage_->getCollectionName();
         std::string settingPrefix = "collections." + collectionName + ".";
 
-        bool cyclePlaylist = true;
         std::string firstCollection = "";
         std::string cycleString = "";
         config_.getProperty("firstCollection", firstCollection);
