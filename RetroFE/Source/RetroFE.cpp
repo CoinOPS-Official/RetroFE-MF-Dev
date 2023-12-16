@@ -2700,7 +2700,7 @@ CollectionInfo *RetroFE::getCollection(const std::string& collectionName)
     }
 
     MenuParser mp;
-    bool menuFromCollectionLaunchers = true;
+    bool menuFromCollectionLaunchers = false;
     config_.getProperty("collections." + collectionName + ".menuFromCollectionLaunchers", menuFromCollectionLaunchers);
     if (menuFromCollectionLaunchers) {
         // build menu out of all found collections that have launcherfiles
@@ -2714,7 +2714,9 @@ CollectionInfo *RetroFE::getCollection(const std::string& collectionName)
             {
                 std::string substr;
                 getline(ss, substr, ',');
-                launcherVector.push_back(substr);
+                if (substr != "") {
+                    launcherVector.push_back(substr);
+                }
             }
             mp.buildMenuFromCollectionLaunchers(collection, launcherVector);
         }
