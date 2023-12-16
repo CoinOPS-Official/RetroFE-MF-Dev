@@ -39,7 +39,7 @@ MenuParser::MenuParser() = default;
 
 MenuParser::~MenuParser() = default;
 
-bool MenuParser::buildMenuFromCollectionLaunchers(CollectionInfo* collection, std::vector<std::string> collectionNames)
+void MenuParser::buildMenuFromCollectionLaunchers(CollectionInfo* collection, std::vector<std::string> collectionNames)
 {
     collection->menusort = true;
     std::vector<Item*> menuItems;

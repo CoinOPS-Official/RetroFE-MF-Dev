@@ -2699,7 +2699,6 @@ CollectionInfo *RetroFE::getCollection(const std::string& collectionName)
         collection->sortItems();
     }
 
-    //todo check if setting menuFromCollectionLaunchers=t
     MenuParser mp;
     bool menuFromCollectionLaunchers = true;
     config_.getProperty("collections." + collectionName + ".menuFromCollectionLaunchers", menuFromCollectionLaunchers);

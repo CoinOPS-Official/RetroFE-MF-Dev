@@ -237,7 +237,7 @@ static bool ImportConfiguration(Configuration* c)
             }
 
             // record which collections have launcher files
-            std::string prefix = "launchers." + collection;
+            prefix = "launchers." + collection;
             std::string importFile = Utils::combinePath(collectionsPath, collection, "launcher.conf");
             if (c->import(collection, prefix, importFile, false)) {
                 std::string collectionLaunchers = "collectionLaunchers";
