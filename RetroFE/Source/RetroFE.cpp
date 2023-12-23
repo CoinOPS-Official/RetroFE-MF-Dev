@@ -1960,10 +1960,12 @@ bool RetroFE::back(bool &exit)
     return canGoBack;
 }
 
+// depricated - use kiosk mode
 bool RetroFE::isStandalonePlaylist(std::string playlist)
 {
-    return playlist == "street fighter and capcom fighters" ||
-        playlist == "street fighter";
+
+    // return playlist == "street fighter and capcom fighters" || playlist == "street fighter";
+    return false;
 }
 
 bool RetroFE::isInAttractModeSkipPlaylist(std::string playlist)
