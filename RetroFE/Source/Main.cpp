@@ -237,13 +237,20 @@ static bool ImportConfiguration(Configuration* c)
             }
 
             // record which collections have launcher files
-            prefix = "launchers." + collection;
+            prefix = "launchers." + Utils::toLower(collection);
             std::string importFile = Utils::combinePath(collectionsPath, collection, "launcher.conf");
+            bool launcherExists = c->propertyExists(prefix + ".executable");
             if (c->import(collection, prefix, importFile, false)) {
+                if (launcherExists) {
+                    LOG_INFO("Launcher", "Override global launcher with collection launcher: " + prefix + " path: " + importFile);
+                }
                 std::string collectionLaunchers = "collectionLaunchers";
                 std::string launchers = "";
                 c->getProperty(collectionLaunchers, launchers);
                 c->setProperty(collectionLaunchers, launchers + collection + ",");
+            }
+            else {
+                LOG_INFO("Launcher", "Override of global luancher doesn't exist for collection: " + collection + " path: " + importFile);
             }
         }
     }

@@ -62,7 +62,7 @@ bool Launcher::run(std::string collection, Item *collectionItem, Page *currentPa
 
     if(!launcherExecutable(executablePath, launcherName))
     {
-        LOG_ERROR("Launcher", "Failed to find launcher executable (launcher: " + launcherName + " executable: " + executablePath + ")");
+        LOG_ERROR("Launcher", "Failed to find launcher executable (launcher: " + launcherName + " executable: " + executablePath + " collection: " + collectionItem->collectionInfo->name + " item: " + collectionItem->name + ")");
         return false;
     }
     if(!extensions(extensionstr, collection))
@@ -415,6 +415,7 @@ bool Launcher::launcherExecutable(std::string &executable, std::string launcherN
 
     if(std::string executableKey = "launchers." + launcherName + ".executable"; !config_.getProperty(executableKey, executable))
     {
+        LOG_ERROR("Launcher", "No launcher found for: " + executableKey);
         return false;
     }
 
