@@ -39,6 +39,25 @@ MenuParser::MenuParser() = default;
 
 MenuParser::~MenuParser() = default;
 
+void MenuParser::buildMenuFromCollectionLaunchers(CollectionInfo* collection, std::vector<std::string> collectionNames)
+{
+    collection->menusort = true;
+    std::vector<Item*> menuItems;
+    for (std::size_t i = 0; i < collectionNames.size(); i++) {
+        std::string title = collectionNames[i];
+        auto* item = new Item();
+        item->title = title;
+        item->fullTitle = title;
+        item->name = title;
+        item->leaf = false;
+        item->collectionInfo = collection;
+
+        menuItems.push_back(item);
+    }
+    std::sort(menuItems.begin(), menuItems.end(), [](Item const* a, Item const* b) { return Utils::toLower(a->fullTitle) <= Utils::toLower(b->fullTitle); });
+    collection->items.insert(collection->items.begin(), menuItems.begin(), menuItems.end());
+}
+
 bool MenuParser::buildMenuItems(CollectionInfo *collection, bool sort)
 {
 

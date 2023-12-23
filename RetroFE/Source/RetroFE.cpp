@@ -1960,10 +1960,12 @@ bool RetroFE::back(bool &exit)
     return canGoBack;
 }
 
+// depricated - use kiosk mode
 bool RetroFE::isStandalonePlaylist(std::string playlist)
 {
-    return playlist == "street fighter and capcom fighters" ||
-        playlist == "street fighter";
+
+    // return playlist == "street fighter and capcom fighters" || playlist == "street fighter";
+    return false;
 }
 
 bool RetroFE::isInAttractModeSkipPlaylist(std::string playlist)
@@ -2699,9 +2701,34 @@ CollectionInfo *RetroFE::getCollection(const std::string& collectionName)
         collection->sortItems();
     }
 
-    // build collection menu if menu.txt exists
     MenuParser mp;
-    mp.buildMenuItems(collection, menuSort);
+    bool menuFromCollectionLaunchers = false;
+    config_.getProperty("collections." + collectionName + ".menuFromCollectionLaunchers", menuFromCollectionLaunchers);
+    if (menuFromCollectionLaunchers) {
+        // build menu out of all found collections that have launcherfiles
+        std::string collectionLaunchers = "collectionLaunchers";
+        std::string launchers = "";
+        config_.getProperty(collectionLaunchers, launchers);
+        if (launchers != "") {
+            std::vector<std::string> launcherVector;
+            std::stringstream ss(launchers);
+            while (ss.good())
+            {
+                std::string substr;
+                getline(ss, substr, ',');
+                if (substr != "") {
+                    launcherVector.push_back(substr);
+                }
+            }
+            mp.buildMenuFromCollectionLaunchers(collection, launcherVector);
+        }
+        else {
+            // todo log error
+        }
+    } else {
+        // build collection menu if menu.txt exists
+        mp.buildMenuItems(collection, menuSort);
+    }
 
     // adds items to "all" list except those found in "exclude_all.txt"
     cib.addPlaylists(collection);
