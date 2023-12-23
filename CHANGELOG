@@ -46,6 +46,7 @@ v0.10.34.3
     - added ability to have ..: blank playlist to allow for multiple playlists in global setting toggle, uses autoPlaylist and cyclePlaylist in setting collection (monkofthefunk)
 	- added configurable quitCombo in controls.conf, example quitCombo = joyButton6,joyButton7
     - added ability for collections to have their own launcher within the folder; also a menu collection can have a setting "menuFromCollectionLaunchers=true" to build menu based off of collections with launcher.conf (monkofthefunk)
+    - added access to selected collection's art via mode="system" on relodables (monkofthefunk)
 
 v0.10.34.2
     - update version *.2 (monkofthefunk)
