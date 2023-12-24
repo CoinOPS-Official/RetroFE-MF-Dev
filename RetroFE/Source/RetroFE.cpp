@@ -2735,7 +2735,9 @@ CollectionInfo *RetroFE::getCollection(const std::string& collectionName)
     collection->sortPlaylists();
 
    // Add extra info, if available
+    std::string defaultPath = Utils::combinePath(Configuration::absolutePath, "collections", collectionName, "info", "default.conf");
     for (auto& item : collection->items) {
+        item->loadInfo(defaultPath);
         std::string path = Utils::combinePath(Configuration::absolutePath, "collections", collectionName, "info", item->name + ".conf");
         item->loadInfo(path);
     }
