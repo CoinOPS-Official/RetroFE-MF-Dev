@@ -21,19 +21,6 @@
 
 AnimationEvents::AnimationEvents() = default;
 
-AnimationEvents::AnimationEvents(AnimationEvents& copy)
-{
-    for (const auto& [outerKey, outerValue] : copy.animationMap_)
-    {
-        auto& innerMap = animationMap_[outerKey];
-        for (const auto& [innerKey, innerValue] : outerValue)
-        {
-            innerMap[innerKey] = new Animation(*innerValue);
-        }
-    }
-}
-
-
 AnimationEvents::~AnimationEvents()
 {
     clear();
@@ -44,17 +31,13 @@ Animation *AnimationEvents::getAnimation(const std::string& tween)
     return getAnimation(tween, -1);
 }
 
-Animation *AnimationEvents::getAnimation(const std::string& tween, int index)
+Animation* AnimationEvents::getAnimation(const std::string& tween, int index)
 {
-    if(animationMap_[tween].find(-1) == animationMap_[tween].end())
-    {
+    if (animationMap_.find(tween) == animationMap_.end())
         animationMap_[tween][-1] = new Animation();
-    }
 
-    if(animationMap_[tween].find(index) == animationMap_[tween].end())
-    {
+    if (animationMap_[tween].find(index) == animationMap_[tween].end())
         index = -1;
-    }
 
     return animationMap_[tween][index];
 }

@@ -28,10 +28,13 @@
 #include "../Graphics/Page.h"
 #include <thread>
 #include <atomic>
+#include <filesystem>
 #ifdef WIN32
-#include <windows.h>
+#include <Windows.h>
 #include <cstring>
 #endif
+
+namespace fs = std::filesystem;
 
 Launcher::Launcher(Configuration &c)
     : config_(c)
@@ -40,7 +43,38 @@ Launcher::Launcher(Configuration &c)
 
 bool Launcher::run(std::string collection, Item *collectionItem, Page *currentPage)
 {
+    // Initialize with the default launcher for the collection
     std::string launcherName = collectionItem->collectionInfo->launcher;
+
+    // Check for per-item launcher override
+    std::string launcherFile = Utils::combinePath(Configuration::absolutePath, "collections", collection, "launchers", collectionItem->name + ".conf");
+    if (std::ifstream launcherStream(launcherFile); launcherStream.good()) {
+        std::string line;
+        if (std::getline(launcherStream, line)) {
+            // Construct localLauncher key
+            std::string localLauncherKey = "localLaunchers." + collection + "." + line;
+            if (config_.propertyPrefixExists(localLauncherKey)) {
+                // Use localLauncher if exists
+                launcherName = collection + "." + line;
+            }
+            else {
+                // Use specified launcher from conf file
+                launcherName = line;
+            }
+        }
+    }
+
+    // If no per-item launcher override, check for a collection-specific launcher
+    if (launcherName == collectionItem->collectionInfo->launcher) {
+        std::string collectionSpecificLauncherKey = "collectionLaunchers." + collection;
+        if (config_.propertyPrefixExists(collectionSpecificLauncherKey)) {
+            launcherName = collectionItem->collectionInfo->name; // Use the collection-specific launcher
+        }
+    }
+
+    // Convert launcherName to lowercase for consistency
+   //launcherName = Utils::toLower(launcherName);
+
     std::string executablePath;
     std::string selectedItemsDirectory;
     std::string selectedItemsPath;
@@ -48,17 +82,6 @@ bool Launcher::run(std::string collection, Item *collectionItem, Page *currentPa
     std::string matchedExtension;
     std::string args;
 
-    // check if launcher has overide for the particular rom
-    std::string launcherFile = Utils::combinePath( Configuration::absolutePath, "collections", collectionItem->collectionInfo->name, "launchers", collectionItem->name + ".conf" );
-    if (std::ifstream launcherStream( launcherFile.c_str( ) ); launcherStream.good( )) // Launcher file found
-    {
-        std::string line;
-        if (std::getline( launcherStream, line)) // Launcher found
-        {
-            launcherName = line;
-        }
-    }
-    launcherName = Utils::toLower(launcherName);
 
     if(!launcherExecutable(executablePath, launcherName))
     {
@@ -87,6 +110,15 @@ bool Launcher::run(std::string collection, Item *collectionItem, Page *currentPa
     {
         selectedItemsDirectory = collectionItem->filepath;
     }
+    LOG_DEBUG("LauncherDebug", "selectedItemsPath pre-find file: " + selectedItemsPath);
+    LOG_DEBUG("LauncherDebug", "selectedItemsDirectory pre - find file : " + selectedItemsDirectory);
+    LOG_DEBUG("LauncherDebug", "matchedExtension pre - find file : " + matchedExtension);
+    LOG_DEBUG("LauncherDebug", "extensionstr pre - find file : " + extensionstr);
+    LOG_DEBUG("LauncherDebug", "collectionItem->name pre - find file: " + collectionItem->name);
+    LOG_DEBUG("LauncherDebug", "collectionItem->file pre - find file: " + collectionItem->file);
+
+
+
 
     // It is ok to continue if the file could not be found. We could be launching a merged romset
     if (collectionItem->file == "")
@@ -94,12 +126,18 @@ bool Launcher::run(std::string collection, Item *collectionItem, Page *currentPa
     else
         findFile(selectedItemsPath, matchedExtension, selectedItemsDirectory, collectionItem->file, extensionstr);
 
+    LOG_DEBUG("LauncherDebug", "args: " + args);
+    LOG_DEBUG("LauncherDebug", "selectedItemsPath: " + selectedItemsPath);
+
+
     args = replaceVariables(args,
                             selectedItemsPath,
                             collectionItem->name,
                             Utils::getFileName(selectedItemsPath),
                             selectedItemsDirectory,
                             collection);
+    
+    LOG_DEBUG("LauncherDebug", "executablePath: " + executablePath);
 
     executablePath = replaceVariables(executablePath,
                                       selectedItemsPath,
@@ -223,6 +261,7 @@ std::string Launcher::replaceVariables(std::string str,
     str = Utils::replace(str, "%ITEM_DIRECTORY%", itemDirectory);
     str = Utils::replace(str, "%ITEM_COLLECTION_NAME%", itemCollectionName);
     str = Utils::replace(str, "%RETROFE_PATH%", Configuration::absolutePath);
+    str = Utils::replace(str, "%COLLECTION_PATH%", Utils::combinePath(Configuration::absolutePath, "collections", itemCollectionName));
 #ifdef WIN32
     str = Utils::replace(str, "%RETROFE_EXEC_PATH%", Utils::combinePath(Configuration::absolutePath, "retrofe", "RetroFE.exe"));
     const char* comspec = std::getenv("COMSPEC");
@@ -410,29 +449,45 @@ bool Launcher::launcherName(std::string &launcherName, std::string collection)
 
 
 
-bool Launcher::launcherExecutable(std::string &executable, std::string launcherName)
-{
-
-    if(std::string executableKey = "launchers." + launcherName + ".executable"; !config_.getProperty(executableKey, executable))
-    {
-        LOG_ERROR("Launcher", "No launcher found for: " + executableKey);
-        return false;
-    }
-
-    return true;
-}
-
-bool Launcher::launcherArgs(std::string &args, std::string launcherName)
-{
-
-    if(std::string argsKey = "launchers." + launcherName + ".arguments"; !config_.getProperty(argsKey, args))
-    {
-        LOG_ERROR("Launcher", "No arguments specified for: " + argsKey);
-
-        return false;
+bool Launcher::launcherExecutable(std::string& executable, std::string launcherName) {
+    // Try with the localLauncher prefix
+    std::string executableKey = "localLaunchers." + launcherName + ".executable";
+    if (!config_.getProperty(executableKey, executable)) {
+        // Try with the collectionLauncher prefix
+        executableKey = "collectionLaunchers." + launcherName + ".executable";
+        if (!config_.getProperty(executableKey, executable)) {
+            // Finally, try with the global launcher prefix
+            executableKey = "launchers." + launcherName + ".executable";
+            if (!config_.getProperty(executableKey, executable)) {
+                LOG_ERROR("Launcher", "No launcher found for: " + executableKey);
+                return false;
+            }
+        }
     }
     return true;
 }
+
+
+
+bool Launcher::launcherArgs(std::string& args, std::string launcherName) {
+    // Try with the localLauncher prefix
+    std::string argsKey = "localLaunchers." + launcherName + ".arguments";
+    if (!config_.getProperty(argsKey, args)) {
+        // Try with the collectionLauncher prefix
+        argsKey = "collectionLaunchers." + launcherName + ".arguments";
+        if (!config_.getProperty(argsKey, args)) {
+            // Finally, try with the global launcher prefix
+            argsKey = "launchers." + launcherName + ".arguments";
+            if (!config_.getProperty(argsKey, args)) {
+                LOG_ERROR("Launcher", "No arguments specified for: " + argsKey);
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+
 
 bool Launcher::extensions(std::string &extensions, std::string collection)
 {
@@ -461,59 +516,29 @@ bool Launcher::collectionDirectory(std::string &directory, std::string collectio
     return true;
 }
 
-bool Launcher::findFile(std::string &foundFilePath, std::string &foundFilename, std::string directory, std::string filenameWithoutExtension, std::string extensions)
-{
-    std::string extension;
+bool Launcher::findFile(std::string& foundFilePath, std::string& foundFilename, const std::string& directory, const std::string& filenameWithoutExtension, const std::string& extensions) {
     bool fileFound = false;
-    std::stringstream ss;
-    ss << extensions;
+    std::stringstream ss(extensions);
+    std::string extension;
 
-    while(!fileFound && std::getline(ss, extension, ',') )
-    {
-        std::string selectedItemsPath = directory + filenameWithoutExtension + "." + extension;
-        std::ifstream f(selectedItemsPath.c_str());
+    while (!fileFound && std::getline(ss, extension, ',')) {
+        fs::path filePath = fs::path(directory) / (filenameWithoutExtension + "." + extension);
 
-        if (f.good())
-        {
-            std::stringstream ss;
-
-            ss        <<"Checking to see if \""
-                      << selectedItemsPath << "\" exists  [Yes]";
-
-            fileFound = true;
-
-            LOG_INFO("Launcher", ss.str());
-
-            foundFilePath = selectedItemsPath;
+        if (fs::exists(filePath)) {
+            foundFilePath = filePath.string();
             foundFilename = extension;
+            fileFound = true;
+            LOG_INFO("Launcher", "File found: " + foundFilePath);
         }
-        else
-        {
-            std::stringstream ss;
-
-            ss        << "Checking to see if \""
-                      << selectedItemsPath << "\" exists  [No]";
-
-            LOG_WARNING("Launcher", ss.str());
+        else {
+            LOG_WARNING("Launcher", "File not found: " + filePath.string());
         }
-
-        f.close();
     }
 
-    // get the launchers executable
-
-    if(!fileFound)
-    {
-        std::stringstream ss;
-        ss        <<"Could not find any files with the name \""
-                  << filenameWithoutExtension << "\" in folder \""
-                  << directory;
-
-        LOG_WARNING("Launcher", ss.str());
-
+    if (!fileFound) {
+        LOG_WARNING("Launcher", "Could not find any files with the name \"" + filenameWithoutExtension + "\" in folder \"" + directory + "\"");
     }
 
     return fileFound;
 }
-
 

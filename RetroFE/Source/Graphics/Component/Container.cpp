@@ -24,22 +24,4 @@ Container::Container(Page &p)
     allocateGraphicsMemory();
 }
 
-Container::~Container()
-{
-    freeGraphicsMemory();
-}
-
-void Container::freeGraphicsMemory()
-{
-    Component::freeGraphicsMemory();
-}
-
-void Container::allocateGraphicsMemory()
-{
-    Component::allocateGraphicsMemory();
-}
-
-void Container::draw()
-{
-    Component::draw();
-}
+Container::~Container() = default;

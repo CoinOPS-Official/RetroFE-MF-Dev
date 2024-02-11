@@ -16,6 +16,7 @@
 #pragma once
 
 #include "../Collection/CollectionInfo.h"
+#include "ThreadPool.h"
 
 #include <map>
 #include <string>
@@ -31,8 +32,11 @@ class Sound;
 
 class Page
 {
+
 public:
-    enum ScrollDirection
+
+    ThreadPool pool_{ 4 };
+    ;    enum ScrollDirection
     {
         ScrollDirectionForward,
         ScrollDirectionBack,
@@ -47,7 +51,7 @@ public:
     virtual void onNewScrollItemSelected();
     void returnToRememberSelectedItem();
     void rememberSelectedItem();
-    std::map<std::string, unsigned int> getLastPlaylistOffsets();
+    std::map<std::string, size_t> getLastPlaylistOffsets() const;
     void highlightLoadArt();
     bool pushCollection(CollectionInfo *collection);
     bool popCollection();
@@ -64,7 +68,7 @@ public:
     void prevCyclePlaylist(std::vector<std::string> list);
     void pushMenu(ScrollingList *s, int index = -1);
     void updatePlaylistMenuPosition();
-    bool isMenusFull();
+    bool isMenusFull() const;
     void setLoadSound(Sound *chunk);
     void setUnloadSound(Sound *chunk);
     void setHighlightSound(Sound *chunk);
@@ -77,7 +81,7 @@ public:
     void metaScroll(ScrollDirection direction, std::string attribute);
     void cfwLetterSubScroll(ScrollDirection direction);
     size_t getCollectionSize();
-    unsigned int getSelectedIndex();
+    size_t getSelectedIndex();
     void selectRandom();
     void selectRandomPlaylist(CollectionInfo* collection, std::vector<std::string> cycleVector);
     void start();
@@ -90,12 +94,12 @@ public:
     void setLayoutHeightByMonitor(int monitor, int height);
     void setScrolling(ScrollDirection direction);
     bool isHorizontalScroll();
-    unsigned int getMenuDepth();
+    unsigned int getMenuDepth() const;
     Item *getSelectedItem();
     Item *getSelectedItem(int offset);
     void removeSelectedItem();
-    void setScrollOffsetIndex(unsigned int i);
-    unsigned int getScrollOffsetIndex();
+    void setScrollOffsetIndex(size_t i);
+    size_t getScrollOffsetIndex();
     bool isIdle();
     bool isAttractIdle();
     bool isGraphicsIdle();
@@ -114,8 +118,8 @@ public:
     std::string getCollectionName();
     CollectionInfo *getCollection();
     void  setMinShowTime(float value);
-    float getMinShowTime();
-    std::string controlsType();
+    float getMinShowTime() const;
+    std::string controlsType() const;
     void setControlsType(const std::string& type);
     void  menuScroll();
     void  highlightEnter();
@@ -208,7 +212,7 @@ private:
     std::vector<Component *> LayerComponents;
     std::list<ScrollingList *> deleteMenuList_;
     std::list<CollectionInfo *> deleteCollectionList_;
-    std::map<std::string, unsigned int> lastPlaylistOffsets_;
+    std::map<std::string, size_t> lastPlaylistOffsets_;
 
     bool scrollActive_;
 
@@ -225,5 +229,6 @@ private:
     std::vector<int> layoutWidthByMonitor_;
     std::vector<int> layoutHeightByMonitor_;
     bool jukebox_;
+    bool useThreading_;
 
 };

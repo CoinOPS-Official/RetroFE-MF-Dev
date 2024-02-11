@@ -27,20 +27,22 @@
     #include <Windows.h>
 #endif
 
+#ifdef __APPLE__
 struct PathHash {
     auto operator()(const std::filesystem::path& p) const noexcept {
         return std::filesystem::hash_value(p);
     }
 };
+#endif
 
 class Utils
 {
 public:
-    static std::string replace(std::string subject, const std::string& search,
-        const std::string& replace);
+    static std::string replace(std::string subject, const std::string_view& search,
+        const std::string_view& replace);
 
-    static float convertFloat(std::string content);
-    static int convertInt(std::string content);
+    static float convertFloat(const std::string_view& content);
+    static int convertInt(const std::string_view& content);
     static void replaceSlashesWithUnderscores(std::string& content);
 #ifdef WIN32    
     static void postMessage(LPCTSTR windowTitle, UINT Msg, WPARAM wParam, LPARAM lParam);
@@ -48,7 +50,7 @@ public:
     static std::string getDirectory(const std::string& filePath);
     static std::string getParentDirectory(std::string filePath);
     static std::string getEnvVar(std::string const& key);
-    static std::string getFileName(std::string filePath);
+    static std::string getFileName(const std::string& filePath);
     static bool findMatchingFile(const std::string& prefix, const std::vector<std::string>& extensions, std::string& file);
     static std::string toLower(const std::string& inputStr);
     static std::string uppercaseFirst(std::string str);
@@ -60,11 +62,11 @@ public:
     static std::string removeAbsolutePath(const std::string& fullPath);
 
     template <typename... Paths>
-    static std::string combinePath(Paths... paths) {
+    static std::string combinePath(Paths&&... paths) {
         std::filesystem::path combinedPath;
-        // Use fold expression to append paths
-        (combinedPath /= ... /= std::filesystem::path(paths));
-        return combinedPath.make_preferred().string(); // Convert to the preferred path format for the platform
+        // Use fold expression with perfect forwarding and direct construction
+        ((combinedPath /= std::filesystem::path(std::forward<Paths>(paths))), ...);
+        return combinedPath.make_preferred().string();
     }
 
    
@@ -75,8 +77,13 @@ public:
 #endif
 
 private:
+#ifdef __APPLE__
     static std::unordered_map<std::filesystem::path, std::unordered_set<std::string>, PathHash> fileCache;
-    static std::unordered_set<std::filesystem::path, PathHash> nonExistingDirectories; // Cache for non-existing directories
+    static std::unordered_set<std::filesystem::path, PathHash> nonExistingDirectories;
+#else
+    static std::unordered_map<std::filesystem::path, std::unordered_set<std::string>> fileCache;
+    static std::unordered_set<std::filesystem::path> nonExistingDirectories;
+#endif
     static void populateCache(const std::filesystem::path& directory);
     static bool isFileInCache(const std::filesystem::path& directory, const std::string& filename);
     static bool isFileCachePopulated(const std::filesystem::path& directory);

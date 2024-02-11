@@ -83,6 +83,9 @@ bool SDL::initialize( Configuration &config )
 	int AvdecMaxThreads = 2;
 	config.getProperty("AvdecMaxThreads", AvdecMaxThreads);
 	Configuration::AvdecMaxThreads = AvdecMaxThreads;
+    int AvdecThreadType = 2;
+    config.getProperty("AvdecThreadType", AvdecThreadType);
+    Configuration::AvdecThreadType = AvdecThreadType;
 	bool MuteVideo = false;
 	config.getProperty("MuteVideo", MuteVideo);
 	Configuration::MuteVideo = MuteVideo;
@@ -276,8 +279,15 @@ bool SDL::initialize( Configuration &config )
             else
             {
                 if (screenNum == mainScreen) {
-                    // Move the mouse to the top right corner of the primary window
-                    SDL_WarpMouseInWindow(window_[screenNum], windowWidth_[screenNum], 0);
+                    #ifndef __APPLE__
+                        // If not MacOS, warp cursor top right
+                        SDL_WarpMouseInWindow(window_[screenNum], windowWidth_[screenNum], 0 );
+                    #endif
+                    #ifdef __APPLE__
+                        // If MacOS, warp cursor to center to prevent hot corner activation
+                        SDL_WarpMouseInWindow(window_[screenNum], windowWidth_[screenNum] / 2, windowHeight_[screenNum] /2 );
+                        SDL_SetRelativeMouseMode(SDL_TRUE);
+                    #endif
                 }
                 bool vSync = false;
 				config.getProperty("vSync", vSync);
@@ -357,9 +367,12 @@ bool SDL::deInitialize( )
     LOG_INFO("SDL", "DeInitializing" );
 
     if (window_[0] != NULL) {
-        int windowCenterX = windowWidth_[0] / 2;
-        int windowCenterY = windowHeight_[0] / 2;
-        SDL_WarpMouseInWindow(window_[0], windowCenterX, windowCenterY);
+        // If on MacOS disable relative mouse mode
+        #ifdef __APPLE__
+            SDL_SetRelativeMouseMode(SDL_FALSE);
+        #endif
+        // Center mouse in primary window
+        SDL_WarpMouseInWindow(window_[0], windowWidth_[0] / 2, windowHeight_[0] / 2);
     }
     else {
         LOG_WARNING("SDL", "Window 0 is NULL, cannot center mouse within it");
