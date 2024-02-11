@@ -166,28 +166,36 @@ void RetroFE::launchEnter( )
 
     // Disable window focus
     SDL_SetWindowGrab(SDL::getWindow( 0 ), SDL_FALSE);
-    // Free the textures, and optionally take down SDL
-    //freeGraphicsMemory();
+    // Free the textures, and take down SDL if unloadSDL flag is set
+    bool unloadSDL = false;
+    config_.getProperty( "unloadSDL", unloadSDL );
+    if ( unloadSDL )
+    {
+        freeGraphicsMemory();
+    }
+    // If on MacOS disable relative mouse mode to handoff mouse to game/program
+    #ifdef __APPLE__
+        SDL_SetRelativeMouseMode(SDL_FALSE);
+    #endif
+    
+    #ifdef WIN32
+            Utils::postMessage("MediaplayerHiddenWindow",0x8001, 75, 0);
+    #endif
 
-    bool hideMouse = false;
-    int  mouseX    = 5000;
-    int  mouseY    = 5000;
-    config_.getProperty( "hideMouse", hideMouse );
-    config_.getProperty( "mouseX",    mouseX );
-    config_.getProperty( "mouseY",    mouseY );
-    if ( hideMouse )
-        SDL_WarpMouseGlobal( mouseX, mouseY );
-#ifdef WIN32            
-        Utils::postMessage("MediaplayerHiddenWindow",0x8001, 75, 0);		
-#endif		
+
 }
 
 
 // Return from the launch of a game/program
 void RetroFE::launchExit( )
 {
-    // Optionally set up SDL, and load the textures
-    //allocateGraphicsMemory();
+    // Set up SDL, and load the textures if unloadSDL flag is set
+    bool unloadSDL = false;
+    config_.getProperty( "unloadSDL", unloadSDL );
+    if ( unloadSDL )
+    {
+        allocateGraphicsMemory();
+    }
 
     // Restore the SDL settings
     SDL_RestoreWindow( SDL::getWindow( 0 ) );
@@ -214,40 +222,44 @@ void RetroFE::launchExit( )
     keyLastTime_ = currentTime_;
     lastLaunchReturnTime_ = currentTime_;
 
-    bool hideMouse = false;
-    int  mouseX    = 5000;
-    int  mouseY    = 5000;
-    config_.getProperty( "hideMouse", hideMouse );
-    config_.getProperty( "mouseX",    mouseX );
-    config_.getProperty( "mouseY",    mouseY );
-    if ( hideMouse )
-        SDL_WarpMouseGlobal( mouseX, mouseY );
-#ifdef WIN32            
-			Utils::postMessage("MediaplayerHiddenWindow",0x8001, 76, 0);		
-#endif			
+    #ifndef __APPLE__
+        // If not MacOS, warp cursor top right. game/program may warp elsewhere
+        SDL_WarpMouseInWindow(SDL::getWindow(0), SDL::getWindowWidth(0), 0);
+    #endif
+    
+    #ifdef WIN32
+                Utils::postMessage("MediaplayerHiddenWindow",0x8001, 76, 0);
+    #endif
+    // If on MacOS enable relative mouse mode
+    #ifdef __APPLE__
+        SDL_SetRelativeMouseMode(SDL_TRUE);
+    #endif
 }
 
 
 // Free the textures, and optionall take down SDL
-void RetroFE::freeGraphicsMemory( )
+void RetroFE::freeGraphicsMemory()
 {
-
     // Free textures
-    if ( currentPage_ )
+    if (currentPage_)
     {
-        currentPage_->freeGraphicsMemory( );
+        currentPage_->freeGraphicsMemory();
     }
 
     // Close down SDL
     bool unloadSDL = false;
-    config_.getProperty( "unloadSDL", unloadSDL );
-    if ( unloadSDL )
+    config_.getProperty("unloadSDL", unloadSDL);
+    if (unloadSDL)
     {
-        currentPage_->deInitializeFonts( );
-        SDL::deInitialize( );
-        input_.clearJoysticks( );
-    }
+        // Ensure currentPage_ is not null before calling deInitializeFonts
+        if (currentPage_)
+        {
+            currentPage_->deInitializeFonts();
+        }
 
+        SDL::deInitialize();
+        input_.clearJoysticks();
+    }
 }
 
 
@@ -327,7 +339,9 @@ bool RetroFE::run( )
     // Initialize SDL
     if(! SDL::initialize( config_ ) ) return false;
     fontcache_.initialize( );
-
+    SDL_RestoreWindow(SDL::getWindow(0));
+    SDL_RaiseWindow(SDL::getWindow(0));
+    SDL_SetWindowGrab(SDL::getWindow(0), SDL_TRUE);
 #ifdef WIN32
     bool highPriority = false;
     config_.getProperty("highPriority", highPriority);
@@ -339,8 +353,12 @@ bool RetroFE::run( )
     // Define control configuration
     std::string controlsConfPath = Utils::combinePath( Configuration::absolutePath, "controls" );
     config_.import("controls", controlsConfPath + ".conf");
-    for (int i = 1; i < 10; i++)
-        config_.import("controls", controlsConfPath + std::to_string(i) + ".conf", false);
+    for (int i = 1; i < 10; i++) {
+        std::string numberedControlsFile = controlsConfPath + std::to_string(i) + ".conf";
+        if (fs::exists(numberedControlsFile)) {
+            config_.import("controls", numberedControlsFile, false);
+        }
+    }
 
     if (config_.propertiesEmpty())
     {
@@ -430,8 +448,7 @@ bool RetroFE::run( )
     std::string settingsPlaylist = "settings";
     std::string settingsCollectionPlaylist;
     config_.getProperty("settingsCollectionPlaylist", settingsCollectionPlaylist);
-    size_t position = settingsCollectionPlaylist.find(":");
-    if (position != std::string::npos) {
+    if (size_t position = settingsCollectionPlaylist.find(":"); position != std::string::npos) {
         settingsCollection = settingsCollectionPlaylist.substr(0, position);
         settingsPlaylist = settingsCollectionPlaylist.erase(0, position + 1);
         config_.setProperty("settingsPlaylist", settingsPlaylist);
@@ -555,7 +572,7 @@ bool RetroFE::run( )
                 delete currentPage_;
 
                 // find first collection
-                std::string firstCollection = "Main";
+                firstCollection = "Main";
                 config_.getProperty("firstCollection", firstCollection);
                 currentPage_ = loadPage(firstCollection);
                 splashMode = false;
@@ -1550,16 +1567,38 @@ bool RetroFE::run( )
                 config_.getProperty( "lastPlayedSkipCollection", lastPlayedSkipCollection );
                 config_.getProperty( "lastplayedSize", size );
 
-                if (nextPageItem_->collectionInfo->name != lastPlayedSkipCollection)
-                {
-                    cib.updateLastPlayedPlaylist(currentPage_->getCollection(), nextPageItem_, size); // Update last played playlist if not currently in the skip playlist (e.g. settings)
-                    currentPage_->updateReloadables(0);
-                }
+                if (lastPlayedSkipCollection != "") {
+                    // see if any of the comma seperated match current collection
+                    std::stringstream ss(lastPlayedSkipCollection);
+                    std::string collection = "";
+                    bool updateLastPlayed = true;
+                    while (ss.good())
+                    {
+                        getline(ss, collection, ',');
+                        // Check if the current collection matches any collection in lastPlayedSkipCollection
+                        if (nextPageItem_->collectionInfo->name == collection) {
+                            updateLastPlayed = false;
+                            break;  // No need to check further, as we found a match
+                        }
+                    }
+                    // Update last played collection if not found in the skip collection
+                    if (updateLastPlayed) {
+                        cib.updateLastPlayedPlaylist(currentPage_->getCollection(), nextPageItem_, size);
+                        currentPage_->updateReloadables(0);
+                        }
+                    }
 
                 l.LEDBlinky( 3, nextPageItem_->collectionInfo->name, nextPageItem_ );
                 if (l.run(nextPageItem_->collectionInfo->name, nextPageItem_, currentPage_)) // Run and check if we need to reboot
                 {
                     attract_.reset( );
+                    //Run launchExit function when unloadSDL flag is set
+                    bool unloadSDL = false;
+                    config_.getProperty("unloadSDL", unloadSDL);
+                    if (unloadSDL)
+                    {
+                        launchExit();
+                    }
                     reboot_ = true;
                     state   = RETROFE_QUIT_REQUEST;
                 }
@@ -2118,6 +2157,14 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             keyLastTime_ = currentTime_;
             return RETROFE_MENUMODE_START_REQUEST;
         }
+        else if (input_.keystate(UserInput::KeyCodeSettingsCombo1) && input_.keystate(UserInput::KeyCodeSettingsCombo2)) {
+            attract_.reset();
+            bool controllerComboSettings = false;
+            config_.getProperty("controllerComboSettings", controllerComboSettings);
+            if (controllerComboSettings) {
+                return RETROFE_SETTINGS_REQUEST;
+            }
+        }
         else if (input_.keystate(UserInput::KeyCodeQuitCombo1) && input_.keystate(UserInput::KeyCodeQuitCombo2)) {
             attract_.reset();
             bool controllerComboExit = false;
@@ -2647,18 +2694,18 @@ Page *RetroFE::loadSplashPage( )
 }
 
 // Load a collection
-CollectionInfo *RetroFE::getCollection(const std::string& collectionName)
+CollectionInfo* RetroFE::getCollection(const std::string& collectionName)
 {
 
     // Check if subcollections should be merged or split
     bool subsSplit = false;
-    config_.getProperty( "subsSplit", subsSplit );
+    config_.getProperty("subsSplit", subsSplit);
 
     // Build the collection
     CollectionInfoBuilder cib(config_, *metadb_);
-    CollectionInfo *collection = cib.buildCollection( collectionName );
+    CollectionInfo* collection = cib.buildCollection(collectionName);
     collection->subsSplit = subsSplit;
-    cib.injectMetadata( collection );
+    cib.injectMetadata(collection);
 
     // Check collection folder exists 
     fs::path path = Utils::combinePath(Configuration::absolutePath, "collections", collectionName);
@@ -2669,30 +2716,22 @@ CollectionInfo *RetroFE::getCollection(const std::string& collectionName)
 
     // Loading sub collection files
     for (const auto& entry : fs::directory_iterator(path)) {
-        if (fs::is_regular_file(entry)) {
-            std::string file = entry.path().filename().string();
+        if (entry.is_regular_file() && entry.path().extension() == ".sub") {
+            std::string basename = entry.path().stem().string();
 
-            size_t position = file.find_last_of(".");
-            std::string basename = (std::string::npos == position) ? file : file.substr(0, position);
+            LOG_INFO("RetroFE", "Loading subcollection into menu: " + basename);
 
-            std::string comparator = ".sub";
-            size_t start = file.length() >= comparator.length() ? file.length() - comparator.length() : 0;
-
-            if (file.compare(start, comparator.length(), comparator) == 0) {
-                LOG_INFO("RetroFE", "Loading subcollection into menu: " + basename);
-
-                CollectionInfo* subcollection = cib.buildCollection(basename, collectionName);
-                collection->addSubcollection(subcollection);
-                subcollection->subsSplit = subsSplit;
-                cib.injectMetadata(subcollection);
-                collection->hasSubs = true;
-            }
+            CollectionInfo* subcollection = cib.buildCollection(basename, collectionName);
+            collection->addSubcollection(subcollection);
+            subcollection->subsSplit = subsSplit;
+            cib.injectMetadata(subcollection);
+            collection->hasSubs = true;
         }
     }
 
     // sort a collection's items
     bool menuSort = true;
-    config_.getProperty( "collections." + collectionName + ".list.menuSort", menuSort );
+    config_.getProperty("collections." + collectionName + ".list.menuSort", menuSort);
     if (menuSort) {
         config_.getProperty("collections." + collectionName + ".list.sortType", collection->sortType);
         if (!Item::validSortType(collection->sortType)) {
@@ -2725,7 +2764,8 @@ CollectionInfo *RetroFE::getCollection(const std::string& collectionName)
         else {
             // todo log error
         }
-    } else {
+    }
+    else {
         // build collection menu if menu.txt exists
         mp.buildMenuItems(collection, menuSort);
     }
@@ -2744,11 +2784,11 @@ CollectionInfo *RetroFE::getCollection(const std::string& collectionName)
 
 
     // Remove parenthesis and brackets, if so configured
-    bool showParenthesis    = true;
+    bool showParenthesis = true;
     bool showSquareBrackets = true;
 
-    (void)config_.getProperty( "showParenthesis", showParenthesis );
-    (void)config_.getProperty( "showSquareBrackets", showSquareBrackets );
+    (void)config_.getProperty("showParenthesis", showParenthesis);
+    (void)config_.getProperty("showSquareBrackets", showSquareBrackets);
 
     //using Playlists_T = std::map<std::string, std::vector<Item *> *>;
     for (auto const& playlistPair : collection->playlists) {

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -49,17 +49,17 @@
 		D13224E8035B4C24806BB1D2 /* JoyAxisHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AFBFD8ED7A76485FB4AE6FE7 /* JoyAxisHandler.cpp */; };
 		DE4104C81A7D4148ADEBAFC8 /* Animation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 265E7B256A954D8793198331 /* Animation.cpp */; };
 		DED5255F5B2A458586051B1C /* RetroFE.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 003330130E81476F9950FA59 /* RetroFE.cpp */; };
+		DF010EF92B4DDDAA0062DCCA /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DFF91E9F2B260B5B00507957 /* SDL2_image.framework */; };
+		DF010EFA2B4DDDAA0062DCCA /* SDL2_image.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DFF91E9F2B260B5B00507957 /* SDL2_image.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		DF010EFB2B4DDDAA0062DCCA /* SDL2_mixer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DFF91E9B2B260B5B00507957 /* SDL2_mixer.framework */; };
+		DF010EFC2B4DDDAA0062DCCA /* SDL2_mixer.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DFF91E9B2B260B5B00507957 /* SDL2_mixer.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		DF010EFD2B4DDDAA0062DCCA /* SDL2_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DFF91E9E2B260B5B00507957 /* SDL2_ttf.framework */; };
+		DF010EFE2B4DDDAA0062DCCA /* SDL2_ttf.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DFF91E9E2B260B5B00507957 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		DF010EFF2B4DDDAA0062DCCA /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DFF91E9C2B260B5B00507957 /* SDL2.framework */; };
+		DF010F002B4DDDAA0062DCCA /* SDL2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DFF91E9C2B260B5B00507957 /* SDL2.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DF07B3E52B2A14CE00B732CF /* GStreamer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DF07B3E42B2A14CE00B732CF /* GStreamer.framework */; };
 		DF07B3E62B2A14CE00B732CF /* GStreamer.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DF07B3E42B2A14CE00B732CF /* GStreamer.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		DF87A17A2B152AAB00548E78 /* RetroFE.png in Resources */ = {isa = PBXBuildFile; fileRef = DF87A1792B152AA400548E78 /* RetroFE.png */; };
-		DFF91EAD2B26200A00507957 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DFF91E9F2B260B5B00507957 /* SDL2_image.framework */; };
-		DFF91EAE2B26200A00507957 /* SDL2_image.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DFF91E9F2B260B5B00507957 /* SDL2_image.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		DFF91EAF2B26200B00507957 /* SDL2_mixer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DFF91E9B2B260B5B00507957 /* SDL2_mixer.framework */; };
-		DFF91EB02B26200B00507957 /* SDL2_mixer.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DFF91E9B2B260B5B00507957 /* SDL2_mixer.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		DFF91EB12B26200C00507957 /* SDL2_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DFF91E9E2B260B5B00507957 /* SDL2_ttf.framework */; };
-		DFF91EB22B26200C00507957 /* SDL2_ttf.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DFF91E9E2B260B5B00507957 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		DFF91EB32B26200D00507957 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DFF91E9C2B260B5B00507957 /* SDL2.framework */; };
-		DFF91EB42B26200D00507957 /* SDL2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DFF91E9C2B260B5B00507957 /* SDL2.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		EBC08A29661C4F528F9D6AC9 /* Version.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6896574AEBD347EE888038E9 /* Version.cpp */; };
 		F979BDA3A4184905BFCA0DEA /* Configuration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87B7677F57FF454B953BAD59 /* Configuration.cpp */; };
 		FAAFCC77A92B455787428238 /* MouseButtonHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5BE2DB1B42B5406981272867 /* MouseButtonHandler.cpp */; };
@@ -75,11 +75,11 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				DFF91EB42B26200D00507957 /* SDL2.framework in Embed Frameworks */,
-				DFF91EB22B26200C00507957 /* SDL2_ttf.framework in Embed Frameworks */,
-				DFF91EB02B26200B00507957 /* SDL2_mixer.framework in Embed Frameworks */,
+				DF010F002B4DDDAA0062DCCA /* SDL2.framework in Embed Frameworks */,
+				DF010EFE2B4DDDAA0062DCCA /* SDL2_ttf.framework in Embed Frameworks */,
+				DF010EFC2B4DDDAA0062DCCA /* SDL2_mixer.framework in Embed Frameworks */,
 				DF07B3E62B2A14CE00B732CF /* GStreamer.framework in Embed Frameworks */,
-				DFF91EAE2B26200A00507957 /* SDL2_image.framework in Embed Frameworks */,
+				DF010EFA2B4DDDAA0062DCCA /* SDL2_image.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -99,7 +99,7 @@
 		13BFB75C2B0C419DA620A836 /* VideoBuilder.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = VideoBuilder.h; path = Graphics/Component/VideoBuilder.h; sourceTree = SOURCE_ROOT; };
 		16D023276B4B40BB89328135 /* KeyboardHandler.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = KeyboardHandler.h; path = Control/KeyboardHandler.h; sourceTree = SOURCE_ROOT; };
 		1A054F9D5F574151A8D39C1E /* TweenTypes.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = TweenTypes.h; path = Graphics/Animate/TweenTypes.h; sourceTree = SOURCE_ROOT; };
-		1B5B0776E6324B4195FFDB16 /* retrofe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = retrofe.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1B5B0776E6324B4195FFDB16 /* RetroFE.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = RetroFE.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		202FB2166FE14BD1A9EEF5BF /* JoyButtonHandler.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = JoyButtonHandler.h; path = Control/JoyButtonHandler.h; sourceTree = SOURCE_ROOT; };
 		2280024C19F14DC999AD8305 /* ReloadableScrollingText.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ReloadableScrollingText.cpp; path = Graphics/Component/ReloadableScrollingText.cpp; sourceTree = SOURCE_ROOT; };
 		246A23C191D74D11B2E79FDD /* ReloadableText.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = ReloadableText.h; path = Graphics/Component/ReloadableText.h; sourceTree = SOURCE_ROOT; };
@@ -109,7 +109,6 @@
 		3B7D2FD0A52142D19F391788 /* CollectionInfoBuilder.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = CollectionInfoBuilder.h; path = Collection/CollectionInfoBuilder.h; sourceTree = SOURCE_ROOT; };
 		3BC313ADA5DC4A779D50FDCA /* VideoFactory.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = VideoFactory.h; path = Video/VideoFactory.h; sourceTree = SOURCE_ROOT; };
 		3C75846B6EEE4DA19FF46935 /* Component.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = Component.h; path = Graphics/Component/Component.h; sourceTree = SOURCE_ROOT; };
-		3CD8551A3EE743A3B323FA4E /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
 		3F3F54E8E4D945EE992D1169 /* RetroFE.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; path = RetroFE.h; sourceTree = SOURCE_ROOT; };
 		410B03D8D64D46F791687130 /* MenuParser.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = MenuParser.h; path = Collection/MenuParser.h; sourceTree = SOURCE_ROOT; };
 		41EA3E9FBEB9441ABFA62BF1 /* PageBuilder.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = PageBuilder.h; path = Graphics/PageBuilder.h; sourceTree = SOURCE_ROOT; };
@@ -167,8 +166,10 @@
 		D331C2DFEBE34D7F810DE589 /* Tween.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = Tween.cpp; path = Graphics/Animate/Tween.cpp; sourceTree = SOURCE_ROOT; };
 		D815DD8BD8F1405E9F3EE4D2 /* sqlite3.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.c; fileEncoding = 4; name = sqlite3.c; path = /Users/aiden/Documents/Github/RetroFE/RetroFE/ThirdParty/sqlite3/sqlite3.c; sourceTree = "<absolute>"; };
 		DB8250A9EDC247899F1AD712 /* Menu.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = Menu.cpp; path = Menu/Menu.cpp; sourceTree = SOURCE_ROOT; };
+		DF010EF62B4DD80C0062DCCA /* libc++.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.1.tbd"; path = "usr/lib/libc++.1.tbd"; sourceTree = SDKROOT; };
+		DF010EF72B4DD8150062DCCA /* libSystem.B.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libSystem.B.tbd; path = usr/lib/libSystem.B.tbd; sourceTree = SDKROOT; };
+		DF010EF82B4DD81C0062DCCA /* libz.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.tbd; path = usr/lib/libz.1.tbd; sourceTree = SDKROOT; };
 		DF07B3E42B2A14CE00B732CF /* GStreamer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GStreamer.framework; path = ../ThirdPartyMac/GStreamer.framework; sourceTree = "<group>"; };
-		DF07B3E72B2A153500B732CF /* retrofe.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = retrofe.entitlements; sourceTree = "<group>"; };
 		DF87A1792B152AA400548E78 /* RetroFE.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = RetroFE.png; path = ../../Package/Environment/Common/RetroFE.png; sourceTree = "<group>"; };
 		DFF91E9B2B260B5B00507957 /* SDL2_mixer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_mixer.framework; path = ../ThirdPartyMac/SDL2_mixer.framework; sourceTree = "<group>"; };
 		DFF91E9C2B260B5B00507957 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = ../ThirdPartyMac/SDL2.framework; sourceTree = "<group>"; };
@@ -200,11 +201,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DFF91EB32B26200D00507957 /* SDL2.framework in Frameworks */,
-				DFF91EAF2B26200B00507957 /* SDL2_mixer.framework in Frameworks */,
-				DFF91EAD2B26200A00507957 /* SDL2_image.framework in Frameworks */,
-				DFF91EB12B26200C00507957 /* SDL2_ttf.framework in Frameworks */,
+				DF010EFF2B4DDDAA0062DCCA /* SDL2.framework in Frameworks */,
+				DF010EFB2B4DDDAA0062DCCA /* SDL2_mixer.framework in Frameworks */,
 				DF07B3E52B2A14CE00B732CF /* GStreamer.framework in Frameworks */,
+				DF010EF92B4DDDAA0062DCCA /* SDL2_image.framework in Frameworks */,
+				DF010EFD2B4DDDAA0062DCCA /* SDL2_ttf.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -282,16 +283,14 @@
 				3BC313ADA5DC4A779D50FDCA /* VideoFactory.h */,
 			);
 			name = "Header Files";
-			sourceTree = "<group>";
+			sourceTree = SOURCE_ROOT;
 		};
 		A1D16326A0024131923E1EB7 /* retrofe */ = {
 			isa = PBXGroup;
 			children = (
-				DF07B3E72B2A153500B732CF /* retrofe.entitlements */,
 				F1EBF96675C5443E881F32F0 /* Source Files */,
 				4C418535FD0A487485FDF907 /* Header Files */,
 				42FFB63E16B947FA8CCC2784 /* Resources */,
-				3CD8551A3EE743A3B323FA4E /* CMakeLists.txt */,
 			);
 			name = retrofe;
 			sourceTree = "<group>";
@@ -299,6 +298,9 @@
 		D0A78259C0704D50B83B5260 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				DF010EF82B4DD81C0062DCCA /* libz.1.tbd */,
+				DF010EF72B4DD8150062DCCA /* libSystem.B.tbd */,
+				DF010EF62B4DD80C0062DCCA /* libc++.1.tbd */,
 				DF07B3E42B2A14CE00B732CF /* GStreamer.framework */,
 				DFF91E9C2B260B5B00507957 /* SDL2.framework */,
 				DFF91E9F2B260B5B00507957 /* SDL2_image.framework */,
@@ -311,7 +313,7 @@
 		DA3165AA0ABC4ABCBAD49511 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				1B5B0776E6324B4195FFDB16 /* retrofe.app */,
+				1B5B0776E6324B4195FFDB16 /* RetroFE.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -369,7 +371,7 @@
 				D815DD8BD8F1405E9F3EE4D2 /* sqlite3.c */,
 			);
 			name = "Source Files";
-			sourceTree = "<group>";
+			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */
 
@@ -389,7 +391,7 @@
 			);
 			name = retrofe;
 			productName = retrofe;
-			productReference = 1B5B0776E6324B4195FFDB16 /* retrofe.app */;
+			productReference = 1B5B0776E6324B4195FFDB16 /* RetroFE.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -399,15 +401,10 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1510;
-				TargetAttributes = {
-					28DEFA88B73A4CA1825D0DDC = {
-						ProvisioningStyle = Automatic;
-					};
-				};
+				LastUpgradeCheck = 1500;
 			};
 			buildConfigurationList = 61A9781468EE4214A7EB7754 /* Build configuration list for PBXProject "retrofe" */;
-			compatibilityVersion = "Xcode 3.2";
+			compatibilityVersion = "Xcode 15.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -509,14 +506,13 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				SDKROOT = macosx14.0;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				SDKROOT = macosx;
 				SYMROOT = /Users/aiden/Documents/Github/RetroFE/RetroFE/xcode/build;
 			};
 			name = MinSizeRel;
@@ -537,14 +533,13 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				SDKROOT = macosx14.0;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				SDKROOT = macosx;
 				SYMROOT = /Users/aiden/Documents/Github/RetroFE/RetroFE/xcode/build;
 			};
 			name = Release;
@@ -552,239 +547,152 @@
 		2BC18680D4D94DAE847A20F7 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = YES;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = retrofe.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				CONFIGURATION_BUILD_DIR = /Users/aiden/Documents/Github/RetroFE/RetroFE/Build/Release;
-				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_HARDENED_RUNTIME = NO;
-				EXECUTABLE_PREFIX = "";
-				EXECUTABLE_SUFFIX = "";
-				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/../ThirdPartyMac/**";
+				CONFIGURATION_BUILD_DIR = "$(PROJECT_DIR)/../Build/Release";
+				DEVELOPMENT_TEAM = S3WCLDU5UR;
+				ENABLE_HARDENED_RUNTIME = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/../ThirdPartyMac",
+				);
+				GCC_FAST_MATH = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
 				GCC_OPTIMIZATION_LEVEL = 3;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
-					"'RETROFE_VERSION_MAJOR='",
-					"'RETROFE_VERSION_MINOR='",
-					"'RETROFE_VERSION_BUILD='",
-					"$(inherited)",
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_UNROLL_LOOPS = NO;
 				HEADER_SEARCH_PATHS = (
-					/Users/aiden/Documents/Github/RetroFE/RetroFE/Source/../ThirdParty/sqlite3,
-					"/Users/aiden/Documents/Github/RetroFE/RetroFE/Source/../ThirdParty/rapidxml-1.13",
 					"$(inherited)",
-					../ThirdPartyMac/GStreamer.framework/Headers,
+					"$(PROJECT_DIR)/../ThirdParty/sqlite3",
+					"$(PROJECT_DIR)/../ThirdParty/rapidxml-1.13",
+					"$(PROJECT_DIR)/../ThirdPartyMac/GStreamer.framework/Headers",
 				);
-				INFOPLIST_FILE = /Users/aiden/Documents/Github/RetroFE/RetroFE/xcode/CMakeFiles/retrofe.dir/Info.plist;
-				LD_DYLIB_INSTALL_NAME = "@rpath";
+				INFOPLIST_FILE = "$(PROJECT_DIR)/../xcode/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = RetroFE;
 				LD_RUNPATH_SEARCH_PATHS = (
-					"@executable_path/../Frameworks/GStreamer.framework/Libraries",
+					"$(inherited)",
 					"@executable_path/../Frameworks",
+					"@executable_path/../Frameworks/GStreamer.framework/Libraries",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					../ThirdPartyMac/GStreamer.framework/Libraries,
+					"$(PROJECT_DIR)/../ThirdPartyMac/GStreamer.framework/Libraries",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MARKETING_VERSION = 0.10.34.3;
-				ONLY_ACTIVE_ARCH = NO;
-				OTHER_CFLAGS = (
-					"-ffast-math",
-					"-Wall",
-					"-funroll-loops",
-					"-DNDEBUG",
-					"$(inherited)",
-				);
-				OTHER_CPLUSPLUSFLAGS = (
-					"-ffast-math",
-					"-Wall",
-					"-Wno-reorder",
-					"-funroll-loops",
-					"-DNDEBUG",
-					"'-std=c++17'",
-				);
-				OTHER_LDFLAGS = (
-					"-Wl,-headerpad_max_install_names",
-					/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk/usr/lib/libz.tbd,
-					"$(inherited)",
-				);
-				OTHER_REZFLAGS = "";
-				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = retrofe;
-				PRODUCT_NAME = retrofe;
+				PRODUCT_BUNDLE_IDENTIFIER = RetroFE;
+				PRODUCT_NAME = RetroFE;
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SDKROOT = macosx;
 				TARGET_TEMP_DIR = "/Users/aiden/Documents/Github/RetroFE/RetroFE/xcode/build/retrofe.build/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = "$(inherited)";
 			};
 			name = Release;
 		};
 		2E242776098448CB9C4C4F7C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = YES;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = retrofe.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				CONFIGURATION_BUILD_DIR = /Users/aiden/Documents/Github/RetroFE/RetroFE/Build/Debug;
-				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_HARDENED_RUNTIME = NO;
-				EXECUTABLE_PREFIX = "";
-				EXECUTABLE_SUFFIX = "";
-				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/../ThirdPartyMac/**";
+				CONFIGURATION_BUILD_DIR = "$(PROJECT_DIR)/../Build/Debug";
+				DEVELOPMENT_TEAM = S3WCLDU5UR;
+				ENABLE_HARDENED_RUNTIME = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/../ThirdPartyMac",
+				);
+				GCC_FAST_MATH = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
 				GCC_OPTIMIZATION_LEVEL = 3;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
-					"'RETROFE_VERSION_MAJOR='",
-					"'RETROFE_VERSION_MINOR='",
-					"'RETROFE_VERSION_BUILD='",
-					"$(inherited)",
-				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_UNROLL_LOOPS = YES;
 				HEADER_SEARCH_PATHS = (
-					/Users/aiden/Documents/Github/RetroFE/RetroFE/Source/../ThirdParty/sqlite3,
-					"/Users/aiden/Documents/Github/RetroFE/RetroFE/Source/../ThirdParty/rapidxml-1.13",
 					"$(inherited)",
-					../ThirdPartyMac/GStreamer.framework/Headers,
+					"$(PROJECT_DIR)/../ThirdParty/sqlite3",
+					"$(PROJECT_DIR)/../ThirdParty/rapidxml-1.13",
+					"$(PROJECT_DIR)/../ThirdPartyMac/GStreamer.framework/Headers",
 				);
-				INFOPLIST_FILE = /Users/aiden/Documents/Github/RetroFE/RetroFE/xcode/CMakeFiles/retrofe.dir/Info.plist;
-				LD_DYLIB_INSTALL_NAME = "@rpath";
+				INFOPLIST_FILE = "$(PROJECT_DIR)/../xcode/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = RetroFE;
 				LD_RUNPATH_SEARCH_PATHS = (
-					"@executable_path/../Frameworks/GStreamer.framework/Libraries",
+					"$(inherited)",
 					"@executable_path/../Frameworks",
+					"@executable_path/../Frameworks/GStreamer.framework/Libraries",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					../ThirdPartyMac/GStreamer.framework/Libraries,
+					"$(PROJECT_DIR)/../ThirdPartyMac/GStreamer.framework/Libraries",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MARKETING_VERSION = 0.10.34.3;
-				ONLY_ACTIVE_ARCH = NO;
-				OTHER_CFLAGS = (
-					"-ffast-math",
-					"-Wall",
-					"-funroll-loops",
-					"-Wall",
-					"$(inherited)",
-				);
-				OTHER_CPLUSPLUSFLAGS = (
-					"-ffast-math",
-					"-Wall",
-					"-Wno-reorder",
-					"-funroll-loops",
-					"-Wall",
-					"'-std=c++17'",
-				);
-				OTHER_LDFLAGS = (
-					"-Wl,-headerpad_max_install_names",
-					/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk/usr/lib/libz.tbd,
-					"$(inherited)",
-				);
-				OTHER_REZFLAGS = "";
-				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = retrofe;
-				PRODUCT_NAME = retrofe;
+				PRODUCT_BUNDLE_IDENTIFIER = RetroFE;
+				PRODUCT_NAME = RetroFE;
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SDKROOT = macosx;
 				TARGET_TEMP_DIR = "/Users/aiden/Documents/Github/RetroFE/RetroFE/xcode/build/retrofe.build/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = "$(inherited)";
 			};
 			name = Debug;
 		};
 		36892CECCDAD4CE29A06618A /* RelWithDebInfo */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = YES;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = retrofe.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				CONFIGURATION_BUILD_DIR = /Users/aiden/Documents/Github/RetroFE/RetroFE/Build/RelWithDebInfo;
-				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_HARDENED_RUNTIME = NO;
-				EXECUTABLE_PREFIX = "";
-				EXECUTABLE_SUFFIX = "";
-				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/../ThirdPartyMac/**";
+				CONFIGURATION_BUILD_DIR = "$(PROJECT_DIR)/../Build/RelWithDebInfo";
+				DEVELOPMENT_TEAM = S3WCLDU5UR;
+				ENABLE_HARDENED_RUNTIME = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/../ThirdPartyMac",
+				);
+				GCC_FAST_MATH = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
 				GCC_OPTIMIZATION_LEVEL = 2;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
-					"'RETROFE_VERSION_MAJOR='",
-					"'RETROFE_VERSION_MINOR='",
-					"'RETROFE_VERSION_BUILD='",
-					"$(inherited)",
-				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_UNROLL_LOOPS = YES;
 				HEADER_SEARCH_PATHS = (
-					/Users/aiden/Documents/Github/RetroFE/RetroFE/Source/../ThirdParty/sqlite3,
-					"/Users/aiden/Documents/Github/RetroFE/RetroFE/Source/../ThirdParty/rapidxml-1.13",
 					"$(inherited)",
-					../ThirdPartyMac/GStreamer.framework/Headers,
+					"$(PROJECT_DIR)/../ThirdParty/sqlite3",
+					"$(PROJECT_DIR)/../ThirdParty/rapidxml-1.13",
+					"$(PROJECT_DIR)/../ThirdPartyMac/GStreamer.framework/Headers",
 				);
-				INFOPLIST_FILE = /Users/aiden/Documents/Github/RetroFE/RetroFE/xcode/CMakeFiles/retrofe.dir/Info.plist;
-				LD_DYLIB_INSTALL_NAME = "@rpath";
+				INFOPLIST_FILE = "$(PROJECT_DIR)/../xcode/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = RetroFE;
 				LD_RUNPATH_SEARCH_PATHS = (
-					"@executable_path/../Frameworks/GStreamer.framework/Libraries",
+					"$(inherited)",
 					"@executable_path/../Frameworks",
+					"@executable_path/../Frameworks/GStreamer.framework/Libraries",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					../ThirdPartyMac/GStreamer.framework/Libraries,
+					"$(PROJECT_DIR)/../ThirdPartyMac/GStreamer.framework/Libraries",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MARKETING_VERSION = 0.10.34.3;
-				ONLY_ACTIVE_ARCH = NO;
-				OTHER_CFLAGS = (
-					"-march=native",
-					"-ffast-math",
-					"-Wall",
-					"-funroll-loops",
-					"-DNDEBUG",
-					"$(inherited)",
-				);
-				OTHER_CPLUSPLUSFLAGS = (
-					"-march=native",
-					"-ffast-math",
-					"-Wall",
-					"-Wno-reorder",
-					"-funroll-loops",
-					"-DNDEBUG",
-					"'-std=c++17'",
-				);
-				OTHER_LDFLAGS = (
-					"-Wl,-headerpad_max_install_names",
-					/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk/usr/lib/libz.tbd,
-					"$(inherited)",
-				);
-				OTHER_REZFLAGS = "";
-				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = retrofe;
-				PRODUCT_NAME = retrofe;
+				PRODUCT_BUNDLE_IDENTIFIER = RetroFE;
+				PRODUCT_NAME = RetroFE;
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SDKROOT = macosx;
 				TARGET_TEMP_DIR = "/Users/aiden/Documents/Github/RetroFE/RetroFE/xcode/build/retrofe.build/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = "$(inherited)";
 			};
 			name = RelWithDebInfo;
 		};
@@ -804,14 +712,13 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				SDKROOT = macosx14.0;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				SDKROOT = macosx;
 				SYMROOT = /Users/aiden/Documents/Github/RetroFE/RetroFE/xcode/build;
 			};
 			name = RelWithDebInfo;
@@ -819,81 +726,50 @@
 		675B01D4D7364B9F85262AD5 /* MinSizeRel */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = YES;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = retrofe.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				CONFIGURATION_BUILD_DIR = /Users/aiden/Documents/Github/RetroFE/RetroFE/Build/MinSizeRel;
-				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_HARDENED_RUNTIME = NO;
-				EXECUTABLE_PREFIX = "";
-				EXECUTABLE_SUFFIX = "";
-				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/../ThirdPartyMac/**";
+				CONFIGURATION_BUILD_DIR = "$(PROJECT_DIR)/../Build/MinSizeRel";
+				DEVELOPMENT_TEAM = S3WCLDU5UR;
+				ENABLE_HARDENED_RUNTIME = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/../ThirdPartyMac",
+				);
+				GCC_FAST_MATH = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
 				GCC_OPTIMIZATION_LEVEL = s;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
-					"'RETROFE_VERSION_MAJOR='",
-					"'RETROFE_VERSION_MINOR='",
-					"'RETROFE_VERSION_BUILD='",
-					"$(inherited)",
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_UNROLL_LOOPS = YES;
 				HEADER_SEARCH_PATHS = (
-					/Users/aiden/Documents/Github/RetroFE/RetroFE/Source/../ThirdParty/sqlite3,
-					"/Users/aiden/Documents/Github/RetroFE/RetroFE/Source/../ThirdParty/rapidxml-1.13",
 					"$(inherited)",
-					../ThirdPartyMac/GStreamer.framework/Headers,
+					"$(PROJECT_DIR)/../ThirdParty/sqlite3",
+					"$(PROJECT_DIR)/../ThirdParty/rapidxml-1.13",
+					"$(PROJECT_DIR)/../ThirdPartyMac/GStreamer.framework/Headers",
 				);
-				INFOPLIST_FILE = /Users/aiden/Documents/Github/RetroFE/RetroFE/xcode/CMakeFiles/retrofe.dir/Info.plist;
-				LD_DYLIB_INSTALL_NAME = "@rpath";
+				INFOPLIST_FILE = "$(PROJECT_DIR)/../xcode/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = RetroFE;
 				LD_RUNPATH_SEARCH_PATHS = (
-					"@executable_path/../Frameworks/GStreamer.framework/Libraries",
+					"$(inherited)",
 					"@executable_path/../Frameworks",
+					"@executable_path/../Frameworks/GStreamer.framework/Libraries",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					../ThirdPartyMac/GStreamer.framework/Libraries,
+					"$(PROJECT_DIR)/../ThirdPartyMac/GStreamer.framework/Libraries",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MARKETING_VERSION = 0.10.34.3;
-				ONLY_ACTIVE_ARCH = NO;
-				OTHER_CFLAGS = (
-					"-march=native",
-					"-ffast-math",
-					"-Wall",
-					"-funroll-loops",
-					"-DNDEBUG",
-					"$(inherited)",
-				);
-				OTHER_CPLUSPLUSFLAGS = (
-					"-march=native",
-					"-ffast-math",
-					"-Wall",
-					"-Wno-reorder",
-					"-funroll-loops",
-					"-DNDEBUG",
-					"'-std=c++17'",
-				);
-				OTHER_LDFLAGS = (
-					"-Wl,-headerpad_max_install_names",
-					/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk/usr/lib/libz.tbd,
-					"$(inherited)",
-				);
-				OTHER_REZFLAGS = "";
-				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = retrofe;
-				PRODUCT_NAME = retrofe;
+				PRODUCT_BUNDLE_IDENTIFIER = RetroFE;
+				PRODUCT_NAME = RetroFE;
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SDKROOT = macosx;
 				TARGET_TEMP_DIR = "/Users/aiden/Documents/Github/RetroFE/RetroFE/xcode/build/retrofe.build/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
-				USE_HEADERMAP = NO;
-				WARNING_CFLAGS = "$(inherited)";
 			};
 			name = MinSizeRel;
 		};
@@ -914,14 +790,14 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				SDKROOT = macosx14.0;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
 				SYMROOT = /Users/aiden/Documents/Github/RetroFE/RetroFE/xcode/build;
 			};
 			name = Debug;

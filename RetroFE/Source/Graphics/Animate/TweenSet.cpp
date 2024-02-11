@@ -26,6 +26,20 @@ TweenSet::TweenSet(TweenSet &copy)
     }
 }
 
+TweenSet& TweenSet::operator=(const TweenSet& other) {
+    if (this != &other) { // Check for self-assignment
+        clear(); // Clear existing resources
+
+        // Deep copy
+        for (auto const* tween : other.set_) {
+            auto* newTween = new Tween(*tween); // Assuming Tween has a suitable copy constructor
+            push(newTween);
+        }
+    }
+    return *this;
+}
+
+
 TweenSet::~TweenSet()
 {
     clear();
@@ -56,7 +70,7 @@ Tween *TweenSet::getTween(unsigned int index)
 }
 
 
-size_t TweenSet::size()
+size_t TweenSet::size() const
 {
     return set_.size();
 }

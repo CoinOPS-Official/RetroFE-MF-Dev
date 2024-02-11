@@ -47,6 +47,7 @@ Page::Page(Configuration &config, int layoutWidth, int layoutHeight)
     , selectSoundChunk_(NULL)
     , minShowTime_(0)
     , jukebox_(false)
+    , useThreading_(SDL::getRendererBackend(0) != "opengl" && !Configuration::HardwareVideoAccel)
 {
 
     for (int i = 0; i < MAX_LAYOUTS; i++)
@@ -54,7 +55,7 @@ Page::Page(Configuration &config, int layoutWidth, int layoutHeight)
         layoutWidth_.push_back(layoutWidth);
         layoutHeight_.push_back(layoutHeight);
     }
-    for (int i = 0; i < SDL::getNumScreens(); i++)
+    for (int i = 0; i < SDL::getScreenCount(); i++)
     {
         layoutWidthByMonitor_.push_back(layoutWidth);
         layoutHeightByMonitor_.push_back(layoutHeight);
@@ -64,9 +65,7 @@ Page::Page(Configuration &config, int layoutWidth, int layoutHeight)
 }
 
 
-Page::~Page()
-{
-}
+Page::~Page() = default;
 
 
 void Page::deInitialize()
@@ -93,17 +92,30 @@ void Page::deInitialize()
     LayerComponents.clear();
 
     // Delete sound chunks and reset pointers
-    delete loadSoundChunk_;
-    loadSoundChunk_ = nullptr;
+    if (loadSoundChunk_)
+    {
+        delete loadSoundChunk_;
+        loadSoundChunk_ = nullptr;
+    }
 
-    delete unloadSoundChunk_;
-    unloadSoundChunk_ = nullptr;
+    if (unloadSoundChunk_)
+    {
+        delete unloadSoundChunk_;
+        unloadSoundChunk_ = nullptr;
+    }
 
-    delete highlightSoundChunk_;
-    highlightSoundChunk_ = nullptr;
 
-    delete selectSoundChunk_;
-    selectSoundChunk_ = nullptr;
+    if (highlightSoundChunk_)
+    {
+        delete highlightSoundChunk_;
+        highlightSoundChunk_ = nullptr;
+    }
+
+    if (selectSoundChunk_)
+    {
+        delete selectSoundChunk_;
+        selectSoundChunk_ = nullptr;
+    }
 
     // Deinitialize and clear collections_
     for (auto& collectionEntry : collections_)
@@ -113,7 +125,7 @@ void Page::deInitialize()
     collections_.clear();
 }
 
-bool Page::isMenusFull()
+bool Page::isMenusFull() const
 {
   return (menuDepth_ > menus_.size());
 }
@@ -175,9 +187,9 @@ void Page::onNewItemSelected()
 {
     if(!getAnActiveMenu()) return;
 
-    for(MenuVector_T::iterator it = menus_.begin(); it != menus_.end(); ++it)
+    for(auto it = menus_.begin(); it != menus_.end(); ++it)
     {
-        for(std::vector<ScrollingList *>::iterator it2 = it->begin(); it2 != it->end(); ++it2)
+        for(auto it2 = it->begin(); it2 != it->end(); ++it2)
         {
             ScrollingList *menu = *it2;
             if(menu)
@@ -185,7 +197,7 @@ void Page::onNewItemSelected()
         }
     }
 
-    for(std::vector<Component *>::iterator it = LayerComponents.begin(); it != LayerComponents.end(); ++it)
+    for(auto it = LayerComponents.begin(); it != LayerComponents.end(); ++it)
     {
         (*it)->setNewItemSelected();
     }
@@ -196,8 +208,7 @@ void Page::returnToRememberSelectedItem()
 {
     if (!getAnActiveMenu()) return;
 
-    std::string name = getPlaylistName();
-    if (name != "" && lastPlaylistOffsets_[name]) {
+    if (std::string name = getPlaylistName(); name != "" && lastPlaylistOffsets_[name]) {
         setScrollOffsetIndex(lastPlaylistOffsets_[name]);
     }
     onNewItemSelected();
@@ -205,7 +216,7 @@ void Page::returnToRememberSelectedItem()
 
 void Page::rememberSelectedItem()
 {
-    ScrollingList* amenu = getAnActiveMenu();
+    ScrollingList const* amenu = getAnActiveMenu();
     if (!amenu || !amenu->getItems().size()) return;
 
     std::string name = getPlaylistName();
@@ -214,7 +225,7 @@ void Page::rememberSelectedItem()
     }
 }
 
-std::map<std::string, unsigned int> Page::getLastPlaylistOffsets()
+std::map<std::string, size_t> Page::getLastPlaylistOffsets() const
 {
     return lastPlaylistOffsets_;
 }
@@ -223,7 +234,7 @@ void Page::onNewScrollItemSelected()
 {
     if(!getAnActiveMenu()) return;
 
-    for(std::vector<Component *>::iterator it = LayerComponents.begin(); it != LayerComponents.end(); ++it)
+    for(auto it = LayerComponents.begin(); it != LayerComponents.end(); ++it)
     {
         (*it)->setNewScrollItemSelected();
     }
@@ -238,7 +249,7 @@ void Page::highlightLoadArt()
     // loading new items art
     setSelectedItem();
 
-    for(std::vector<Component *>::iterator it = LayerComponents.begin(); it != LayerComponents.end(); ++it)
+    for(auto it = LayerComponents.begin(); it != LayerComponents.end(); ++it)
     {
         (*it)->setNewItemSelected();
     }
@@ -265,7 +276,7 @@ void Page::pushMenu(ScrollingList *s, int index)
 }
 
 
-unsigned int Page::getMenuDepth()
+unsigned int Page::getMenuDepth() const
 {
     return menuDepth_;
 }
@@ -299,13 +310,13 @@ bool Page::addComponent(Component *c)
 
 bool Page::isMenuIdle()
 {
-    for(MenuVector_T::iterator it = menus_.begin(); it != menus_.end(); ++it)
+    for(auto it = menus_.begin(); it != menus_.end(); ++it)
     {
-        for(std::vector<ScrollingList *>::iterator it2 = it->begin(); it2 != it->end(); ++it2)
+        for(auto it2 = it->begin(); it2 != it->end(); ++it2)
         {
             ScrollingList *menu = *it2;
 
-            if(!menu->isIdle())
+            if(!menu->isScrollingListIdle())
             {
                 return false;
             }
@@ -319,7 +330,7 @@ bool Page::isIdle()
 {
     bool idle = isMenuIdle();
 
-    for(std::vector<Component *>::iterator it = LayerComponents.begin(); it != LayerComponents.end() && idle; ++it)
+    for(auto it = LayerComponents.begin(); it != LayerComponents.end() && idle; ++it)
     {
         idle = (*it)->isIdle();
     }
@@ -330,11 +341,11 @@ bool Page::isIdle()
 
 bool Page::isAttractIdle()
 {
-    for(MenuVector_T::iterator it = menus_.begin(); it != menus_.end(); ++it)
+    for(auto it = menus_.begin(); it != menus_.end(); ++it)
     {
         for(auto it2 = it->begin(); it2 != it->end(); ++it2)
         {
-            ScrollingList *menu = *it2;
+            ScrollingList const *menu = *it2;
 
             if(!menu->isAttractIdle())
             {
@@ -463,7 +474,7 @@ void Page::removeSelectedItem()
 }
 
 
-void Page::setScrollOffsetIndex(unsigned int i)
+void Page::setScrollOffsetIndex(size_t i)
 {
     if (!getAnActiveMenu()) return;
 
@@ -475,7 +486,7 @@ void Page::setScrollOffsetIndex(unsigned int i)
 }
 
 
-unsigned int Page::getScrollOffsetIndex()
+size_t Page::getScrollOffsetIndex()
 {
     ScrollingList const* amenu = getAnActiveMenu();
     if (!amenu) return -1;
@@ -490,12 +501,12 @@ void Page::setMinShowTime(float value)
 }
 
 
-float Page::getMinShowTime()
+float Page::getMinShowTime() const
 {
     return minShowTime_;
 }
 
-std::string Page::controlsType()
+std::string Page::controlsType() const
 {
     return controlsType_;
 }
@@ -694,12 +705,6 @@ void Page::setScrolling(ScrollDirection direction)
     switch(direction)
     {
     case ScrollDirectionForward:
-        if(!scrollActive_)
-        {
-            menuScroll();
-        }
-        scrollActive_ = true;
-        break;
     case ScrollDirectionBack:
         if(!scrollActive_)
         {
@@ -738,7 +743,7 @@ void Page::pageScroll(ScrollDirection direction)
         amenu->pageUp();
     }
 
-    unsigned int index = amenu->getScrollOffsetIndex();
+    size_t index = amenu->getScrollOffsetIndex();
     for(auto it = activeMenu_.begin(); it != activeMenu_.end(); it++)
     {
         ScrollingList *menu = *it;
@@ -753,7 +758,7 @@ void Page::selectRandom()
     if (!amenu) return;
 
     amenu->random();
-    unsigned int index = amenu->getScrollOffsetIndex();
+    size_t index = amenu->getScrollOffsetIndex();
     for(auto it = activeMenu_.begin(); it != activeMenu_.end(); it++)
     {
         ScrollingList *menu = *it;
@@ -861,7 +866,7 @@ size_t Page::getCollectionSize()
 }
 
 
-unsigned int Page::getSelectedIndex()
+size_t Page::getSelectedIndex()
 {
     ScrollingList const* amenu = getAnActiveMenu();
     if (!amenu) return 0;
@@ -1211,50 +1216,79 @@ bool Page::playlistExists(const std::string& playlist)
 }
 
 
-void Page::update(float dt)
-{
+void Page::update(float dt) {
     std::string playlistName = getPlaylistName();
 
-    for(auto it = menus_.begin(); it != menus_.end(); ++it)
-    {
-        for(auto it2 = it->begin(); it2 != it->end(); ++it2)
-        {
-            ScrollingList* menu = *it2;
-            menu->playlistName = playlistName;
-            menu->update(dt);
+    if (useThreading_) {
+        // Asynchronous (threaded) version for non-OpenGL backends
+
+        // Future for asynchronous update of ScrollingLists within menus_
+        auto menuUpdateFuture = pool_.enqueue([this, dt, playlistName]() {
+            for (auto& menuList : menus_) {
+                for (auto* menu : menuList) {
+                    menu->playlistName = playlistName;
+                    menu->update(dt);
+                }
+            }
+            });
+
+        // Future for asynchronous update of LayerComponents
+        auto layerUpdateFuture = pool_.enqueue([this, dt, playlistName]() {
+            for (auto it = LayerComponents.begin(); it != LayerComponents.end();) {
+                if (*it) {
+                    (*it)->playlistName = playlistName;
+                    if ((*it)->update(dt) && (*it)->getAnimationDoneRemove()) {
+                        (*it)->freeGraphicsMemory();
+                        delete* it;
+                        it = LayerComponents.erase(it);
+                    }
+                    else {
+                        ++it;
+                    }
+                }
+                else {
+                    ++it;
+                }
+            }
+            });
+
+        // Wait for asynchronous operations to complete
+        menuUpdateFuture.get();
+        layerUpdateFuture.get();
+    }
+    else {
+        // Synchronous (non-threaded) version for OpenGL backend
+
+        for (auto& menuList : menus_) {
+            for (auto* menu : menuList) {
+                menu->playlistName = playlistName;
+                menu->update(dt);
+            }
+        }
+
+        for (auto it = LayerComponents.begin(); it != LayerComponents.end();) {
+            if (*it) {
+                (*it)->playlistName = playlistName;
+                if ((*it)->update(dt) && (*it)->getAnimationDoneRemove()) {
+                    (*it)->freeGraphicsMemory();
+                    delete* it;
+                    it = LayerComponents.erase(it);
+                }
+                else {
+                    ++it;
+                }
+            }
+            else {
+                ++it;
+            }
         }
     }
 
-    if(textStatusComponent_)
-    {
-        std::string status;
+    // Common update code for textStatusComponent_
+    if (textStatusComponent_) {
+        std::string status; // Populate 'status' as needed
         config_.setProperty("status", status);
         textStatusComponent_->setText(status);
-    }
-
-    for (auto it = LayerComponents.begin(); it != LayerComponents.end();)
-    {
-        if (*it)
-        {
-            (*it)->playlistName = playlistName;
-            if ((*it)->update(dt) && (*it)->getAnimationDoneRemove())
-            {
-                // Free resources if needed
-                (*it)->freeGraphicsMemory();
-                delete* it;  // Delete the object (if dynamically allocated)
-
-                // Erase the element from the container and get the next iterator
-                it = LayerComponents.erase(it);
-            }
-            else
-            {
-                ++it;  // Only increment if the element was not erased
-            }
-        }
-        else
-        {
-            ++it;  // Increment iterator if the element is null
-        }
     }
 }
 
@@ -1308,7 +1342,7 @@ void Page::draw()
         }
 
         // Drawing Menus
-        for(MenuVector_T::iterator it = menus_.begin(); it != menus_.end(); ++it)
+        for(auto it = menus_.begin(); it != menus_.end(); ++it)
         {
             for(auto it2 = it->begin(); it2 != it->end(); ++it2)
             {
@@ -1329,12 +1363,11 @@ void Page::removePlaylist()
     CollectionInfo *collection = info.collection;
 
     std::vector<Item *> *items = collection->playlists["favorites"];
-    auto it = std::find(items->begin(), items->end(), selectedItem_);
 
-    if (it != items->end())
+    if (auto it = std::find(items->begin(), items->end(), selectedItem_); it != items->end())
     {
-        unsigned int index = 0;  // Initialize with 0 instead of NULL
-        ScrollingList* amenu = nullptr;  // Use nullptr for pointer types
+        size_t index = 0;  // Initialize with 0 instead of NULL
+        ScrollingList const* amenu = nullptr;  // Use nullptr for pointer types
         // get the deleted item's position
         if (getPlaylistName() == "favorites")
         {
@@ -1377,8 +1410,7 @@ void Page::addPlaylist()
     MenuInfo_S &info = collections_.back();
     CollectionInfo *collection = info.collection;
 
-    std::vector<Item *> *items = collection->playlists["favorites"];
-    if(getPlaylistName() != "favorites" && std::find(items->begin(), items->end(), selectedItem_) == items->end())
+    if(std::vector<Item *> *items = collection->playlists["favorites"]; getPlaylistName() != "favorites" && std::find(items->begin(), items->end(), selectedItem_) == items->end())
     {
         items->push_back(selectedItem_);
         selectedItem_->isFavorite = true;
@@ -1584,21 +1616,39 @@ void Page::updateScrollPeriod() const
 }
 
 
-void Page::scroll(bool forward)
-{
-    for(auto& menu : activeMenu_)
-    {
-        if(menu && !menu->isPlaylist())
-        {
-            menu->scroll(forward);
+void Page::scroll(bool forward) {
+    if (useThreading_) {
+        // Asynchronous version
+        auto scrollFuture = pool_.enqueue([this, forward]() {
+            for (auto& menu : activeMenu_) {
+                if (menu && !menu->isPlaylist()) {
+                    menu->scroll(forward);
+                }
+            }
+            });
+
+        // Wait for the scroll operation to complete
+        scrollFuture.get();
+        onNewScrollItemSelected();
+        if (highlightSoundChunk_) {
+            highlightSoundChunk_->play();
+        }
+    
+    }
+    else {
+        // Synchronous version
+        for (auto& menu : activeMenu_) {
+            if (menu && !menu->isPlaylist()) {
+                menu->scroll(forward);
+            }
+        }
+        onNewScrollItemSelected();
+        if (highlightSoundChunk_) {
+            highlightSoundChunk_->play();
         }
     }
-    onNewScrollItemSelected();
-    if(highlightSoundChunk_)
-    {
-        highlightSoundChunk_->play();
-    }
 }
+
 
 
 bool Page::hasSubs()
@@ -1619,7 +1669,7 @@ int Page::getCurrentLayout() const
 
 int Page::getLayoutWidthByMonitor(int monitor)
 {
-    if (monitor < SDL::getNumScreens())
+    if (monitor < SDL::getScreenCount())
         return layoutWidthByMonitor_[monitor];
     else
         return 0;
@@ -1628,7 +1678,7 @@ int Page::getLayoutWidthByMonitor(int monitor)
 
 int Page::getLayoutHeightByMonitor(int monitor)
 {
-    if (monitor < SDL::getNumScreens())
+    if (monitor < SDL::getScreenCount())
         return layoutHeightByMonitor_[monitor];
     else
         return 0;
@@ -1637,14 +1687,14 @@ int Page::getLayoutHeightByMonitor(int monitor)
 
 void Page::setLayoutWidthByMonitor(int monitor, int width)
 {
-    if (monitor < SDL::getNumScreens())
+    if (monitor < SDL::getScreenCount())
         layoutWidthByMonitor_[monitor] = width;
 }
 
 
 void Page::setLayoutHeightByMonitor(int monitor, int height)
 {
-    if (monitor < SDL::getNumScreens())
+    if (monitor < SDL::getScreenCount())
         layoutHeightByMonitor_[monitor] = height;
 }
 

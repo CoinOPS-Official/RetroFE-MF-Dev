@@ -44,7 +44,7 @@ ReloadableMedia::ReloadableMedia(Configuration& config, bool systemMode, bool la
     , jukebox_(jukebox)
     , jukeboxNumLoops_(jukeboxNumLoops)
 {
-
+    allocateGraphicsMemory();
 }
 
 ReloadableMedia::~ReloadableMedia()
@@ -410,7 +410,12 @@ Component *ReloadableMedia::reloadTexture()
             {
                 foundComponent = findComponent(selectedItem->collectionInfo->name, type, type, "", true, false);
             }
-
+            
+            // check selected item that's a collection
+            if (!foundComponent && !selectedItem->leaf)
+            {
+                foundComponent = findComponent(selectedItem->name, type, type, "", true, false);
+            }
         }
         else
         {
@@ -523,18 +528,7 @@ Component* ReloadableMedia::findComponent(
             }
             else
             {
-                if (commonMode_)
-                {
-                    imagePath = Utils::combinePath(Configuration::absolutePath, "collections", "_common");
-                    if (systemMode)
-                        imagePath = Utils::combinePath(imagePath, "system_artwork");
-                    else
-                        imagePath = Utils::combinePath(imagePath, "medium_artwork", type);
-                }
-                else
-                {
-                    config_.getMediaPropertyAbsolutePath(collection, type, systemMode, imagePath);
-                }
+                config_.getMediaPropertyAbsolutePath(collection, type, systemMode, imagePath);
             }
         }
     }
@@ -585,7 +579,8 @@ void ReloadableMedia::draw()
     	baseViewInfo.ImageHeight = loadedComponent_->baseViewInfo.ImageHeight;
     	baseViewInfo.ImageWidth = loadedComponent_->baseViewInfo.ImageWidth;
         loadedComponent_->baseViewInfo = baseViewInfo;
-        loadedComponent_->draw();
+        if(baseViewInfo.Alpha > 0.0f)
+            loadedComponent_->draw();
     }
 }
 

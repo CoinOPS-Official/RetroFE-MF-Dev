@@ -72,6 +72,8 @@ public:
         KeyCodePause,
         KeyCodeRestart,
         KeyCodeKisok,
+        KeyCodeSettingsCombo1,
+        KeyCodeSettingsCombo2,
         KeyCodeQuitCombo1,
         KeyCodeQuitCombo2,
         KeyCodeCycleCollection,

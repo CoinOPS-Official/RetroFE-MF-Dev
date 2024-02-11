@@ -25,14 +25,23 @@
 #include <filesystem>
 #include <unordered_set>
 #include <unordered_map>
+#ifndef __APPLE__
+    #include <charconv>
+#endif
 
 #ifdef WIN32
     #include <Windows.h>
 #endif
 
+
+// Initialize the static member variables
+#ifdef __APPLE__
 std::unordered_map<std::filesystem::path, std::unordered_set<std::string>, PathHash> Utils::fileCache;
 std::unordered_set<std::filesystem::path, PathHash> Utils::nonExistingDirectories;
-
+#else
+std::unordered_map<std::filesystem::path, std::unordered_set<std::string>> Utils::fileCache;
+std::unordered_set<std::filesystem::path> Utils::nonExistingDirectories;
+#endif
 
 Utils::Utils() = default;
 
@@ -119,7 +128,7 @@ bool Utils::findMatchingFile(const std::string& prefix, const std::vector<std::s
 
         namespace fs = std::filesystem;
 
-        fs::path absolutePath = Configuration::convertToAbsolutePath(Configuration::absolutePath, prefix);
+        fs::path absolutePath = Utils::combinePath(Configuration::absolutePath, prefix);
         fs::path baseDir = absolutePath.parent_path();
 
         // Check if the directory is known to not exist
@@ -163,8 +172,8 @@ bool Utils::findMatchingFile(const std::string& prefix, const std::vector<std::s
 
 std::string Utils::replace(
     std::string subject,
-    const std::string& search,
-    const std::string& replace)
+    const std::string_view& search,
+    const std::string_view& replace)
 {
     if (search.empty())
         return subject; // Early exit if search string is empty
@@ -179,23 +188,34 @@ std::string Utils::replace(
 }
 
 
-float Utils::convertFloat(std::string content)
-{
+float Utils::convertFloat(const std::string_view& content) {
     float retVal = 0;
+#ifdef __APPLE__
     std::stringstream ss;
     ss << content;
     ss >> retVal;
-
+#else
+    std::from_chars_result result = std::from_chars(content.data(), content.data() + content.size(), retVal, std::chars_format::general);
+    if (result.ec == std::errc::invalid_argument || result.ec == std::errc::result_out_of_range) {
+        retVal = 0.0f; // Handle error or set default value
+    }
+#endif
     return retVal;
 }
 
-int Utils::convertInt(std::string content)
-{
+int Utils::convertInt(const std::string_view& content) {
     int retVal = 0;
+#ifdef __APPLE__
     std::stringstream ss;
     ss << content;
     ss >> retVal;
-
+#else
+    std::from_chars_result result = std::from_chars(content.data(), content.data() + content.size(), retVal);
+    if (result.ec == std::errc::invalid_argument || result.ec == std::errc::result_out_of_range) {
+        // Handle error or set default value
+        retVal = 0;
+    }
+#endif
     return retVal;
 }
 
@@ -244,18 +264,8 @@ std::string Utils::getEnvVar(std::string const& key)
     return val == NULL ? std::string() : std::string(val);
 }
 
-std::string Utils::getFileName(std::string filePath)
-{
-
-    std::string filename = filePath;
-
-    const size_t last_slash_idx = filePath.rfind(pathSeparator);
-    if (std::string::npos != last_slash_idx)
-    {
-        filename = filePath.erase(0, last_slash_idx+1);
-    }
-
-    return filename;
+std::string Utils::getFileName(const std::string& filePath) {
+    return std::filesystem::path(filePath).filename().string();
 }
 
 

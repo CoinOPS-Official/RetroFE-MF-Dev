@@ -93,6 +93,7 @@ bool UserInput::initialize()
     MapKey("settings", KeyCodeSettings, false);
     
 	MapKeyCombo("quitCombo", KeyCodeQuitCombo1, KeyCodeQuitCombo2, false);
+    MapKeyCombo("settingsCombo", KeyCodeSettingsCombo1, KeyCodeSettingsCombo2, false);
 
     bool retVal = true;
     

@@ -353,7 +353,8 @@ void ReloadableText::draw()
     if(imageInst_)
     {
         imageInst_->baseViewInfo = baseViewInfo;
-        imageInst_->draw();
+        if (baseViewInfo.Alpha > 0.0f)
+            imageInst_->draw();
     }
 }
 

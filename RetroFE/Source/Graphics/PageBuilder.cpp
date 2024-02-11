@@ -388,16 +388,34 @@ bool PageBuilder::buildComponents(xml_node<>* layout, Page* page, const std::str
 
 {
     xml_attribute<> const* layoutMonitorXml = layout->first_attribute("monitor");
-    int monitor = layoutMonitorXml ? Utils::convertInt(layoutMonitorXml->value()) : monitor_;
-    for(xml_node<> *componentXml = layout->first_node("menu"); componentXml; componentXml = componentXml->next_sibling("menu"))
+    int layoutMonitor = layoutMonitorXml ? Utils::convertInt(layoutMonitorXml->value()) : monitor_;
+    // Check if the specified monitor exists (for this "layout")
+    if (layoutMonitor + 1 > SDL::getScreenCount()) {
+        LOG_WARNING("Layout", "Skipping layout due to non-existent monitor index: " + std::to_string(layoutMonitor));
+        return true; // Skip this layout
+    }
+
+    for (xml_node<>* componentXml = layout->first_node("menu"); componentXml; componentXml = componentXml->next_sibling("menu"))
     {
-        ScrollingList *scrollingList = buildMenu(componentXml,*page, monitor);
-        xml_attribute<> const *indexXml = componentXml->first_attribute("menuIndex");
+        // Extract "monitor" attribute specifically for this "menu" node
+        xml_attribute<> const* menuMonitorXml = componentXml->first_attribute("monitor");
+        int menuMonitor = menuMonitorXml ? Utils::convertInt(menuMonitorXml->value()) : layoutMonitor;
+        // Check if the specified monitor exists (for this "menu")
+        if (menuMonitor + 1 > SDL::getScreenCount()) {
+            LOG_WARNING("Layout", "Skipping menu due to non-existent monitor index: " + std::to_string(menuMonitor));
+            continue; // Skip this menu and go to the next
+        }
+
+        // If the monitor exists, proceed to build the menu
+        ScrollingList* scrollingList = buildMenu(componentXml, *page, menuMonitor);
+        xml_attribute<> const* indexXml = componentXml->first_attribute("menuIndex");
         int index = indexXml ? Utils::convertInt(indexXml->value()) : -1;
-        if (scrollingList->isPlaylist()) {
+        if (scrollingList && scrollingList->isPlaylist()) {
             page->setPlaylistMenu(scrollingList);
         }
-        page->pushMenu(scrollingList, index);
+        if (scrollingList) {
+            page->pushMenu(scrollingList, index);
+        }
     }
 
     for(xml_node<> *componentXml = layout->first_node("container"); componentXml; componentXml = componentXml->next_sibling("container"))
@@ -410,15 +428,13 @@ bool PageBuilder::buildComponents(xml_node<>* layout, Page* page, const std::str
                     c->setMenuScrollReload(true);
         }
         xml_attribute<> const* monitorXml = componentXml->first_attribute("monitor");
-        c->baseViewInfo.Monitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor;
+        c->baseViewInfo.Monitor = monitorXml ? Utils::convertInt(monitorXml->value()) : layoutMonitor;
         c->baseViewInfo.Layout = page->getCurrentLayout();
 
         buildViewInfo(componentXml, c->baseViewInfo);
         loadTweens(c, componentXml);
         page->addComponent(c);
     }
-
-    int cMonitor;
     for(xml_node<> *componentXml = layout->first_node("image"); componentXml; componentXml = componentXml->next_sibling("image"))
     {
         xml_attribute<> const *src        = componentXml->first_attribute("src");
@@ -430,6 +446,14 @@ bool PageBuilder::buildComponents(xml_node<>* layout, Page* page, const std::str
         if (idXml)
         {
             id = Utils::convertInt(idXml->value());
+        }
+
+         int imageMonitor = monitorXml ? Utils::convertInt(monitorXml->value()) : layoutMonitor; // Use layout's monitor if not specified at the menu level
+
+        // Check if the specified monitor exists (for this "image")
+        if (imageMonitor + 1 > SDL::getScreenCount()) {
+            LOG_WARNING("Layout", "Skipping image due to non-existent monitor index: " + std::to_string(imageMonitor));
+            continue; // Skip this image and go to the next
         }
 
         if (!src)
@@ -448,27 +472,24 @@ bool PageBuilder::buildComponents(xml_node<>* layout, Page* page, const std::str
             }
             std::string altImagePath;
             altImagePath = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName, std::string(src->value()));
-            cMonitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor;
-
-            // don't add videos if display doesn't exist
-            if (cMonitor + 1 <= SDL::getScreenCount()) {
-                bool additive = additiveXml ? bool(additiveXml->value()) : false;
-                auto* c = new Image(imagePath, altImagePath, *page, cMonitor, additive);
-                c->allocateGraphicsMemory();
-                c->setId(id);
-
-                if (auto const* menuScrollReload = componentXml->first_attribute("menuScrollReload");
-                    menuScrollReload &&
-                    (Utils::toLower(menuScrollReload->value()) == "true" || Utils::toLower(menuScrollReload->value()) == "yes"))
-                {
-                    c->setMenuScrollReload(true);
-                }
 
 
-                buildViewInfo(componentXml, c->baseViewInfo);
-                loadTweens(c, componentXml);
-                page->addComponent(c);
+            bool additive = additiveXml ? bool(additiveXml->value()) : false;
+            auto* c = new Image(imagePath, altImagePath, *page, imageMonitor, additive);
+            c->allocateGraphicsMemory();
+            c->setId(id);
+
+            if (auto const* menuScrollReload = componentXml->first_attribute("menuScrollReload");
+                menuScrollReload &&
+                (Utils::toLower(menuScrollReload->value()) == "true" || Utils::toLower(menuScrollReload->value()) == "yes"))
+            {
+                c->setMenuScrollReload(true);
             }
+
+
+            buildViewInfo(componentXml, c->baseViewInfo);
+            loadTweens(c, componentXml);
+            page->addComponent(c);
         }
     }
 
@@ -505,18 +526,26 @@ bool PageBuilder::buildComponents(xml_node<>* layout, Page* page, const std::str
             }
             std::string altVideoPath = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName, std::string(srcXml->value()));
             int numLoops = numLoopsXml ? Utils::convertInt(numLoopsXml->value()) : 1;
-            cMonitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor;
+            
+
+            int videoMonitor = monitorXml ? Utils::convertInt(monitorXml->value()) : layoutMonitor; // Use layout's monitor if not specified at the menu level
+
+            // Check if the specified monitor exists (for this "image")
+            if (videoMonitor + 1 > SDL::getScreenCount()) {
+                LOG_WARNING("Layout", "Skipping video due to non-existent monitor index: " + std::to_string(videoMonitor));
+                continue; // Skip this image and go to the next
+            }
 
             // Don't add videos if display doesn't exist
-            if (cMonitor + 1 <= SDL::getScreenCount()) {
+            
                 std::filesystem::path primaryPath(videoPath);
                 std::filesystem::path altPath(altVideoPath);
 
-                VideoComponent* c = videoBuild.createVideo(primaryPath.parent_path().string(), *page, primaryPath.stem().string(), cMonitor, numLoops);
+                VideoComponent* c = videoBuild.createVideo(primaryPath.parent_path().string(), *page, primaryPath.stem().string(), videoMonitor, numLoops);
 
                 if (!c) {
                     // Try alternative video path if the primary path did not yield a VideoComponent
-                    c = videoBuild.createVideo(altPath.parent_path().string(), *page, altPath.stem().string(), cMonitor, numLoops);
+                    c = videoBuild.createVideo(altPath.parent_path().string(), *page, altPath.stem().string(), videoMonitor, numLoops);
                 }
 
                 if (c) {
@@ -543,7 +572,7 @@ bool PageBuilder::buildComponents(xml_node<>* layout, Page* page, const std::str
                     loadTweens(c, componentXml);
                     page->addComponent(c);
                 }
-            }
+            
         }
 
     }
@@ -566,10 +595,10 @@ bool PageBuilder::buildComponents(xml_node<>* layout, Page* page, const std::str
         }
         else
         {
-            cMonitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor;
-            Font *font = addFont(componentXml, NULL, cMonitor);
+            int textMonitor = monitorXml ? Utils::convertInt(monitorXml->value()) : layoutMonitor;
+            Font *font = addFont(componentXml, NULL, textMonitor);
 
-            auto *c = new Text(value->value(), *page, font, cMonitor);
+            auto *c = new Text(value->value(), *page, font, textMonitor);
             c->setId( id );
             if (xml_attribute<> const *menuScrollReload = componentXml->first_attribute("menuScrollReload"); menuScrollReload &&
                 (Utils::toLower(menuScrollReload->value()) == "true" ||
@@ -587,10 +616,10 @@ bool PageBuilder::buildComponents(xml_node<>* layout, Page* page, const std::str
     for(xml_node<> *componentXml = layout->first_node("statusText"); componentXml; componentXml = componentXml->next_sibling("statusText"))
     {
         xml_attribute<> const *monitorXml = componentXml->first_attribute("monitor");
-        cMonitor = monitorXml ? Utils::convertInt(monitorXml->value()) : monitor;
-        Font* font = addFont(componentXml, NULL, cMonitor);
+        int statusTextMonitor = monitorXml ? Utils::convertInt(monitorXml->value()) : layoutMonitor;
+        Font* font = addFont(componentXml, NULL, statusTextMonitor);
 
-        auto* c = new Text("", *page, font, cMonitor);
+        auto* c = new Text("", *page, font, statusTextMonitor);
         if (auto const* menuScrollReload = componentXml->first_attribute("menuScrollReload");
             menuScrollReload && (Utils::toLower(menuScrollReload->value()) == "true" ||
                 Utils::toLower(menuScrollReload->value()) == "yes")) 

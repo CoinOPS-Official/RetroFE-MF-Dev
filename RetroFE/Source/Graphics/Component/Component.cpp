@@ -26,70 +26,24 @@ Component::Component(Page &p)
     tweens_                   = nullptr;
     menuScrollReload_         = false;
     animationDoneRemove_      = false;
-    backgroundTexture_ = nullptr;
-    freeGraphicsMemory();
     id_                       = -1;
-}
-
-Component::Component(const Component& copy)
-    : page(copy.page)
-{
-    tweens_ = nullptr;
-    //freeGraphicsMemory();
     backgroundTexture_ = nullptr;
+    animationRequestedType_ = "";
+    animationType_ = "";
+    animationRequested_ = false;
+    newItemSelected = false;
+    newScrollItemSelected = false;
+    menuIndex_ = -1;
 
-    if (copy.tweens_)
-    {
-        auto* tweens = new AnimationEvents(*copy.tweens_);
-        setTweens(tweens);
-    }
+    currentTweens_ = nullptr;
+    currentTweenIndex_ = 0;
+    currentTweenComplete_ = true;
+    elapsedTweenTime_ = 0;
 
 
 }
 
-Component& Component::operator=(const Component& other) {
-    if (this != &other) {
-        // Free existing resources
-        if (tweens_) {
-            delete tweens_;
-        }
-        tweens_ = (other.tweens_) ? new AnimationEvents(*other.tweens_) : nullptr;
-
-        if (currentTweens_) {
-            delete currentTweens_;
-        }
-        currentTweens_ = (other.currentTweens_) ? new Animation(*other.currentTweens_) : nullptr;
-
-        if (backgroundTexture_) {
-            SDL_DestroyTexture(backgroundTexture_);
-        }
-
-        backgroundTexture_ = nullptr;
-
-        // Copy simple data types
-        pauseOnScroll_ = other.pauseOnScroll_;
-        currentTweenIndex_ = other.currentTweenIndex_;
-        currentTweenComplete_ = other.currentTweenComplete_;
-        elapsedTweenTime_ = other.elapsedTweenTime_;
-        animationRequested_ = other.animationRequested_;
-        menuScrollReload_ = other.menuScrollReload_;
-        animationDoneRemove_ = other.animationDoneRemove_;
-        menuIndex_ = other.menuIndex_;
-        id_ = other.id_;
-
-        // Copy complex data types
-        storeViewInfo_ = other.storeViewInfo_;
-        animationRequestedType_ = other.animationRequestedType_;
-        animationType_ = other.animationType_;
-    }
-    return *this;
-}
-
-
-Component::~Component()
-{
-    freeGraphicsMemory();
-}
+Component::~Component() = default;
 
 void Component::freeGraphicsMemory()
 {
@@ -104,13 +58,16 @@ void Component::freeGraphicsMemory()
     currentTweenIndex_ = 0;
     currentTweenComplete_ = true;
     elapsedTweenTime_ = 0;
-    SDL_LockMutex(SDL::getMutex());
-    if (backgroundTexture_ != nullptr)
+
+    if (backgroundTexture_)
     {
+        SDL_LockMutex(SDL::getMutex());
         SDL_DestroyTexture(backgroundTexture_);
+        SDL_UnlockMutex(SDL::getMutex());
+        
         backgroundTexture_ = nullptr;
     }
-    SDL_UnlockMutex(SDL::getMutex());
+ 
 }
 
 // used to draw lines in the layout using <container>
@@ -121,7 +78,7 @@ void Component::allocateGraphicsMemory()
         // make a 4x4 pixel wide surface to be stretched during rendering, make it a white background so we can use
         // color  later
         SDL_Surface* surface = SDL_CreateRGBSurface(0, 4, 4, 32, 0, 0, 0, 0);
-        SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 255, 255, 255));
+        SDL_FillRect(surface, nullptr, SDL_MapRGB(surface->format, 255, 255, 255));
 
         SDL_LockMutex(SDL::getMutex());
         backgroundTexture_ = SDL_CreateTextureFromSurface(SDL::getRenderer(baseViewInfo.Monitor), surface);
@@ -143,14 +100,14 @@ void Component::initializeFonts()
 }
 
 
-void Component::triggerEvent(const std::string& event, int menuIndex)
+void Component::triggerEvent(const std::string_view& event, int menuIndex)
 {
     animationRequestedType_ = event;
     animationRequested_     = true;
     menuIndex_              = (menuIndex > 0 ? menuIndex : 0);
 }
 
-void Component::setPlaylist(const std::string& name)
+void Component::setPlaylist(const std::string_view& name)
 {
     this->playlistName = name;
 }
@@ -258,9 +215,9 @@ bool Component::update(float dt)
 // used to draw lines in the layout using <container>
 void Component::draw()
 {
-    if (backgroundTexture_)
+    if (backgroundTexture_ && baseViewInfo.Alpha > 0.0f)
     {
-        SDL_Rect rect;
+        SDL_Rect rect = { 0,0,0,0 };
         rect.h = static_cast<int>(baseViewInfo.ScaledHeight());
         rect.w = static_cast<int>(baseViewInfo.ScaledWidth());
         rect.x = static_cast<int>(baseViewInfo.XRelativeToOrigin());
@@ -272,7 +229,7 @@ void Component::draw()
             static_cast<char>(baseViewInfo.BackgroundGreen * 255),
             static_cast<char>(baseViewInfo.BackgroundBlue * 255));
 
-        SDL::renderCopy(backgroundTexture_, baseViewInfo.BackgroundAlpha, NULL, &rect, baseViewInfo, page.getLayoutWidthByMonitor(baseViewInfo.Monitor), page.getLayoutHeightByMonitor(baseViewInfo.Monitor));
+        SDL::renderCopy(backgroundTexture_, baseViewInfo.BackgroundAlpha, nullptr, &rect, baseViewInfo, page.getLayoutWidthByMonitor(baseViewInfo.Monitor), page.getLayoutHeightByMonitor(baseViewInfo.Monitor));
     }
 }
 

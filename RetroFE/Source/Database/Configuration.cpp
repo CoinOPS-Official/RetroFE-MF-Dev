@@ -38,6 +38,7 @@
 std::string Configuration::absolutePath;
 bool Configuration::HardwareVideoAccel = false;
 int Configuration::AvdecMaxThreads = 2;
+int Configuration::AvdecThreadType = 2;
 bool Configuration::MuteVideo = false;
 
 Configuration::Configuration() = default;
@@ -454,4 +455,43 @@ bool Configuration::StartLogging(Configuration* config)
     }
 
     return true;
+}
+
+void Configuration::dumpPropertiesToFile(const std::string& filename) {
+    // Separate items with and without prefixes
+    std::vector<std::pair<std::string, std::string>> withPrefix, withoutPrefix;
+    for (const auto& pair : properties_) {
+        if (pair.first.find('.') != std::string::npos) {
+            withPrefix.push_back(pair);
+        }
+        else {
+            withoutPrefix.push_back(pair);
+        }
+    }
+
+    // Sort each group
+    std::sort(withoutPrefix.begin(), withoutPrefix.end(),
+        [](const auto& a, const auto& b) {
+            return Utils::toLower(a.first) < Utils::toLower(b.first);
+        });
+    std::sort(withPrefix.begin(), withPrefix.end(),
+        [](const auto& a, const auto& b) {
+            return Utils::toLower(a.first) < Utils::toLower(b.first);
+        });
+
+    // Write to file
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        // Handle the error
+        return;
+    }
+
+    for (const auto& pair : withoutPrefix) {
+        file << pair.first << "=" << pair.second << std::endl;
+    }
+    for (const auto& pair : withPrefix) {
+        file << pair.first << "=" << pair.second << std::endl;
+    }
+
+    file.close();
 }

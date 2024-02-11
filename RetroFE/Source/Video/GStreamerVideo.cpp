@@ -64,6 +64,8 @@ bool GStreamerVideo::initialize()
 {
     if(initialized_)
     {
+        initialized_ = true;
+        paused_ = false;
         return true;
     }
 
@@ -267,7 +269,7 @@ bool GStreamerVideo::createAndLinkGstElements()
         return false;
     }
 
-    g_object_set(G_OBJECT(videoSink_), "sync", TRUE, "qos", FALSE, nullptr);
+    g_object_set(G_OBJECT(videoSink_), "sync", TRUE, "qos", FALSE, "enable-last-sample", FALSE, nullptr);
     g_object_set(G_OBJECT(capsFilter_), "caps", videoConvertCaps_, nullptr);
 
     gst_bin_add_many(GST_BIN(videoBin_), videoConvert_, capsFilter_, videoSink_, nullptr);
@@ -287,10 +289,14 @@ bool GStreamerVideo::createAndLinkGstElements()
 
 
 void GStreamerVideo::elementSetupCallback([[maybe_unused]] GstElement const* playbin, GstElement* element, [[maybe_unused]] GStreamerVideo const* video) {
-    #ifdef WIN32
+#if defined(WIN32) || defined(__APPLE__)
     bool hardwareVideoAccel = Configuration::HardwareVideoAccel;
     if (!hardwareVideoAccel) {
+#ifdef WIN32
         std::vector<std::string> decoderPluginNames = {"d3d11h264dec", "d3d11h265dec"};
+#elif __APPLE__
+        std::vector<std::string> decoderPluginNames = { "vtdec", "vtdec_hw" };
+#endif
         for (const auto& pluginName : decoderPluginNames) {
             GstElementFactory *factory = gst_element_factory_find(pluginName.c_str());
             if (factory) {
@@ -299,7 +305,7 @@ void GStreamerVideo::elementSetupCallback([[maybe_unused]] GstElement const* pla
             }
         }
     }
-    #endif
+#endif
 
     gchar *elementName = gst_element_get_name(element);
     if (g_str_has_prefix(elementName, "avdec_h264") || g_str_has_prefix(elementName, "avdec_h265")) {
@@ -307,7 +313,7 @@ void GStreamerVideo::elementSetupCallback([[maybe_unused]] GstElement const* pla
         if (!hardwareVideoAccel) {
         #endif
             // Modify the properties of the avdec_h265 element here
-            g_object_set(G_OBJECT(element), "thread-type", 2, "max-threads", Configuration::AvdecMaxThreads, "direct-rendering", false, nullptr);
+            g_object_set(G_OBJECT(element), "thread-type", Configuration::AvdecThreadType, "max-threads", Configuration::AvdecMaxThreads, "direct-rendering", false, nullptr);
         #ifdef WIN32
         }
         #endif
@@ -363,7 +369,7 @@ void GStreamerVideo::processNewBuffer(GstElement const */* fakesink */, GstBuffe
 
 void GStreamerVideo::update(float /* dt */)
 {
-	if(!playbin_ || frameReady_)
+	if(!playbin_ || frameReady_ || paused_)
 	{
 		return;
 	}
@@ -383,6 +389,7 @@ void GStreamerVideo::update(float /* dt */)
         if (!gst_buffer_map(videoBuffer_, &bufInfo, GST_MAP_READ))
         {
             SDL_UnlockMutex(SDL::getMutex());
+            LOG_ERROR("Video", "Failed to map buffer");
             return; // Early exit if unable to map the buffer
         }
         
@@ -445,13 +452,13 @@ void GStreamerVideo::update(float /* dt */)
                 meta->stride[1] != expected_uv_stride || meta->offset[1] != expected_uv_offset)
             {
                 bufferLayout_ = NON_CONTIGUOUS;
-                LOG_DEBUG("Video", "Buffer is Non-Contiguous");
+                LOG_DEBUG("Video", "Buffer for " + Utils::getFileName(currentFile_) + " is Non - Contiguous");
                 handleNonContiguous();
             }
             else 
             {
                 bufferLayout_ = CONTIGUOUS;
-                LOG_DEBUG("Video", "Buffer is Contiguous");
+                LOG_DEBUG("Video", "Buffer for " + Utils::getFileName(currentFile_) + " is Contiguous");
                 handleContiguous();
             }
         }
@@ -670,13 +677,17 @@ void GStreamerVideo::skipBackwardp( )
 }
 
 
-void GStreamerVideo::pause( )
-{
+void GStreamerVideo::pause()
+{    
+    if (!Configuration::HardwareVideoAccel) 
+        g_object_set(G_OBJECT(videoSink_), "sync", FALSE, "async", FALSE, nullptr);
     paused_ = !paused_;
     if (paused_)
         gst_element_set_state(GST_ELEMENT(playbin_), GST_STATE_PAUSED);
     else
         gst_element_set_state(GST_ELEMENT(playbin_), GST_STATE_PLAYING);
+    if (!Configuration::HardwareVideoAccel)
+        g_object_set(G_OBJECT(videoSink_), "sync", TRUE, "async", TRUE, nullptr);
 }
 
 

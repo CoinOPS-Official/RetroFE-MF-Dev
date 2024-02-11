@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1510"
+   LastUpgradeVersion = "1500"
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "28DEFA88B73A4CA1825D0DDC"
-               BuildableName = "retrofe.app"
+               BuildableName = "RetroFE.app"
                BlueprintName = "retrofe"
                ReferencedContainer = "container:../xcode/retrofe.xcodeproj">
             </BuildableReference>
@@ -44,7 +44,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "28DEFA88B73A4CA1825D0DDC"
-            BuildableName = "retrofe.app"
+            BuildableName = "RetroFE.app"
             BlueprintName = "retrofe"
             ReferencedContainer = "container:../xcode/retrofe.xcodeproj">
          </BuildableReference>
@@ -61,7 +61,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "28DEFA88B73A4CA1825D0DDC"
-            BuildableName = "retrofe.app"
+            BuildableName = "RetroFE.app"
             BlueprintName = "retrofe"
             ReferencedContainer = "container:../xcode/retrofe.xcodeproj">
          </BuildableReference>

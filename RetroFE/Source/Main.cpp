@@ -75,21 +75,6 @@ int main(int argc, char** argv)
     Configuration config;
 
     gst_init(nullptr, nullptr);
-    // Check if GStreamer initialization was successful
-    if (gst_is_initialized())
-    {
-#ifdef WIN32
-        std::string path = Utils::combinePath(Configuration::absolutePath, "retrofe");
-        GstRegistry* registry = gst_registry_get();
-        gst_registry_scan_path(registry, path.c_str());
-#endif
-        LOG_INFO("RetroFE", "GStreamer successfully initialized");
-    }
-    else
-    {
-        LOG_ERROR("RetroFE", "Failed to initialize GStreamer");
-        return -1;
-    }
 
     // check to see if createcollection was requested
     if (argc == 3)
@@ -135,14 +120,18 @@ int main(int argc, char** argv)
 static bool ImportConfiguration(Configuration* c)
 {
     std::string configPath = Configuration::absolutePath;
+
 #ifdef WIN32
-    std::string launchersPath = Utils::combinePath(Configuration::absolutePath, "launchers.windows");
+    std::string osType = "windows";
 #elif __APPLE__
-    std::string launchersPath = Utils::combinePath(Configuration::absolutePath, "launchers.apple");
+    std::string osType = "apple";
 #else
-    std::string launchersPath = Utils::combinePath(Configuration::absolutePath, "launchers.linux");
+    std::string osType = "linux";
 #endif
-    std::string collectionsPath = Utils::combinePath(Configuration::absolutePath, "collections");
+
+    fs::path launchersPath = Utils::combinePath(Configuration::absolutePath, "launchers." + osType);
+
+    fs::path collectionsPath = Utils::combinePath(Configuration::absolutePath, "collections");
 
     std::string settingsConfPath = Utils::combinePath(configPath, "settings");
     if (!c->import("", settingsConfPath + ".conf"))
@@ -150,9 +139,16 @@ static bool ImportConfiguration(Configuration* c)
         LOG_ERROR("RetroFE", "Could not import \"" + settingsConfPath + ".conf\"");
         return false;
     }
-    for (int i = 1; i < 16; i++)
-        c->import("", "", settingsConfPath + std::to_string(i) + ".conf", false);
-    c->import("", "", settingsConfPath + "_saved.conf", false);
+    for (int i = 1; i < 16; i++) {
+        std::string settingsFile = settingsConfPath + std::to_string(i) + ".conf";
+        if (fs::exists(settingsFile)) {
+            c->import("", "", settingsFile, false);
+        }
+    }
+    std::string savedSettingsFile = settingsConfPath + "_saved.conf";
+    if (fs::exists(savedSettingsFile)) {
+        c->import("", "", savedSettingsFile, false);
+    }
 
     // log version
     LOG_INFO("RetroFE", "Version " + Version::getString() + " starting");
@@ -164,99 +160,162 @@ static bool ImportConfiguration(Configuration* c)
 #else
     LOG_INFO("RetroFE", "OS: Linux");
 #endif
+    
+    // Check if GStreamer initialization was successful
+    if (gst_is_initialized())
+    {
+#ifdef WIN32
+        std::string path = Utils::combinePath(Configuration::absolutePath, "retrofe");
+        GstRegistry* registry = gst_registry_get();
+        gst_registry_scan_path(registry, path.c_str());
+#endif
+        LOG_INFO("RetroFE", "GStreamer successfully initialized");
+    }
+    else
+    {
+        LOG_ERROR("RetroFE", "Failed to initialize GStreamer");
+        return false;
+    }
 
     LOG_INFO("RetroFE", "Absolute path: " + Configuration::absolutePath);
 
     // Process launchers
-    if (!fs::exists(launchersPath) || !fs::is_directory(launchersPath))
+    if (fs::is_directory(launchersPath))
     {
-        launchersPath = Utils::combinePath(Configuration::absolutePath, "launchers");
-        if (!fs::exists(launchersPath) || !fs::is_directory(launchersPath))
+        for (const auto& entry : fs::directory_iterator(launchersPath))
         {
-            LOG_NOTICE("RetroFE", "Could not read directory \"" + launchersPath + "\"");
-            return false;
-        }
-    }
-
-    for (const auto& entry : fs::directory_iterator(launchersPath))
-    {
-        if (fs::is_regular_file(entry))
-        {
-            std::string file = entry.path().filename().string();
-            size_t dot_position = file.find_last_of(".");
-
-            if (dot_position != std::string::npos)
+            if (entry.is_regular_file())
             {
-                std::string extension = Utils::toLower(file.substr(dot_position));
-                std::string basename = file.substr(0, dot_position);
-
-                if (extension == ".conf")
+                fs::path filePath = entry.path();
+                if (filePath.extension() == ".conf")
                 {
-                    std::string prefix = "launchers." + Utils::toLower(basename);
-                    std::string importFile = entry.path().string();
+                    std::string basename = filePath.stem().string();
+                    std::string prefix = "launchers." + basename;
+                    std::string importFile = filePath.string();
 
                     if (!c->import(prefix, importFile))
                     {
                         LOG_ERROR("RetroFE", "Could not import \"" + importFile + "\"");
-                        return false;
                     }
                 }
             }
         }
     }
+    else
+    {
+        LOG_NOTICE("RetroFE", "Launchers directory does not exist or is not a directory: " + launchersPath.string());
+    }
 
 
     // Process collections
-    if (!fs::exists(collectionsPath) || !fs::is_directory(collectionsPath))
-    {
-        LOG_ERROR("RetroFE", "Could not read directory \"" + collectionsPath + "\"");
+    if (!fs::exists(collectionsPath) || !fs::is_directory(collectionsPath)) {
+        LOG_ERROR("RetroFE", "Could not read directory \"" + collectionsPath.string() + "\"");
         return false;
     }
 
-    for (const auto& entry : fs::directory_iterator(collectionsPath))
-    {
+    for (const auto& entry : fs::directory_iterator(collectionsPath)) {
         std::string collection = entry.path().filename().string();
-        if (fs::is_directory(entry) && !collection.empty() && collection[0] != '_' && collection != "." && collection != "..")
-        {
+        if (fs::is_directory(entry) && !collection.empty() && collection[0] != '_' && collection != "." && collection != "..") {
             std::string prefix = "collections." + collection;
             bool settingsImported = false;
-            std::string settingsPath = Utils::combinePath(collectionsPath, collection, "settings");
+            std::string settingsFile = Utils::combinePath(collectionsPath, collection, "settings.conf");
+            if (fs::exists(settingsFile)) {
+                settingsImported |= c->import(collection, prefix, settingsFile, false);
+            }
 
-            settingsImported |= c->import(collection, prefix, settingsPath + ".conf", false);
-            for (int i = 1; i < 16; i++)
-            {
-                settingsImported |= c->import(collection, prefix, settingsPath + std::to_string(i) + ".conf", false);
+            for (int i = 1; i < 16; i++) {
+                std::string numberedSettingsFile = Utils::combinePath(collectionsPath, collection, "settings" + std::to_string(i) + ".conf");
+                if (fs::exists(numberedSettingsFile)) {
+                    settingsImported |= c->import(collection, prefix, numberedSettingsFile, false);
+                }
             }
 
             std::string infoFile = Utils::combinePath(collectionsPath, collection, "info.conf");
-            c->import(collection, prefix, infoFile, false);
-
-            if (!settingsImported)
-            {
-                LOG_ERROR("RetroFE", "Could not import any collection settings for " + collection);
+            if (fs::exists(infoFile)) {
+                c->import(collection, prefix, infoFile, false);
             }
 
-            // record which collections have launcher files
-            prefix = "launchers." + Utils::toLower(collection);
-            std::string importFile = Utils::combinePath(collectionsPath, collection, "launcher.conf");
-            bool launcherExists = c->propertyExists(prefix + ".executable");
-            if (c->import(collection, prefix, importFile, false)) {
-                if (launcherExists) {
-                    LOG_INFO("Launcher", "Override global launcher with collection launcher: " + prefix + " path: " + importFile);
+            // Process collection-specific launcher overrides
+            std::string osSpecificLauncherFile = Utils::combinePath(collectionsPath, collection, "launcher." + osType + ".conf");
+            std::string defaultLauncherFile = Utils::combinePath(collectionsPath, collection, "launcher.conf");
+            std::string launcherKey = "collectionLaunchers." + collection; // Unique key for collection-specific launchers
+
+            std::string importFile = fs::exists(osSpecificLauncherFile) ? osSpecificLauncherFile
+                : fs::exists(defaultLauncherFile) ? defaultLauncherFile
+                : "";
+
+            // Import the launcher file if it exists under the unique key
+            if (!importFile.empty()) {
+                c->import(collection, launcherKey, importFile, false);
+                LOG_INFO("RetroFE", "Imported collection-specific launcher for: " + collection);
+                if (!c->propertyExists("collections." + collection + ".launcher"))
+                {
+                    c->setProperty("collections." + collection + ".launcher", collection);
                 }
-                std::string collectionLaunchers = "collectionLaunchers";
-                std::string launchers = "";
-                c->getProperty(collectionLaunchers, launchers);
+            }
+
+            fs::path localLaunchersPath = Utils::combinePath(collectionsPath, collection, "launchers." + osType + ".local");
+            fs::path defaultLocalLaunchersPath = Utils::combinePath(collectionsPath, collection, "launchers.local");
+
+            // Check if OS-specific launchers directory exists, otherwise use the default launchers directory
+            if (!fs::is_directory(localLaunchersPath) && fs::is_directory(defaultLocalLaunchersPath)) {
+                localLaunchersPath = defaultLocalLaunchersPath;
+            }
+
+            if (fs::is_directory(localLaunchersPath))
+            {
+                for (const auto& launcherEntry : fs::directory_iterator(localLaunchersPath)) {
+                    if (launcherEntry.is_regular_file()) {
+                        fs::path filePath = launcherEntry.path();
+                        if (filePath.extension() == ".conf") {
+                            std::string basename = filePath.stem().string();
+                            std::string prefix = "localLaunchers." + collection + "." + basename;
+                            std::string importFile = filePath.string();
+
+                            if (!c->import(collection, prefix, importFile)) {
+                                LOG_ERROR("RetroFE", "Could not import local launcher \"" + importFile + "\" for collection \"" + collection + "\"");
+                            }
+                            else {
+                                LOG_INFO("RetroFE", "Imported local launcher \"" + basename + "\" for collection \"" + collection + "\"");
+                            }
+                        }
+                    }
+                }
+            }
+            // Set the launcher property if it's not already set in settings.conf
+            std::string launcherPropertyKey = "collections." + collection + ".launcher";
+            if (!c->propertyExists(launcherPropertyKey) && !importFile.empty()) {
+                c->setProperty(launcherPropertyKey, collection);
+            }
+
+            // Update collectionLaunchers property
+            std::string collectionLaunchers = "collectionLaunchers";
+            std::string launchers = "";
+            c->getProperty(collectionLaunchers, launchers);
+            if (!importFile.empty() && (collection.size() < 3 || collection.substr(collection.size() - 3) != "SUB")) {
                 c->setProperty(collectionLaunchers, launchers + collection + ",");
             }
+
+
+
+            if (!settingsImported) {
+                LOG_ERROR("RetroFE", "Could not import any collection settings for " + collection);
+            }
             else {
-                LOG_INFO("Launcher", "Override of global luancher doesn't exist for collection: " + collection + " path: " + importFile);
+                LOG_INFO("RetroFE", "Imported settings for collection: " + collection);
+            }
+
+            if (!importFile.empty()) {
+                LOG_INFO("RetroFE", "Imported launcher configuration for collection: " + collection);
             }
         }
     }
 
-
     LOG_INFO("RetroFE", "Imported configuration");
-
+    bool dumpProperties = false;
+    c->getProperty("dumpProperties", dumpProperties);
+    if (dumpProperties) {
+            c->dumpPropertiesToFile(Utils::combinePath(Configuration::absolutePath, "properties.txt"));
+    }
     return true;
 }
