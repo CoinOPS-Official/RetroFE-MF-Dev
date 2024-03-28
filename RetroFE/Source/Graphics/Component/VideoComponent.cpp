@@ -50,6 +50,7 @@ bool VideoComponent::update(float dt)
     {
         videoInst_->setVolume(baseViewInfo.Volume);
         videoInst_->update(dt);
+        videoInst_->loopHandler();
 
         // video needs to run a frame to start getting size info
         if (baseViewInfo.ImageHeight == 0 && baseViewInfo.ImageWidth == 0)
@@ -151,7 +152,7 @@ bool VideoComponent::isPlaying()
     return isPlaying_;
 }
 
-std::string VideoComponent::filePath()
+std::string_view VideoComponent::filePath()
 {
     return videoFile_;
 }

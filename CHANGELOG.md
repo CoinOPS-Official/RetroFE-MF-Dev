@@ -11,6 +11,30 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 [@arghs15](https://github.com/arghs15)
 [@bluestang2006](https://github.com/bluestang2006)
 
+## [10.34.5] - 2024-02-18
+
+### Added
+- added default.conf for default game info [@monkofthefunk](https://github.com/monkofthefunk)
+- Append build number to RetroFE binary when building [@aidenjbass](https://github.com/aidenjbass)
+- A plethora of CLI options [@aidenjbass](https://github.com/aidenjbass)
+- -help to show all [@aidenjbass](https://github.com/aidenjbass)
+- -createcollection, generates a default collection structure with global/local [@aidenjbass](https://github.com/aidenjbass)
+- -rebuilddatabase, rebuilds the database without a full initialisation [@aidenjbass](https://github.com/aidenjbass)
+- -showusage, print a list of all settings [@aidenjbass](https://github.com/aidenjbass)
+- -showconfig, print a list of current settings and properties [@aidenjbass](https://github.com/aidenjbass)
+- -createconfig, generate a default settings.conf and associated readme [@aidenjbass](https://github.com/aidenjbass)
+- -dump, dump current settings and properties to a file [@aidenjbass](https://github.com/aidenjbass)
+- Pass all global settings via CLI in [-key] [value] format [@aidenjbass](https://github.com/aidenjbass)
+- layoutFromAnotherCollection key, search in layouts/\<layout>/collections/\<collectionName>/layout/ [@aidenjbass](https://github.com/aidenjbass)
+- File existence checks for settings.conf etc, could result in seg faults under certain conditions [@aidenjbass](https://github.com/aidenjbass)
+- If init fails GUI textbox will show instead of just logging to console [@aidenjbass](https://github.com/aidenjbass)
+
+### Changed
+- Moved all global settings to GlobalOpts data class [@aidenjbass](https://github.com/aidenjbass)
+- Existence checks for start and exit scripts [@aidenjbass](https://github.com/aidenjbass)
+- Placed jbKey's behind a jukebox key to not bother mapping [@aidenjbass](https://github.com/aidenjbass)
+- Rebuilt the layout getter in pageBuilder [@aidenjbass](https://github.com/aidenjbass)
+
 ## [10.34.4] - 2024-02-03
 
 ### Added

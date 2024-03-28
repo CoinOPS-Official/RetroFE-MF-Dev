@@ -17,6 +17,7 @@
 
 #include "SDL.h"
 #include "Database/Configuration.h"
+#include "Database/GlobalOpts.h"
 #include "Utility/Log.h"
 #if (__APPLE__)
     #include <SDL2_mixer/SDL_mixer.h>
@@ -65,7 +66,7 @@ bool SDL::initialize( Configuration &config )
         return false;
     }
 
-    if ( config.getProperty( "hideMouse", hideMouse ) )
+    if ( config.getProperty( OPTION_HIDEMOUSE, hideMouse ) )
     {
         if ( hideMouse )
         {
@@ -78,19 +79,19 @@ bool SDL::initialize( Configuration &config )
     }
 	
 	bool HardwareVideoAccel = false;
-	config.getProperty("HardwareVideoAccel", HardwareVideoAccel);
+	config.getProperty(OPTION_HARDWAREVIDEOACCEL, HardwareVideoAccel);
 	Configuration::HardwareVideoAccel = HardwareVideoAccel; // Set the static member variable
 	int AvdecMaxThreads = 2;
-	config.getProperty("AvdecMaxThreads", AvdecMaxThreads);
+	config.getProperty(OPTION_AVDECMAXTHREADS, AvdecMaxThreads);
 	Configuration::AvdecMaxThreads = AvdecMaxThreads;
     int AvdecThreadType = 2;
-    config.getProperty("AvdecThreadType", AvdecThreadType);
+    config.getProperty(OPTION_AVDECTHREADTYPE, AvdecThreadType);
     Configuration::AvdecThreadType = AvdecThreadType;
 	bool MuteVideo = false;
-	config.getProperty("MuteVideo", MuteVideo);
+	config.getProperty(OPTION_MUTEVIDEO, MuteVideo);
 	Configuration::MuteVideo = MuteVideo;
 	// check for a few other necessary Configurations
-    config.getProperty( "numScreens", numScreens_ );
+    config.getProperty( OPTION_NUMSCREENS, numScreens_ );
 
     if ( numScreens_ <= 0 )
     {
@@ -113,16 +114,16 @@ bool SDL::initialize( Configuration &config )
         bool            windowResize = false;
         Uint32          windowFlags  = SDL_WINDOW_OPENGL;
         std::string     screenIndex = std::to_string(screenNum);
-        config.getProperty( "windowBorder", windowBorder );
+        config.getProperty( OPTION_WINDOWBORDER, windowBorder );
         if ( !windowBorder )
             windowFlags |= SDL_WINDOW_BORDERLESS;
-        config.getProperty( "windowResize", windowResize );
+        config.getProperty( OPTION_WINDOWRESIZE, windowResize );
         if ( windowResize )
             windowFlags |= SDL_WINDOW_RESIZABLE;
 
-        if ( !config.getProperty( "screenNum" + screenIndex, screenNum ) && screenNum != mainScreen)
+        if ( !config.getProperty( OPTION_SCREENNUM + screenIndex, screenNum ) && screenNum != mainScreen)
         {
-            LOG_ERROR("SDL", "screenNum" + screenIndex + " parameter not defined.");
+            LOG_ERROR("SDL", OPTION_SCREENNUM + screenIndex + " parameter not defined.");
             return false;
         }
 
@@ -150,9 +151,9 @@ bool SDL::initialize( Configuration &config )
             displayWidth_.push_back(mode.w);
             std::string hString = "";
             if (screenNum == mainScreen)
-                config.getProperty( "horizontal", hString );
+                config.getProperty( OPTION_HORIZONTAL, hString );
 
-            config.getProperty( "horizontal" + screenIndex, hString );
+            config.getProperty( OPTION_HORIZONTAL + screenIndex, hString );
             if ( hString == "" )
             {
                 LOG_ERROR("Configuration", "Missing property \"horizontal\"" + screenIndex );
@@ -169,7 +170,7 @@ bool SDL::initialize( Configuration &config )
                     windowWidth_[screenNum] = Utils::convertInt(hString);
                 }
 			}
-			else if ( hString != "stretch" && (screenNum != mainScreen || !config.getProperty( "horizontal", windowWidth_[screenNum] )) && !config.getProperty( "horizontal" + screenIndex, windowWidth_[screenNum] ))
+			else if ( hString != "stretch" && (screenNum != mainScreen || !config.getProperty( OPTION_HORIZONTAL, windowWidth_[screenNum] )) && !config.getProperty( OPTION_HORIZONTAL + screenIndex, windowWidth_[screenNum] ))
             {
                 LOG_ERROR("Configuration", "Invalid property value for \"horizontal\"" + screenIndex );
                 return false;
@@ -179,9 +180,9 @@ bool SDL::initialize( Configuration &config )
             displayHeight_.push_back(mode.h);
             std::string vString = "";
             if (screenNum == mainScreen)
-                config.getProperty( "vertical", vString );
+                config.getProperty( OPTION_VERTICAL, vString );
 
-            config.getProperty( "vertical" + screenIndex, vString );
+            config.getProperty( OPTION_VERTICAL + screenIndex, vString );
             if ( vString == "" )
             {
                 LOG_ERROR("Configuration", "Missing property \"vertical\"" + screenIndex );
@@ -199,7 +200,7 @@ bool SDL::initialize( Configuration &config )
 
                 }
 			}
-			else if ( vString != "stretch" && (screenNum != mainScreen || !config.getProperty( "vertical", windowHeight_[screenNum] )) && !config.getProperty( "vertical" + screenIndex, windowHeight_[screenNum] ) )
+			else if ( vString != "stretch" && (screenNum != mainScreen || !config.getProperty( OPTION_VERTICAL, windowHeight_[screenNum] )) && !config.getProperty( OPTION_VERTICAL + screenIndex, windowHeight_[screenNum] ) )
             {
                 LOG_ERROR("Configuration", "Invalid property value for \"vertical\"" + screenIndex );
                 return false;
@@ -207,8 +208,8 @@ bool SDL::initialize( Configuration &config )
 
 
             bool fullscreen = false;
-            config.getProperty( "fullscreen", fullscreen );
-            if (screenNum == mainScreen && !config.getProperty( "fullscreen", fullscreen ) && !config.getProperty( "fullscreen" + screenIndex, fullscreen ) )
+            config.getProperty( OPTION_FULLSCREEN, fullscreen );
+            if (screenNum == mainScreen && !config.getProperty( OPTION_FULLSCREEN, fullscreen ) && !config.getProperty( OPTION_FULLSCREEN + screenIndex, fullscreen ) )
             {
                 LOG_ERROR("Configuration", "Missing property: \"fullscreen\"" + screenIndex );
                 return false;
@@ -227,12 +228,12 @@ bool SDL::initialize( Configuration &config )
             }
 
             int rotation= 0;
-            config.getProperty( "rotation" + screenIndex, rotation );
+            config.getProperty( OPTION_ROTATION + screenIndex, rotation );
             LOG_INFO("Configuration", "Setting rotation for screen " + screenIndex + " to " + std::to_string( rotation * 90 ) + " degrees." );
             rotation_.push_back( rotation );
 
             bool mirror = false;
-            config.getProperty( "mirror" + screenIndex, mirror );
+            config.getProperty( OPTION_MIRROR + screenIndex, mirror );
             if ( mirror )
                 LOG_INFO("Configuration", "Setting mirror mode for screen " + screenIndex + "." );
             mirror_.push_back( mirror );
@@ -250,14 +251,14 @@ bool SDL::initialize( Configuration &config )
 			
 #ifdef WIN32
 			std::string SDLRenderDriver = "direct3d";
-			config.getProperty("SDLRenderDriver", SDLRenderDriver);
+			config.getProperty(OPTION_SDLRENDERDRIVER, SDLRenderDriver);
 			if ( SDL_SetHint(SDL_HINT_RENDER_DRIVER, SDLRenderDriver.c_str()) != SDL_TRUE )
 			{
 				LOG_ERROR("SDL", "Error setting renderer to" + SDLRenderDriver + ". Available direct3d, direct3d11, direct3d12, opengl, opengles2, opengles, metal, and software");
 			}
 #endif			
 			std::string ScaleQuality = "1";
-			config.getProperty("ScaleQuality", ScaleQuality);
+			config.getProperty(OPTION_SCALEQUALITY, ScaleQuality);
 			if ( SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, ScaleQuality.c_str()) != SDL_TRUE )
 			{
 				LOG_ERROR("SDL", "Improve scale quality. Continuing with low-quality settings 1 = linear. 0 = nearest, 2 = best (linear)" );
@@ -290,7 +291,7 @@ bool SDL::initialize( Configuration &config )
                     #endif
                 }
                 bool vSync = false;
-				config.getProperty("vSync", vSync);
+				config.getProperty(OPTION_VSYNC, vSync);
                 if (!renderer_[screenNum]) {
                     if (vSync == true)
                     {
@@ -328,9 +329,9 @@ bool SDL::initialize( Configuration &config )
 
 
 
-    if (bool minimize_on_focus_loss_;  config.getProperty( "minimize_on_focus_loss", minimize_on_focus_loss_ ) )
+    if (bool minimizeOnFocusLoss;  config.getProperty( OPTION_MINIMIZEONFOCUSLOSS, minimizeOnFocusLoss ) )
     {
-        if ( minimize_on_focus_loss_ )
+        if ( minimizeOnFocusLoss )
         {
             SDL_SetHintWithPriority( SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "1", SDL_HINT_OVERRIDE );
         }

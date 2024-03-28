@@ -24,9 +24,10 @@
 #include "../Sound/Sound.h"
 #include "ComponentItemBindingBuilder.h"
 #include "PageBuilder.h"
+#include "../Utility/Utils.h"
+#include "../Database/GlobalOpts.h"
 #include <algorithm>
 #include <sstream>
-#include "../Utility/Utils.h"
 
 
 Page::Page(Configuration &config, int layoutWidth, int layoutHeight)
@@ -47,7 +48,7 @@ Page::Page(Configuration &config, int layoutWidth, int layoutHeight)
     , selectSoundChunk_(NULL)
     , minShowTime_(0)
     , jukebox_(false)
-    , useThreading_(SDL::getRendererBackend(0) != "opengl" && !Configuration::HardwareVideoAccel)
+    , useThreading_(SDL::getRendererBackend(0) != "opengl")
 {
 
     for (int i = 0; i < MAX_LAYOUTS; i++)
@@ -1389,7 +1390,7 @@ void Page::removePlaylist()
         }
     }
     bool globalFavLast = false;
-    (void)config_.getProperty("globalFavLast", globalFavLast);
+    (void)config_.getProperty(OPTION_GLOBALFAVLAST, globalFavLast);
     if (globalFavLast && collection->name != "Favorites") {
         collection->saveRequest = true;
         collection->saveFavorites(selectedItem_);
@@ -1625,11 +1626,12 @@ void Page::scroll(bool forward) {
                     menu->scroll(forward);
                 }
             }
+            onNewScrollItemSelected();
             });
 
         // Wait for the scroll operation to complete
         scrollFuture.get();
-        onNewScrollItemSelected();
+
         if (highlightSoundChunk_) {
             highlightSoundChunk_->play();
         }

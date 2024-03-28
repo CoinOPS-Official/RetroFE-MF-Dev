@@ -16,6 +16,7 @@
 #include "Configuration.h"
 #include "../Utility/Log.h"
 #include "../Utility/Utils.h"
+#include "GlobalOpts.h"
 #include <algorithm>
 #include <locale>
 #include <fstream>
@@ -23,6 +24,8 @@
 #include <filesystem>
 #include <string_view>
 #include <set>
+#include <cstdio>
+#include <algorithm>
 
 #ifdef WIN32
 #include <windows.h>
@@ -124,37 +127,59 @@ bool Configuration::import(const std::string& collection, const std::string& key
     bool retVal = true;
     int lineCount = 0;
     std::string line;
-
-    LOG_INFO("Configuration", "Importing \"" + file + "\"");
-
-    std::ifstream ifs(file.c_str());
-
-    if (!ifs.is_open())
+    
+    // Some dupe code in here we could probably bring out of branches but not yet
+    if (keyPrefix == "CLI")
     {
-        if (mustExist)
+        LOG_INFO("Configuration", "Importing command line arguments");
+                
+        // Use an istringstream to read lines from string
+        std::istringstream iss(file);
+                        
+        while (std::getline(iss, line))
         {
-            LOG_ERROR("Configuration", "Could not open " + file + "\"");
-        }
-        else
-        {
-            LOG_WARNING("Configuration", "Could not open " + file + "\"");
-        }
+            lineCount++;
+            retVal = retVal && parseLine(collection, "", line, lineCount);
 
-        return false;
-    }
-   
-    while (std::getline(ifs, line))
-    {
-        lineCount++;
-        retVal = retVal && parseLine(collection, keyPrefix, line, lineCount);
-
-        // Check if the line contains the log level setting
-        if (properties_.find("log") != properties_.end()) {
-            StartLogging(this); // Start logging with the specified level
+            // Check if the line contains the log level setting
+            if (properties_.find(OPTION_LOG) != properties_.end()) {
+                StartLogging(this); // Start logging with the specified level
+            }
         }
     }
+    else
+    {
+        LOG_INFO("Configuration", "Importing \"" + file + "\"");
+        
+        std::ifstream ifs(file.c_str());
 
-    ifs.close();
+        if (!ifs.is_open())
+        {
+            if (mustExist)
+            {
+                LOG_ERROR("Configuration", "Could not open " + file + "\"");
+            }
+            else
+            {
+                LOG_WARNING("Configuration", "Could not open " + file + "\"");
+            }
+
+            return false;
+        }
+       
+        while (std::getline(ifs, line))
+        {
+            lineCount++;
+            retVal = retVal && parseLine(collection, keyPrefix, line, lineCount);
+
+            // Check if the line contains the log level setting
+            if (properties_.find(OPTION_LOG) != properties_.end()) {
+                StartLogging(this); // Start logging with the specified level
+            }
+        }
+
+        ifs.close();
+    }
 
     return retVal;
 }
@@ -377,6 +402,12 @@ std::string Configuration::convertToAbsolutePath(const std::string& prefix, cons
 bool Configuration::getPropertyAbsolutePath(const std::string& key, std::string &value)
 {
     bool retVal = getProperty(key, value);
+    
+    #ifndef WIN32
+        // This is a catch me to change dos paths to unix
+        // Windows can resolve unix paths but not vice versa
+        std::replace(value.begin(), value.end(), '\\', '/');
+    #endif
 
     if(retVal)
     {
@@ -457,6 +488,35 @@ bool Configuration::StartLogging(Configuration* config)
     return true;
 }
 
+void Configuration::printProperties() const {
+    // Separate items with and without prefixes
+    std::vector<std::pair<std::string, std::string>> withPrefix, withoutPrefix;
+    for (const auto& pair : properties_) {
+        if (pair.first.find('.') != std::string::npos) {
+            withPrefix.push_back(pair);
+        }
+        else {
+            withoutPrefix.push_back(pair);
+        }
+    }
+  
+    // Sort each group
+    std::sort(withoutPrefix.begin(), withoutPrefix.end(),
+        [](const auto& a, const auto& b) {
+            return Utils::toLower(a.first) < Utils::toLower(b.first);
+        });
+    std::sort(withPrefix.begin(), withPrefix.end(),
+        [](const auto& a, const auto& b) {
+            return Utils::toLower(a.first) < Utils::toLower(b.first);
+        });
+    for (const auto& pair : withoutPrefix) {
+        fprintf(stdout, "%s=%s\n", pair.first.c_str(), pair.second.c_str());
+    }
+    for (const auto& pair : withPrefix) {
+        fprintf(stdout, "%s=%s\n", pair.first.c_str(), pair.second.c_str());
+    }
+}
+
 void Configuration::dumpPropertiesToFile(const std::string& filename) {
     // Separate items with and without prefixes
     std::vector<std::pair<std::string, std::string>> withPrefix, withoutPrefix;
@@ -468,30 +528,28 @@ void Configuration::dumpPropertiesToFile(const std::string& filename) {
             withoutPrefix.push_back(pair);
         }
     }
-
+  
     // Sort each group
     std::sort(withoutPrefix.begin(), withoutPrefix.end(),
-        [](const auto& a, const auto& b) {
-            return Utils::toLower(a.first) < Utils::toLower(b.first);
-        });
+              [](const auto& a, const auto& b) {
+        return Utils::toLower(a.first) < Utils::toLower(b.first);
+    });
     std::sort(withPrefix.begin(), withPrefix.end(),
-        [](const auto& a, const auto& b) {
-            return Utils::toLower(a.first) < Utils::toLower(b.first);
-        });
-
+              [](const auto& a, const auto& b) {
+        return Utils::toLower(a.first) < Utils::toLower(b.first);
+    });
+    
     // Write to file
     std::ofstream file(filename);
     if (!file.is_open()) {
         // Handle the error
         return;
     }
-
     for (const auto& pair : withoutPrefix) {
         file << pair.first << "=" << pair.second << std::endl;
     }
     for (const auto& pair : withPrefix) {
         file << pair.first << "=" << pair.second << std::endl;
     }
-
     file.close();
 }

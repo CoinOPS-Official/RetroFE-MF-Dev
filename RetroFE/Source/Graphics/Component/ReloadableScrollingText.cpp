@@ -17,6 +17,7 @@
 #include "ReloadableScrollingText.h"
 #include "../ViewInfo.h"
 #include "../../Database/Configuration.h"
+#include "../../Database/GlobalOpts.h"
 #include "../../Utility/Log.h"
 #include "../../Utility/Utils.h"
 #include "../../SDL.h"
@@ -393,7 +394,7 @@ void ReloadableScrollingText::loadText( std::string collection, std::string type
         std::string layoutName;
         config_.getProperty("collections." + collection + ".layout", layoutName);
         if (layoutName == "") {
-            config_.getProperty("layout", layoutName);
+            config_.getProperty(OPTION_LAYOUT, layoutName);
         }
         textPath = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName, "collections", collection);
         if (systemMode)

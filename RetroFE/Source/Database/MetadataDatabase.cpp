@@ -20,6 +20,7 @@
 #include "../Utility/Utils.h"
 #include "Configuration.h"
 #include "DB.h"
+#include "GlobalOpts.h"
 #include <algorithm>
 #include <fstream>
 #include <list>
@@ -215,7 +216,7 @@ void MetadataDatabase::injectMetadata(CollectionInfo* collection)
 bool MetadataDatabase::needsRefresh()
 {
     bool metaLock = false;
-    config_.getProperty("metaLock", metaLock);
+    config_.getProperty(OPTION_METALOCK, metaLock);
     if (metaLock)
         return false;
 

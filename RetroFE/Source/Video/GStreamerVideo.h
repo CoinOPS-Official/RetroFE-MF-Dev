@@ -36,7 +36,7 @@ public:
     explicit GStreamerVideo( int monitor );
     GStreamerVideo(const GStreamerVideo&) = delete;
     GStreamerVideo& operator=(const GStreamerVideo&) = delete;
-    ~GStreamerVideo();
+    ~GStreamerVideo() final;
     bool initialize() final;
     bool play(const std::string& file) final;
     bool stop() final;
@@ -46,7 +46,6 @@ public:
     void volumeUpdate();
     void draw() final;
     void setNumLoops(int n);
-    void freeElements();
     int getHeight() final;
     int getWidth() final;
     bool isPlaying() final;

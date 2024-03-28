@@ -17,6 +17,7 @@
 #include "ReloadableText.h"
 #include "../ViewInfo.h"
 #include "../../Database/Configuration.h"
+#include "../../Database/GlobalOpts.h"
 #include "../../Utility/Log.h"
 #include "../../SDL.h"
 #include <fstream>
@@ -296,19 +297,18 @@ void ReloadableText::ReloadTexture()
 				text    = "--:--:--";
         }
 
-        if (!selectedItem->leaf || systemMode_) // item is not a leaf
+        if (text == "" && (!selectedItem->leaf || systemMode_)) // item is not a leaf
         {
             (void)config_.getProperty("collections." + selectedItem->name + "." + type_, text );
         }
 
-        if (systemMode_) // Get the system information in stead
+        if (text == "" && systemMode_) // Get the system information in stead
         {
-            text = "";
             (void)config_.getProperty("collections." + page.getCollectionName() + "." + type_, text );
         }
 
         bool overwriteXML = false;
-        config_.getProperty( "overwriteXML", overwriteXML );
+        config_.getProperty( OPTION_OVERWRITEXML, overwriteXML );
         if ( text == "" || overwriteXML ) // No text was found yet; check the info in stead
         {
             std::string text_tmp;

@@ -94,7 +94,7 @@ void Image::allocateGraphicsMemory()
 
 }
 
-std::string Image::filePath()
+std::string_view Image::filePath()
 {
     return file_;
 }

@@ -97,7 +97,6 @@ bool GStreamerVideo::deInitialize()
 
 bool GStreamerVideo::stop()
 {
-    paused_ = false;
 
     if(!initialized_)
     {
@@ -154,7 +153,19 @@ bool GStreamerVideo::stop()
     }
 
     // Free GStreamer elements and related resources
-    freeElements();
+    if (playbin_)
+    {
+        gst_object_unref(playbin_);
+
+    }
+
+    videoBus_ = nullptr;
+    playbin_ = nullptr;
+    videoBin_ = nullptr;
+    videoConvert_ = nullptr;
+    videoConvertCaps_ = nullptr;
+    capsFilter_ = nullptr;
+    videoSink_ = nullptr;
 
     isPlaying_ = false;
     height_ = 0;
@@ -162,36 +173,6 @@ bool GStreamerVideo::stop()
     frameReady_ = false;
 
     return true;
-}
-
-
-void GStreamerVideo::freeElements()
-{
-    // Unref the video bus
-    if(videoBus_)
-    {
-        gst_object_unref(videoBus_);
-        videoBus_ = nullptr;
-    }
-
-    // Unref the playbin
-    if(playbin_)
-    {
-        gst_object_unref(playbin_);
-        playbin_ = nullptr;
-    }
-
-    // Unref caps associated with video conversion
-    if(videoConvertCaps_)
-    {
-        gst_caps_unref(videoConvertCaps_);
-        videoConvertCaps_ = nullptr;
-    }
-
-    // Nullify video elements
-    videoSink_    = nullptr;
-    videoConvert_ = nullptr;
-    videoBin_     = nullptr;
 }
 
 
@@ -244,6 +225,7 @@ bool GStreamerVideo::initializeGstElements(const std::string& file)
     g_free(uriFile);
     elementSetupHandlerId_ = g_signal_connect(playbin_, "element-setup", G_CALLBACK(elementSetupCallback), this);
     videoBus_ = gst_pipeline_get_bus(GST_PIPELINE(playbin_));
+    gst_object_unref(videoBus_);
     g_object_set(G_OBJECT(videoSink_), "signal-handoffs", TRUE, nullptr);
     handoffHandlerId_ = g_signal_connect(videoSink_, "handoff", G_CALLBACK(processNewBuffer), this);
 
@@ -255,34 +237,60 @@ bool GStreamerVideo::createAndLinkGstElements()
     playbin_ = gst_element_factory_make("playbin3", "player");
     videoBin_ = gst_bin_new("SinkBin");
     videoSink_ = gst_element_factory_make("fakesink", "video_sink");
-    videoConvert_ = gst_element_factory_make("videoconvert", "video_convert");
     capsFilter_ = gst_element_factory_make("capsfilter", "caps_filter");
-    if(Configuration::HardwareVideoAccel && SDL::getRendererBackend(0) == "direct3d11")
+
+    // Only create videoConvert and videoConvertCaps if not using DirectX11
+    if (Configuration::HardwareVideoAccel && SDL::getRendererBackend(0) == "direct3d11") {
+        // Omitting the videoConvert element entirely in DirectX11 case
         videoConvertCaps_ = gst_caps_from_string("video/x-raw(memory:D3D11Memory),format=(string)NV12,pixel-aspect-ratio=(fraction)1/1");
-    else
+    }
+    else {
+        videoConvert_ = gst_element_factory_make("videoconvert", "video_convert");
         videoConvertCaps_ = gst_caps_from_string("video/x-raw,format=(string)NV12,pixel-aspect-ratio=(fraction)1/1");
+        if (!videoConvert_) {
+            LOG_DEBUG("Video", "Could not create video convert element");
+            return false;
+        }
+        gst_bin_add(GST_BIN(videoBin_), videoConvert_);
+    }
 
-
-    if(!playbin_ || !videoSink_ || !videoConvert_ || !capsFilter_ || !videoConvertCaps_)
-    {
+    if (!playbin_ || !videoSink_ || !capsFilter_ || !videoConvertCaps_) {
         LOG_DEBUG("Video", "Could not create elements");
         return false;
     }
 
     g_object_set(G_OBJECT(videoSink_), "sync", TRUE, "qos", FALSE, "enable-last-sample", FALSE, nullptr);
     g_object_set(G_OBJECT(capsFilter_), "caps", videoConvertCaps_, nullptr);
+    gst_caps_unref(videoConvertCaps_);
+    gst_bin_add_many(GST_BIN(videoBin_), capsFilter_, videoSink_, nullptr);
 
-    gst_bin_add_many(GST_BIN(videoBin_), videoConvert_, capsFilter_, videoSink_, nullptr);
-    if (!gst_element_link_many(videoConvert_, capsFilter_, videoSink_, nullptr))
-    {
-        LOG_DEBUG("Video", "Could not link video processing elements");
-        return false;
+    // Adjust linking based on whether videoConvert is used
+    if (videoConvert_) {
+        if (!gst_element_link_many(videoConvert_, capsFilter_, videoSink_, nullptr)) {
+            LOG_DEBUG("Video", "Could not link video processing elements");
+            return false;
+        }
+    }
+    else {
+        // Directly link capsFilter to videoSink if videoConvert is omitted
+        if (!gst_element_link_many(capsFilter_, videoSink_, nullptr)) {
+            LOG_DEBUG("Video", "Could not link video processing elements without video convert");
+            return false;
+        }
     }
 
-    GstPad *videoSinkPad = gst_element_get_static_pad(videoConvert_, "sink");
-    GstPad *ghostPad = gst_ghost_pad_new("sink", videoSinkPad);
+    // Adjust pad linking based on whether videoConvert is used
+    GstPad* sinkPad = nullptr;
+    if (videoConvert_) {
+        sinkPad = gst_element_get_static_pad(videoConvert_, "sink");
+    }
+    else {
+        // If videoConvert is omitted, get the sink pad from the next element in the chain
+        sinkPad = gst_element_get_static_pad(capsFilter_, "sink");
+    }
+    GstPad* ghostPad = gst_ghost_pad_new("sink", sinkPad);
     gst_element_add_pad(videoBin_, ghostPad);
-    gst_object_unref(videoSinkPad);
+    gst_object_unref(sinkPad);
 
     return true;
 }
@@ -489,7 +497,6 @@ void GStreamerVideo::update(float /* dt */)
     }
     SDL_UnlockMutex(SDL::getMutex());
     volumeUpdate();
-    loopHandler();
 }
 
 void GStreamerVideo::loopHandler()

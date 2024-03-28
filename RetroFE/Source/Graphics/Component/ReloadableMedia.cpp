@@ -21,6 +21,7 @@
 #include "../ViewInfo.h"
 #include "../../Video/VideoFactory.h"
 #include "../../Database/Configuration.h"
+#include "../../Database/GlobalOpts.h"
 #include "../../Utility/Log.h"
 #include "../../Utility/Utils.h"
 #include "../../SDL.h"
@@ -380,7 +381,7 @@ Component *ReloadableMedia::reloadTexture()
         }
 
         bool overwriteXML = false;
-        config_.getProperty( "overwriteXML", overwriteXML );
+        config_.getProperty( OPTION_OVERWRITEXML, overwriteXML );
         if ( !defined || overwriteXML ) // No basename was found yet; check the info in stead
         {
             std::string basename_tmp;
@@ -501,7 +502,7 @@ Component* ReloadableMedia::findComponent(
             std::string layoutName;
             config_.getProperty("collections." + collection + ".layout", layoutName);
             if (layoutName == "") {
-                config_.getProperty("layout", layoutName);
+                config_.getProperty(OPTION_LAYOUT, layoutName);
             }
             if (commonMode_)
             {
@@ -542,9 +543,6 @@ Component* ReloadableMedia::findComponent(
             if (filePath == loadedComponent_->filePath()) {
                 return loadedComponent_;
             }
-        }
-        else if (imagePath == loadedComponent_->filePath()) {
-            return loadedComponent_;
         }
     }
 

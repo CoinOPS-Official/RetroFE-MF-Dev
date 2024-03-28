@@ -10,6 +10,17 @@ set(RETROFE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 set(RETROFE_THIRD_PARTY_DIR "${RETROFE_DIR}/ThirdParty")
 list(APPEND CMAKE_MODULE_PATH "${RETROFE_DIR}/CMake")
 
+# Find Git executable
+find_package(Git REQUIRED)
+
+# Get the Git hash
+execute_process(
+    COMMAND ${GIT_EXECUTABLE} rev-list --count HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_COMMIT_NO
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 ##############################################################
 # Setup some variables to help find external libraries
 ##############################################################
@@ -19,13 +30,13 @@ set(RAPIDXML_ROOT "${RETROFE_THIRD_PARTY_DIR}/rapidxml-1.13")
 
 if(WIN32)
 if(MSVC)
-	set(SDL2_ROOT "${RETROFE_THIRD_PARTY_DIR}/SDL2-2.28.2")
-	set(SDL2_IMAGE_ROOT "${RETROFE_THIRD_PARTY_DIR}/SDL2_image-2.6.3")
-	set(SDL2_MIXER_ROOT "${RETROFE_THIRD_PARTY_DIR}/SDL2_mixer-2.6.3")
-	set(SDL2_TTF_ROOT "${RETROFE_THIRD_PARTY_DIR}/SDL2_ttf-2.20.2")
+	set(SDL2_ROOT "${RETROFE_THIRD_PARTY_DIR}/SDL2-2.30.0")
+ 	set(SDL2_IMAGE_ROOT "${RETROFE_THIRD_PARTY_DIR}/SDL2_image-2.8.2")
+ 	set(SDL2_MIXER_ROOT "${RETROFE_THIRD_PARTY_DIR}/SDL2_mixer-2.6.3")
+ 	set(SDL2_TTF_ROOT "${RETROFE_THIRD_PARTY_DIR}/SDL2_ttf-2.20.2")
 elseif(MINGW)
-	set(SDL2_ROOT "${RETROFE_THIRD_PARTY_DIR}/SDL2-2.28.2-mingw/x86_64-w64-mingw32")
-	set(SDL2_IMAGE_ROOT "${RETROFE_THIRD_PARTY_DIR}/SDL2_image-2.6.3-mingw/x86_64-w64-mingw32")
+ 	set(SDL2_ROOT "${RETROFE_THIRD_PARTY_DIR}/SDL2-2.30.0-mingw/x86_64-w64-mingw32")
+ 	set(SDL2_IMAGE_ROOT "${RETROFE_THIRD_PARTY_DIR}/SDL2_image-2.8.2-mingw/x86_64-w64-mingw32")
 	set(SDL2_MIXER_ROOT "${RETROFE_THIRD_PARTY_DIR}/SDL2_mixer-2.6.3-mingw/x86_64-w64-mingw32")
 	set(SDL2_TTF_ROOT "${RETROFE_THIRD_PARTY_DIR}/SDL2_ttf-2.20.2-mingw/x86_64-w64-mingw32")
 endif()
@@ -108,6 +119,7 @@ set(RETROFE_HEADERS
 	"${RETROFE_DIR}/Source/Control/MouseButtonHandler.h"
 	"${RETROFE_DIR}/Source/Database/Configuration.h"
 	"${RETROFE_DIR}/Source/Database/DB.h"
+	"${RETROFE_DIR}/Source/Database/GlobalOpts.h"
 	"${RETROFE_DIR}/Source/Database/MetadataDatabase.h"
 	"${RETROFE_DIR}/Source/Execute/AttractMode.h"
 	"${RETROFE_DIR}/Source/Execute/Launcher.h"
@@ -160,6 +172,7 @@ set(RETROFE_SOURCES
 	"${RETROFE_DIR}/Source/Control/MouseButtonHandler.cpp"
 	"${RETROFE_DIR}/Source/Database/Configuration.cpp"
 	"${RETROFE_DIR}/Source/Database/DB.cpp"
+	"${RETROFE_DIR}/Source/Database/GlobalOpts.cpp"
 	"${RETROFE_DIR}/Source/Database/MetadataDatabase.cpp"
 	"${RETROFE_DIR}/Source/Execute/AttractMode.cpp"
 	"${RETROFE_DIR}/Source/Execute/Launcher.cpp"
@@ -244,6 +257,7 @@ if(APPLE)
 	target_link_libraries(retrofe ${RETROFE_LIBRARIES})
 
 else()
+	set_target_properties(retrofe PROPERTIES OUTPUT_NAME "retrofe-${GIT_COMMIT_NO}")
 	set_target_properties(retrofe PROPERTIES LINKER_LANGUAGE CXX)
 endif()
 

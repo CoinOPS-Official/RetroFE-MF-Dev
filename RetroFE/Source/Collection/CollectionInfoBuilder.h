@@ -36,7 +36,7 @@ public:
     void loadPlaylistItems(CollectionInfo* info, std::map<std::string, Item*>* playlistItems, const std::string& path);
     void updateLastPlayedPlaylist(CollectionInfo *info, Item *item, int size);
     void injectMetadata(CollectionInfo *info);
-    static bool createCollectionDirectory(const std::string& collectionName);
+    static bool createCollectionDirectory(const std::string& collectionName, const std::string& collectionType = NULL, const std::string& osType = NULL);
     bool ImportBasicList(CollectionInfo *info, const std::string& file, std::vector<Item *> &list);
 
 private:

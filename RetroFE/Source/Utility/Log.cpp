@@ -19,6 +19,7 @@
 #include <sstream>
 #include <ctime>
 #include "../Database/Configuration.h"
+#include "../Database/GlobalOpts.h"
 
 std::ofstream Logger::writeFileStream_;
 std::streambuf* Logger::cerrStream_ = NULL;
@@ -90,7 +91,7 @@ bool Logger::isLevelEnabled(const std::string& zone) {
     if (!config_) return false;
 
     if (!isInitialized) {
-        Logger::config_->getProperty("log", level);
+        Logger::config_->getProperty(OPTION_LOG, level);
         isInitialized = true;
 
         std::stringstream ss(level);

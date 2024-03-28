@@ -23,6 +23,8 @@
 #include "../Animate/Tween.h"
 #include "../Animate/AnimationEvents.h"
 #include "../../Collection/Item.h"
+#include <memory>
+
 class Component
 {
 public:
@@ -43,7 +45,7 @@ public:
     bool newScrollItemSelected;
     void setId( int id );
 
-    virtual std::string filePath();
+    virtual std::string_view filePath();
     virtual bool update(float dt);
     virtual void draw();
     void setTweens(AnimationEvents *set);

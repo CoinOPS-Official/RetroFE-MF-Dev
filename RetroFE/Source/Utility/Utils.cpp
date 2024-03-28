@@ -33,6 +33,11 @@
     #include <Windows.h>
 #endif
 
+#ifdef WIN32
+    #include <io.h>
+#else
+    #include <unistd.h>
+#endif
 
 // Initialize the static member variables
 #ifdef __APPLE__
@@ -59,10 +64,9 @@ void Utils::postMessage( LPCTSTR windowTitle, UINT Msg, WPARAM wParam, LPARAM lP
 std::string Utils::toLower(const std::string& inputStr)
 {
     std::string str = inputStr;
-    std::locale loc; // Initialize locale once
-    for (auto& ch : str)
-    {
-        ch = std::tolower(ch, loc);
+    for (auto& ch : str) {
+        // Explicitly cast the result of std::tolower back to char
+        ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
     }
     return str;
 }
@@ -77,19 +81,23 @@ std::string Utils::uppercaseFirst(std::string str)
 
     return str;
 }
-std::string Utils::filterComments(std::string line)
-{
-    size_t position;
 
-    // strip out any comments
-    if((position = line.find("#")) != std::string::npos)
-    {
-        line = line.substr(0, position);
+std::string Utils::filterComments(const std::string& line) {
+    // Use string_view to efficiently find the comment position
+    std::string_view lineView(line);
+    size_t position = lineView.find("#");
+    if (position != std::string_view::npos) {
+        // Narrow down the view to exclude the comment
+        lineView = lineView.substr(0, position);
     }
-    // unix only wants \n. Windows uses \r\n. Strip off the \r for unix.
-    line.erase( std::remove(line.begin(), line.end(), '\r'), line.end() );
-    
-    return line;
+
+    // Convert the string_view back to a string to perform modifications
+    std::string result(lineView.begin(), lineView.end());
+
+    // Remove carriage return characters from the string
+    result.erase(std::remove(result.begin(), result.end(), '\r'), result.end());
+
+    return result;
 }
 
 
@@ -99,7 +107,11 @@ void Utils::populateCache(const std::filesystem::path& directory) {
     std::unordered_set<std::string>& files = fileCache[directory];
     for (const auto& entry : std::filesystem::directory_iterator(directory)) {
         if (entry.is_regular_file()) {
+#ifdef WIN32
+            files.insert(Utils::toLower(entry.path().filename().string()));
+#else
             files.insert(entry.path().filename().string());
+#endif
         }
     }
 }
@@ -108,7 +120,11 @@ bool Utils::isFileInCache(const std::filesystem::path& baseDir, const std::strin
     auto baseDirIt = fileCache.find(baseDir);
     if (baseDirIt != fileCache.end()) {
         const auto& files = baseDirIt->second;
+#ifdef WIN32
+        if (files.find(Utils::toLower(filename)) != files.end()) {
+#else
         if (files.find(filename) != files.end()) {
+#endif
             // Logging cache hit
             LOG_FILECACHE("Hit", removeAbsolutePath(baseDir.string()) + " contains " + filename);
             return true;
@@ -240,18 +256,21 @@ std::string Utils::getDirectory(const std::string& filePath)
     return directory;
 }
 
-std::string Utils::getParentDirectory(std::string directory)
+std::string Utils::getParentDirectory(std::string directory) 
 {
     size_t last_slash_idx = directory.find_last_of(pathSeparator);
-    if(directory.length() - 1 == last_slash_idx)
-    {
-        directory = directory.erase(last_slash_idx, directory.length()-1);
+    if (directory.length() - 1 == last_slash_idx) {
+        directory = directory.erase(last_slash_idx, directory.length() - 1);
         last_slash_idx = directory.find_last_of(pathSeparator);
     }
 
-    if (std::string::npos != last_slash_idx)
-    {
+    if (std::string::npos != last_slash_idx) {
         directory = directory.erase(last_slash_idx, directory.length());
+    }
+
+    // If the directory ends with a drive letter (e.g., "C:"), append a backslash to form a valid root path
+    if (directory.length() == 2 && directory[1] == ':') {
+        directory += pathSeparator;
     }
 
     return directory;
@@ -269,19 +288,21 @@ std::string Utils::getFileName(const std::string& filePath) {
 }
 
 
-std::string Utils::trimEnds(std::string str)
-{
-    // strip off any initial tabs or spaces
-    size_t trimStart = str.find_first_not_of(" \t");
+std::string Utils::trimEnds(const std::string& str) {
+    std::string_view strView = str;
 
-    if(trimStart != std::string::npos)
-    {
-        size_t trimEnd = str.find_last_not_of(" \t");
+    // Find the first and last characters not of tabs or spaces
+    size_t trimStart = strView.find_first_not_of(" \t");
+    size_t trimEnd = strView.find_last_not_of(" \t");
 
-        str = str.substr(trimStart, trimEnd - trimStart + 1);
-    }
+    // If no non-space/tab characters are found, return an empty string
+    if (trimStart == std::string_view::npos) return "";
 
-    return str;
+    // Otherwise, create a substring view of the trimmed section
+    std::string_view trimmedView = strView.substr(trimStart, trimEnd - trimStart + 1);
+
+    // Return a string constructed from the trimmed view
+    return std::string(trimmedView.begin(), trimmedView.end());
 }
 
 
@@ -330,4 +351,39 @@ std::string Utils::removeAbsolutePath(const std::string& fullPath) {
         return fullPath.substr(0, found) + "." + fullPath.substr(found + rootPath.length());
     }
     return fullPath; // Return the original path if root is not found
+}
+
+// Check if we're starting retrofe from terminal on Win or Unix
+bool Utils::isOutputATerminal() {
+    #ifdef _WIN32
+        return _isatty(_fileno(stdout));
+    #else
+        return isatty(STDOUT_FILENO);
+    #endif
+}
+
+// Check if start of fullString contains startOfString
+bool Utils::startsWith(const std::string& fullString, const std::string& startOfString) {
+    return fullString.substr(0, startOfString.length()) == startOfString;
+}
+
+// Check if start of fullString contains startOfString and then remove
+bool Utils::startsWithAndStrip(std::string& fullString, const std::string& startOfString) {
+    if (fullString.substr(0, startOfString.length()) == startOfString) {
+        fullString = fullString.substr(startOfString.length());
+        return true;
+    }
+    return false;
+}
+
+
+std::string Utils::getOSType(){
+    #ifdef WIN32
+        std::string osType = "windows";
+    #elif __APPLE__
+        std::string osType = "apple";
+    #else
+        std::string osType = "linux";
+    #endif
+    return osType;
 }

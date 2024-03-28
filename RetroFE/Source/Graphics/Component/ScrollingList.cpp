@@ -28,6 +28,7 @@
 #include "ReloadableMedia.h"
 #include "Text.h"
 #include "../../Database/Configuration.h"
+#include "../../Database/GlobalOpts.h"
 #include "../../Collection/Item.h"
 #include "../../Utility/Utils.h"
 #include "../../Utility/Log.h"
@@ -261,7 +262,7 @@ Item *ScrollingList::getItemByOffset(int offset)
     }
     else
     {
-        index = loopDecrement(index, offset * -1, itemSize);
+        index = loopDecrement(index, offset, itemSize);
     }
     
     return (*items_)[index];
@@ -332,7 +333,7 @@ void ScrollingList::letterChange(bool increment)
     if (!increment)
     {
         bool prevLetterSubToCurrent = false;
-        config_.getProperty("prevLetterSubToCurrent", prevLetterSubToCurrent);
+        config_.getProperty(OPTION_PREVLETTERSUBTOCURRENT, prevLetterSubToCurrent);
         if (!prevLetterSubToCurrent || (*items_)[(itemIndex_ + 1 + selectedOffsetIndex_) % itemSize] == startItem)
         {
             startname = (*items_)[(itemIndex_ + selectedOffsetIndex_) % itemSize]->lowercaseFullTitle();
@@ -358,14 +359,15 @@ void ScrollingList::letterChange(bool increment)
     }
 }
 
-size_t ScrollingList::loopIncrement(size_t offset, size_t i, size_t size) const {
-    if (size == 0) return 0;
-    return (offset + i) % size;
+size_t ScrollingList::loopIncrement(size_t currentIndex, size_t incrementAmount, size_t listSize) const {
+    if (listSize == 0) return 0;
+    return (currentIndex + incrementAmount) % listSize;
 }
 
-size_t ScrollingList::loopDecrement(size_t offset, size_t i, size_t size) const {
-    if (size == 0) return 0;
-    return (offset + size - i) % size;
+
+size_t ScrollingList::loopDecrement(size_t currentIndex, size_t decrementAmount, size_t listSize) const {
+    if (listSize == 0) return 0;
+    return (currentIndex + listSize - decrementAmount) % listSize;
 }
 
 void ScrollingList::metaUp(const std::string& attribute)
@@ -400,7 +402,7 @@ void ScrollingList::metaChange(bool increment, const std::string& attribute)
     if (!increment)
     {
         bool prevLetterSubToCurrent = false;
-        config_.getProperty("prevLetterSubToCurrent", prevLetterSubToCurrent);
+        config_.getProperty(OPTION_PREVLETTERSUBTOCURRENT, prevLetterSubToCurrent);
         if (!prevLetterSubToCurrent || (*items_)[(itemIndex_ + 1 + selectedOffsetIndex_) % itemSize] == startItem)
         {
             startValue = (*items_)[(itemIndex_ + selectedOffsetIndex_) % itemSize]->getMetaAttribute(attribute);
@@ -446,7 +448,7 @@ void ScrollingList::subChange(bool increment)
     if (!increment) // For decrement, find the first game of the new sub
     {
         bool prevLetterSubToCurrent = false;
-        config_.getProperty("prevLetterSubToCurrent", prevLetterSubToCurrent);
+        config_.getProperty(OPTION_PREVLETTERSUBTOCURRENT, prevLetterSubToCurrent);
         if (!prevLetterSubToCurrent || (*items_)[(itemIndex_ + 1 + selectedOffsetIndex_) % itemSize] == startItem)
         {
             startname = (*items_)[(itemIndex_ + selectedOffsetIndex_) % itemSize]->collectionInfo->lowercaseName();
@@ -675,49 +677,49 @@ size_t ScrollingList::getSize() const
     return items_->size();
 }
 
-void ScrollingList::resetTweens( Component *c, AnimationEvents *sets, ViewInfo *currentViewInfo, ViewInfo *nextViewInfo, double scrollTime ) const
-{
-    if ( !c ) return;
-    if ( !sets ) return;
-    if ( !currentViewInfo ) return;
-    if ( !nextViewInfo ) return;
+void ScrollingList::resetTweens(Component* c, AnimationEvents* sets, ViewInfo* currentViewInfo, ViewInfo* nextViewInfo, double scrollTime) const {
+    if (!c) return;
+    if (!sets) return;
+    if (!currentViewInfo) return;
+    if (!nextViewInfo) return;
 
-    currentViewInfo->ImageHeight  = c->baseViewInfo.ImageHeight;
-    currentViewInfo->ImageWidth   = c->baseViewInfo.ImageWidth;
-    nextViewInfo->ImageHeight     = c->baseViewInfo.ImageHeight;
-    nextViewInfo->ImageWidth      = c->baseViewInfo.ImageWidth;
+    currentViewInfo->ImageHeight = c->baseViewInfo.ImageHeight;
+    currentViewInfo->ImageWidth = c->baseViewInfo.ImageWidth;
+    nextViewInfo->ImageHeight = c->baseViewInfo.ImageHeight;
+    nextViewInfo->ImageWidth = c->baseViewInfo.ImageWidth;
     nextViewInfo->BackgroundAlpha = c->baseViewInfo.BackgroundAlpha;
 
-    c->setTweens(sets );
+    c->setTweens(sets);
 
-    Animation *scrollTween = sets->getAnimation("menuScroll" );
-    scrollTween->Clear( );
+    Animation* scrollTween = sets->getAnimation("menuScroll");
+    scrollTween->Clear();
     c->baseViewInfo = *currentViewInfo;
 
-    auto *set = new TweenSet( );
+    // Use std::make_unique to create a unique_ptr for the TweenSet
+    auto set = std::make_unique<TweenSet>();
     // don't trigger video restart if scrolling fast 
     if (currentViewInfo->Restart && scrollPeriod_ > minScrollTime_)
-        set->push(new Tween(TWEEN_PROPERTY_RESTART, LINEAR, currentViewInfo->Restart, nextViewInfo->Restart, 0));
+        set->push(std::make_unique<Tween>(TWEEN_PROPERTY_RESTART, LINEAR, currentViewInfo->Restart, nextViewInfo->Restart, 0));
 
-    set->push(new Tween(TWEEN_PROPERTY_HEIGHT, LINEAR, currentViewInfo->Height, nextViewInfo->Height, scrollTime ) );
-    set->push(new Tween(TWEEN_PROPERTY_WIDTH, LINEAR, currentViewInfo->Width, nextViewInfo->Width, scrollTime ) );
-    set->push(new Tween(TWEEN_PROPERTY_ANGLE, LINEAR, currentViewInfo->Angle, nextViewInfo->Angle, scrollTime ) );
-    set->push(new Tween(TWEEN_PROPERTY_ALPHA, LINEAR, currentViewInfo->Alpha, nextViewInfo->Alpha, scrollTime ) );
-    set->push(new Tween(TWEEN_PROPERTY_X, LINEAR, currentViewInfo->X, nextViewInfo->X, scrollTime ) );
-    set->push(new Tween(TWEEN_PROPERTY_Y, LINEAR, currentViewInfo->Y, nextViewInfo->Y, scrollTime ) );
-    set->push(new Tween(TWEEN_PROPERTY_X_ORIGIN, LINEAR, currentViewInfo->XOrigin, nextViewInfo->XOrigin, scrollTime ) );
-    set->push(new Tween(TWEEN_PROPERTY_Y_ORIGIN, LINEAR, currentViewInfo->YOrigin, nextViewInfo->YOrigin, scrollTime ) );
-    set->push(new Tween(TWEEN_PROPERTY_X_OFFSET, LINEAR, currentViewInfo->XOffset, nextViewInfo->XOffset, scrollTime ) );
-    set->push(new Tween(TWEEN_PROPERTY_Y_OFFSET, LINEAR, currentViewInfo->YOffset, nextViewInfo->YOffset, scrollTime ) );
-    set->push(new Tween(TWEEN_PROPERTY_FONT_SIZE, LINEAR, currentViewInfo->FontSize, nextViewInfo->FontSize, scrollTime ) );
-    set->push(new Tween(TWEEN_PROPERTY_BACKGROUND_ALPHA, LINEAR, currentViewInfo->BackgroundAlpha, nextViewInfo->BackgroundAlpha, scrollTime ) );
-    set->push(new Tween(TWEEN_PROPERTY_MAX_WIDTH, LINEAR, currentViewInfo->MaxWidth, nextViewInfo->MaxWidth, scrollTime ) );
-    set->push(new Tween(TWEEN_PROPERTY_MAX_HEIGHT, LINEAR, currentViewInfo->MaxHeight, nextViewInfo->MaxHeight, scrollTime ) );
-    set->push(new Tween(TWEEN_PROPERTY_LAYER, LINEAR, currentViewInfo->Layer, nextViewInfo->Layer, scrollTime ) );
-    set->push(new Tween(TWEEN_PROPERTY_VOLUME, LINEAR, currentViewInfo->Volume, nextViewInfo->Volume, scrollTime ) );
-    set->push(new Tween(TWEEN_PROPERTY_MONITOR, LINEAR, currentViewInfo->Monitor, nextViewInfo->Monitor, scrollTime ) );
+    set->push(std::make_unique<Tween>(TWEEN_PROPERTY_HEIGHT, LINEAR, currentViewInfo->Height, nextViewInfo->Height, scrollTime ) );
+    set->push(std::make_unique<Tween>(TWEEN_PROPERTY_WIDTH, LINEAR, currentViewInfo->Width, nextViewInfo->Width, scrollTime ) );
+    set->push(std::make_unique<Tween>(TWEEN_PROPERTY_ANGLE, LINEAR, currentViewInfo->Angle, nextViewInfo->Angle, scrollTime ) );
+    set->push(std::make_unique<Tween>(TWEEN_PROPERTY_ALPHA, LINEAR, currentViewInfo->Alpha, nextViewInfo->Alpha, scrollTime ) );
+    set->push(std::make_unique<Tween>(TWEEN_PROPERTY_X, LINEAR, currentViewInfo->X, nextViewInfo->X, scrollTime ) );
+    set->push(std::make_unique<Tween>(TWEEN_PROPERTY_Y, LINEAR, currentViewInfo->Y, nextViewInfo->Y, scrollTime ) );
+    set->push(std::make_unique<Tween>(TWEEN_PROPERTY_X_ORIGIN, LINEAR, currentViewInfo->XOrigin, nextViewInfo->XOrigin, scrollTime ) );
+    set->push(std::make_unique<Tween>(TWEEN_PROPERTY_Y_ORIGIN, LINEAR, currentViewInfo->YOrigin, nextViewInfo->YOrigin, scrollTime ) );
+    set->push(std::make_unique<Tween>(TWEEN_PROPERTY_X_OFFSET, LINEAR, currentViewInfo->XOffset, nextViewInfo->XOffset, scrollTime ) );
+    set->push(std::make_unique<Tween>(TWEEN_PROPERTY_Y_OFFSET, LINEAR, currentViewInfo->YOffset, nextViewInfo->YOffset, scrollTime ) );
+    set->push(std::make_unique<Tween>(TWEEN_PROPERTY_FONT_SIZE, LINEAR, currentViewInfo->FontSize, nextViewInfo->FontSize, scrollTime ) );
+    set->push(std::make_unique<Tween>(TWEEN_PROPERTY_BACKGROUND_ALPHA, LINEAR, currentViewInfo->BackgroundAlpha, nextViewInfo->BackgroundAlpha, scrollTime ) );
+    set->push(std::make_unique<Tween>(TWEEN_PROPERTY_MAX_WIDTH, LINEAR, currentViewInfo->MaxWidth, nextViewInfo->MaxWidth, scrollTime ) );
+    set->push(std::make_unique<Tween>(TWEEN_PROPERTY_MAX_HEIGHT, LINEAR, currentViewInfo->MaxHeight, nextViewInfo->MaxHeight, scrollTime ) );
+    set->push(std::make_unique<Tween>(TWEEN_PROPERTY_LAYER, LINEAR, currentViewInfo->Layer, nextViewInfo->Layer, scrollTime ) );
+    set->push(std::make_unique<Tween>(TWEEN_PROPERTY_VOLUME, LINEAR, currentViewInfo->Volume, nextViewInfo->Volume, scrollTime ) );
+    set->push(std::make_unique<Tween>(TWEEN_PROPERTY_MONITOR, LINEAR, currentViewInfo->Monitor, nextViewInfo->Monitor, scrollTime ) );
 
-    scrollTween->Push( set );
+    scrollTween->Push(std::move(set));
 }
 
 bool ScrollingList::allocateTexture( size_t index, const Item *item )
@@ -734,7 +736,7 @@ bool ScrollingList::allocateTexture( size_t index, const Item *item )
     VideoBuilder videoBuild{};
 
     std::string layoutName;
-    config_.getProperty( "layout", layoutName );
+    config_.getProperty( OPTION_LAYOUT, layoutName );
 
     std::string typeLC = Utils::toLower( imageType_ );
 

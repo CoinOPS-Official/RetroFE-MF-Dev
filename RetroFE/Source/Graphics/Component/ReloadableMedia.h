@@ -68,12 +68,20 @@ private:
     int numberOfImages_{ 27 };
     
     static inline const std::vector<std::string> imageExtensions = {
+#ifdef WIN32
+        "png", "jpg", "jpeg"
+#else
         "png", "PNG", "jpg", "JPG", "jpeg", "JPEG",
+#endif
     };
 
     static inline const std::vector<std::string> videoExtensions = {
+#ifdef WIN32
+        "mp4", "avi", "mkv", "mp3", "wav", "flac"
+#else
         "mp4", "MP4", "avi", "AVI", "mkv", "MKV",
         "mp3", "MP3", "wav", "WAV", "flac", "FLAC"
+#endif
     };
 
 };

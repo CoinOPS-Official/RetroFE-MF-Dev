@@ -23,11 +23,11 @@ class Image : public Component
 {
 public:
     Image(const std::string& file, const std::string& altFile, Page &p, int monitor, bool additive);
-    virtual ~Image();
-    void freeGraphicsMemory();
-    void allocateGraphicsMemory();
-    void draw();
-    std::string filePath();
+    ~Image() override;
+    void freeGraphicsMemory() override;
+    void allocateGraphicsMemory() override;
+    void draw() override;
+    std::string_view filePath() override;
 
 protected:
     SDL_Texture* texture_{ nullptr };

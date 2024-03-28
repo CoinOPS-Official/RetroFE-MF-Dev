@@ -32,6 +32,7 @@
 #include "../SDL.h"
 #include "../Utility/Log.h"
 #include "../Utility/Utils.h"
+#include "../Database/GlobalOpts.h"
 #include <algorithm>
 #include <cfloat>
 #include <fstream>
@@ -40,6 +41,7 @@
 #include <vector>
 #include <map>
 #include <filesystem>
+#include <memory>
 
 using namespace rapidxml;
 
@@ -75,6 +77,13 @@ Page *PageBuilder::buildPage( const std::string& collectionName, bool defaultToC
     std::string layoutFileAspect;
     std::string layoutName = layoutKey;
     std::string layoutPathDefault = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName);
+    bool fixedResLayouts = false;
+    config_.getProperty(OPTION_FIXEDRESLAYOUTS, fixedResLayouts);
+    namespace fs = std::filesystem;
+    
+    // These just prevented repeated logging
+    bool splashInitialized = false;
+    bool fixedResLayoutsInitialized = false;
 
     if ( isMenu_ )
     {
@@ -103,47 +112,87 @@ Page *PageBuilder::buildPage( const std::string& collectionName, bool defaultToC
     int monitor=0;
     for ( unsigned int layout = 0; layout < layouts.size(); layout++ )
     {
-        layoutFile       = Utils::combinePath(layoutPath, layouts[layout] + ".xml");
-        layoutFileAspect = Utils::combinePath(layoutPath, "layout " +
-            std::to_string(screenWidth_ / Utils::gcd(screenWidth_, screenHeight_)) + "x" +
-            std::to_string(screenHeight_ / Utils::gcd(screenWidth_, screenHeight_)) + layouts[layout] +
-            ".xml");
-
-        LOG_INFO("Layout", "Initializing " + layoutFileAspect);
-
         rapidxml::xml_document<> doc;
-        std::ifstream file(layoutFileAspect.c_str());
-        // aspect layout
-        if ( !file.good( ) )
+        std::ifstream file;
+        
+        // Override layout with layoutFromAnotherCollection = <collection> in layouts/Arcades/collections/<collection>
+        std::string layoutFromAnotherCollection;
+        config_.getProperty("collections." + collectionName + ".layoutFromAnotherCollection", layoutFromAnotherCollection);
+        if (layoutFromAnotherCollection != "")
         {
-            LOG_INFO("Layout", "could not find layout file: " + layoutFileAspect );
-            LOG_INFO("Layout", "Initializing " + layoutFile );
-            
-            // collection or default layout
-            file.open( layoutFile.c_str( ) );
-            if ( !file.good( ) )
+            LOG_INFO("Layout", "Using layout from collection: " + layoutFromAnotherCollection + " " + layouts[layout] + ".xml");
+            std::string layoutFileFromAnotherCollection = Utils::combinePath(layoutPathDefault, "collections", layoutFromAnotherCollection, "layout");
+            layoutPath = layoutFileFromAnotherCollection;
+        }
+        
+        layoutFile = Utils::combinePath(layoutPath, layouts[layout] + ".xml");
+        
+        if(fixedResLayouts)
+        {
+            // Use fixed resolution layout ie layout1920x1080.xml
+            if (!fixedResLayoutsInitialized)
             {
-                LOG_INFO("Layout", "could not find layout file: " + layoutFile );
-
-                // try default layout
-                if (layoutPath != layoutPathDefault) {
-                    layoutFile = Utils::combinePath(layoutPathDefault, layouts[layout] + ".xml");
-                    LOG_INFO("Layout", "Initializing " + layoutFile);
-
-                    file.open(layoutFile.c_str());
-                    if (!file.good())
+                LOG_INFO("Layout", "Fixed resolution layouts have been enabled");
+                fixedResLayoutsInitialized = true;
+            }
+            layoutFileAspect = Utils::combinePath(layoutPathDefault,
+                std::to_string(screenWidth_ / Utils::gcd(screenWidth_, screenHeight_)) + "x" +
+                std::to_string(screenHeight_ / Utils::gcd(screenWidth_, screenHeight_)) + layouts[layout] +
+                ".xml");
+            if (fs::exists(layoutFileAspect))
+            {
+                layoutFile = layoutFileAspect;
+            }
+            else
+            {
+                LOG_ERROR("Layout", "Unable to find fixed resolution layout: " + layoutFileAspect);
+                exit(EXIT_FAILURE);
+            }
+        }
+        
+        if (fs::exists(layoutFile))
+        {
+            // Check for layouts/<layout>/collections/<collectionName>/layout
+            LOG_INFO("Layout", "Attempting to initialize collection layout: " + layoutFile);
+            file.open( layoutFile.c_str() );
+            std::ifstream file(layoutFile.c_str());
+            file.close();
+        }
+        else
+        {
+            if (layoutPath != layoutPathDefault)
+            {
+                if ( layouts[layout] != "splash")
+                {
+                    if ( layoutFile = Utils::combinePath(layoutPathDefault, layouts[layout] + ".xml"); fs::exists(layoutFile) )
                     {
-                        // try next layout
+                        // Check for layouts/<layout>/layout
+                        LOG_INFO("Layout", "Attempting to initialize default layout: " + layoutFile);
+                        file.open( layoutFile.c_str() );
+                        std::ifstream file(layoutFile.c_str());
+                        file.close();
+                    }
+                    else if(!fs::exists(layoutFile))
+                    {
+                        // If layouts/<layout>/layout - x.xml doesn't exist log here but continue
+                        LOG_WARNING("Layout", "Layout not found: " + layoutFile);
                         continue;
                     }
                 }
-                else {
-                    // try next layout
-                    continue;
+                else if (!splashInitialized && fs::exists(Utils::combinePath(layoutPathDefault, "splash.xml")))
+                {
+                    // Check for splash page then don't check again
+                    std::string layoutSplashFile;
+                    layoutSplashFile = Utils::combinePath(layoutPathDefault, "splash.xml");
+                    LOG_INFO("Layout", "Attempting to initialize splash: " + layoutSplashFile);
+                    file.open( layoutSplashFile.c_str() );
+                    std::ifstream file(layoutSplashFile.c_str());
+                    file.close();
+                    splashInitialized = true;
                 }
             }
         }
-
+        
         std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
         try
@@ -245,7 +294,7 @@ Page *PageBuilder::buildPage( const std::string& collectionName, bool defaultToC
                     std::string layoutName;
                     config_.getProperty("collections." + collectionName + ".layout", layoutName);
                     if (layoutName == "") {
-                        config_.getProperty("layout", layoutName);
+                        config_.getProperty(OPTION_LAYOUT, layoutName);
                     }
                     std::string altfile = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName, std::string(src->value()));
                     if (!type)
@@ -254,6 +303,7 @@ Page *PageBuilder::buildPage( const std::string& collectionName, bool defaultToC
                     }
                     else
                     {
+                        // TODO MuteSound key, also this is such a mess
                         auto* sound = new Sound(file, altfile);
                         std::string soundType = type->value();
 
@@ -304,7 +354,14 @@ Page *PageBuilder::buildPage( const std::string& collectionName, bool defaultToC
 
         if(page)
         {
-            LOG_INFO("Layout", "Initialized");
+            if(fixedResLayouts)
+            {
+                LOG_INFO("Layout", "Initialized " + layoutFileAspect);
+            }
+            else
+            {
+                LOG_INFO("Layout", "Initialized " + layoutFile);
+            }
         }
         else
         {
@@ -463,12 +520,32 @@ bool PageBuilder::buildComponents(xml_node<>* layout, Page* page, const std::str
         else
         {
             std::string imagePath;
+            
+            std::string layoutFromAnotherCollection;
+            config_.getProperty("collections." + collectionName + ".layoutFromAnotherCollection", layoutFromAnotherCollection);
+            if (layoutFromAnotherCollection != "")
+            {
+                namespace fs = std::filesystem;
+                // If layoutFromAnotherCollection, search in layouts/<layout>/collections/<collectionName>/layout/
+                // Instead of layouts/<layout>/collections/<layoutFromAnotherCollection>/layout/
+                std::string layoutPathDefault = Utils::combinePath(Configuration::absolutePath, "layouts", layoutKey);
+                layoutPath = Utils::combinePath(layoutPathDefault, "collections", collectionName, "layout");
+                if (!fs::exists(layoutPath))
+                {
+                    std::string layout_artworkCollectionPath = Utils::combinePath(Configuration::absolutePath, "collections", collectionName, "layout_artwork");
+                    LOG_INFO("Layout", "Layout Artwork not found in layouts/" + layoutKey + "/collections/" + collectionName + "/layout/");
+                    LOG_INFO("Layout", "Using layout_artwork folder in: " + layout_artworkCollectionPath);
+                    layoutPath = layout_artworkCollectionPath;
+                }
+            }
+            
             imagePath = Utils::combinePath(Configuration::convertToAbsolutePath(layoutPath, imagePath), std::string(src->value()));
+            
             // check if collection's assets are in a different theme
             std::string layoutName;
             config_.getProperty("collections." + collectionName + ".layout", layoutName);
             if (layoutName == "") {
-                config_.getProperty("layout", layoutName);
+                config_.getProperty(OPTION_LAYOUT, layoutName);
             }
             std::string altImagePath;
             altImagePath = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName, std::string(src->value()));
@@ -522,7 +599,7 @@ bool PageBuilder::buildComponents(xml_node<>* layout, Page* page, const std::str
             std::string layoutName;
             config_.getProperty("collections." + collectionName + ".layout", layoutName);
             if (layoutName.empty()) {
-                config_.getProperty("layout", layoutName);
+                config_.getProperty(OPTION_LAYOUT, layoutName);
             }
             std::string altVideoPath = Utils::combinePath(Configuration::absolutePath, "layouts", layoutName, std::string(srcXml->value()));
             int numLoops = numLoopsXml ? Utils::convertInt(numLoopsXml->value()) : 1;
@@ -991,7 +1068,7 @@ void PageBuilder::loadTweens(Component *c, xml_node<> *componentXml)
     c->setTweens(createTweenInstance(componentXml));
 }
 
-AnimationEvents *PageBuilder::createTweenInstance(xml_node<> *componentXml)
+AnimationEvents *PageBuilder::createTweenInstance(rapidxml::xml_node<> *componentXml)
 {
     auto *tweens = new AnimationEvents();
 
@@ -1525,12 +1602,12 @@ void PageBuilder::buildViewInfo(xml_node<> *componentXml, ViewInfo &info, xml_no
     bool disablePauseOnScroll = false;
 
     // Check if the property exists and is set to true
-    if (config_.getProperty("disableVideoRestart", disableVideoRestart) && disableVideoRestart) {
+    if (config_.getProperty(OPTION_DISABLEVIDEORESTART, disableVideoRestart) && disableVideoRestart) {
         info.Restart = false;
     }
 
     // Check if the property exists and is set to true
-    if (config_.getProperty("disablePauseOnScroll", disablePauseOnScroll) && disablePauseOnScroll) {
+    if (config_.getProperty(OPTION_DISABLEPAUSEONSCROLL, disablePauseOnScroll) && disablePauseOnScroll) {
         info.PauseOnScroll = false;
     }
 
@@ -1560,15 +1637,15 @@ void PageBuilder::buildViewInfo(xml_node<> *componentXml, ViewInfo &info, xml_no
     }
 }
 
-void PageBuilder::getTweenSet(const xml_node<> *node, Animation *animation)
-{
-    if(node)
-    {
-        for(xml_node<> *set = node->first_node("set"); set; set = set->next_sibling("set"))
-        {
-            auto *ts = new TweenSet();
+void PageBuilder::getTweenSet(const xml_node<>* node, Animation* animation) {
+    if (node) {
+        for (xml_node<>* set = node->first_node("set"); set; set = set->next_sibling("set")) {
+            // Create a unique_ptr to manage the TweenSet instance.
+            auto ts = std::make_unique<TweenSet>();
             getAnimationEvents(set, *ts);
-            animation->Push(ts);
+
+            // Use std::move to transfer ownership of the unique_ptr to the Animation instance.
+            animation->Push(std::move(ts));
         }
     }
 }
@@ -1577,7 +1654,7 @@ void PageBuilder::getAnimationEvents(const xml_node<> *node, TweenSet &tweens)
 {
     xml_attribute<> const *durationXml = node->first_attribute("duration");
     std::string actionSetting;
-    config_.getProperty("action", actionSetting);
+    config_.getProperty(OPTION_ACTION, actionSetting);
 
     if(!durationXml)
     {
@@ -1707,10 +1784,9 @@ void PageBuilder::getAnimationEvents(const xml_node<> *node, TweenSet &tweens)
 
                     // if in layout action has playlist="<current playlist name>" then perform action
                     std::string playlistFilter = playlist && playlist->value() ? playlist->value() : "";
-                    auto *t = new Tween(property, algorithm, fromValue, toValue, durationValue, playlistFilter);
-                    if (!fromDefined)
+                    auto t = std::make_unique<Tween>(property, algorithm, fromValue, toValue, durationValue, playlistFilter);                    if (!fromDefined)
                       t->startDefined = false;
-                    tweens.push(t);
+                    tweens.push(std::move(t));
                 }
                 else
                 {

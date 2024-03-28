@@ -179,7 +179,7 @@ public:
     void setSelectedItem();
     bool fromPreviousPlaylist = false;
     bool fromPlaylistNav = false;
-    static const int MAX_LAYOUTS = 6;
+    static const int MAX_LAYOUTS = 6; // TODO Put this behind a key 
 
 private:
     void playlistChange();

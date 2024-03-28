@@ -16,6 +16,7 @@
 
 #include "UserInput.h"
 #include "../Database/Configuration.h"
+#include "../Database/GlobalOpts.h"
 #include "../Utility/Log.h"
 #include "../Utility/Utils.h"
 #include "JoyAxisHandler.h"
@@ -78,12 +79,6 @@ bool UserInput::initialize()
     MapKey("menu", KeyCodeMenu, false);
     MapKey("reboot", KeyCodeReboot, false);
     MapKey("saveFirstPlaylist", KeyCodeSaveFirstPlaylist, false);
-    MapKey("jbFastForward1m", KeyCodeSkipForward, false);
-    MapKey("jbFastRewind1m", KeyCodeSkipBackward, false);
-    MapKey("jbFastForward5p", KeyCodeSkipForwardp, false);
-    MapKey("jbFastRewind5p", KeyCodeSkipBackwardp, false);
-    MapKey("jbPause", KeyCodePause, false);
-    MapKey("jbRestart", KeyCodeRestart, false);
     MapKey("kiosk", KeyCodeKisok, false);
     MapKey("cycleCollection", KeyCodeCycleCollection, false);
     MapKey("prevCycleCollection", KeyCodePrevCycleCollection, false);
@@ -91,6 +86,17 @@ bool UserInput::initialize()
     MapKey("toggleCollectionInfo", KeyCodeToggleCollectionInfo, false);
     MapKey("toggleBuildInfo", KeyCodeToggleBuildInfo, false);
     MapKey("settings", KeyCodeSettings, false);
+    
+    std::string jbKey;
+    if(config_.getProperty(OPTION_JUKEBOX, jbKey))
+    {
+        MapKey("jbFastForward1m", KeyCodeSkipForward, false);
+        MapKey("jbFastRewind1m", KeyCodeSkipBackward, false);
+        MapKey("jbFastForward5p", KeyCodeSkipForwardp, false);
+        MapKey("jbFastRewind5p", KeyCodeSkipBackwardp, false);
+        MapKey("jbPause", KeyCodePause, false);
+        MapKey("jbRestart", KeyCodeRestart, false);
+    }
     
 	MapKeyCombo("quitCombo", KeyCodeQuitCombo1, KeyCodeQuitCombo2, false);
     MapKeyCombo("settingsCombo", KeyCodeSettingsCombo1, KeyCodeSettingsCombo2, false);

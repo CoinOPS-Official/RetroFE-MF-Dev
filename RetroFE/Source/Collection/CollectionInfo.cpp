@@ -16,6 +16,7 @@
 #include "CollectionInfo.h"
 #include "Item.h"
 #include "../Database/Configuration.h"
+#include "../Database/GlobalOpts.h"
 #include "../Utility/Utils.h"
 #include "../Utility/Log.h"
 #include <sstream>
@@ -85,7 +86,7 @@ bool CollectionInfo::saveFavorites(Item* removed)
     {
         std::string playlistCollectionName = name;
         bool globalFavLast = false;
-        (void)conf_.getProperty("globalFavLast", globalFavLast);
+        (void)conf_.getProperty(OPTION_GLOBALFAVLAST, globalFavLast);
         if (globalFavLast) {
             playlistCollectionName = "Favorites";
         }

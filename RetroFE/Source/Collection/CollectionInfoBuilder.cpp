@@ -19,6 +19,7 @@
 #include "../Database/Configuration.h"
 #include "../Database/MetadataDatabase.h"
 #include "../Database/DB.h"
+#include "../Database/GlobalOpts.h"
 #include "../Utility/Log.h"
 #include "../Utility/Utils.h"
 
@@ -45,101 +46,150 @@ namespace fs = std::filesystem;
 
 CollectionInfoBuilder::~CollectionInfoBuilder() = default;
 
-bool CollectionInfoBuilder::createCollectionDirectory(const std::string& name)
+bool CollectionInfoBuilder::createCollectionDirectory(const std::string& name, const std::string& collectionType, const std::string& osType)
 {
     std::string collectionPath = Utils::combinePath(Configuration::absolutePath, "collections", name);
-
-    std::vector<std::string> paths;
-    paths.push_back(collectionPath);
-    paths.push_back(Utils::combinePath(collectionPath, "medium_artwork"));
-    paths.push_back(Utils::combinePath(collectionPath, "medium_artwork", "artwork_back"));
-    paths.push_back(Utils::combinePath(collectionPath, "medium_artwork", "artwork_front"));
-    paths.push_back(Utils::combinePath(collectionPath, "medium_artwork", "bezel"));
-    paths.push_back(Utils::combinePath(collectionPath, "medium_artwork", "logo"));
-    paths.push_back(Utils::combinePath(collectionPath, "medium_artwork", "medium_back"));
-    paths.push_back(Utils::combinePath(collectionPath, "medium_artwork", "medium_front"));
-    paths.push_back(Utils::combinePath(collectionPath, "medium_artwork", "screenshot"));
-    paths.push_back(Utils::combinePath(collectionPath, "medium_artwork", "screentitle"));
-    paths.push_back(Utils::combinePath(collectionPath, "medium_artwork", "video"));
-    paths.push_back(Utils::combinePath(collectionPath, "roms"));
-    paths.push_back(Utils::combinePath(collectionPath, "system_artwork"));
-
-    for(auto it = paths.begin(); it != paths.end(); it++)
-    {
-        std::cout << "Creating folder \"" << *it << "\"" << std::endl;
-
-#if defined(_WIN32) && !defined(__GNUC__)
-        if (!CreateDirectory(it->c_str(), nullptr))
-        {
-            if (ERROR_ALREADY_EXISTS != GetLastError())
-            {
-                std::cout << "Could not create folder \"" << *it << "\"" << std::endl;
-                return false;
+    std::string collectionFolderPath = Utils::combinePath(Configuration::absolutePath, "collections");
+    
+    // Check if the collections folder doesn't exist
+    if (!fs::exists(collectionFolderPath) || !fs::is_directory(collectionFolderPath)) {
+        std::cout << std::endl;
+        std::cout << "Collections folder not found in \"" << Configuration::absolutePath << "\"" << std::endl;
+        std::cout << "Creating collections folder in \"" << Configuration::absolutePath << "/collections" << "\"" << std::endl;
+        try {
+            fs::create_directory("collections");
             }
-        }
-#else 
-#if defined(__MINGW32__)
-        if (mkdir(it->c_str()) == -1)
-#else
-        if (mkdir(it->c_str(), 0755) == -1)
-#endif        
-        {
-           std::cout << "Could not create folder \"" << *it << "\":" << errno << std::endl;
-        }
-    #endif
+        catch (const std::filesystem::filesystem_error& e) {
+            std::cerr << "Error creating folder: " << e.what() << std::endl;
+            }
     }
+    else {
+        std::cout << "Collections folder found in \"" << Configuration::absolutePath << "\"" << std::endl;
+    }
+    std::cout << std::endl;
+    
+    // Check if a collection called <name> doesn't exist
+    if (!fs::exists(collectionPath)) {
+        // Create the collection called <name>
+        std::cout << "Creating a collection called " << name << " at " << "\"" << collectionPath << "\"" << std::endl;
+        
+        std::vector<std::string> paths;
+        paths.push_back(collectionPath);
+        paths.push_back(Utils::combinePath(collectionPath, "medium_artwork"));
+        paths.push_back(Utils::combinePath(collectionPath, "medium_artwork", "artwork_back"));
+        paths.push_back(Utils::combinePath(collectionPath, "medium_artwork", "artwork_front"));
+        paths.push_back(Utils::combinePath(collectionPath, "medium_artwork", "bezel"));
+        paths.push_back(Utils::combinePath(collectionPath, "medium_artwork", "logo"));
+        paths.push_back(Utils::combinePath(collectionPath, "medium_artwork", "marquee"));
+        paths.push_back(Utils::combinePath(collectionPath, "medium_artwork", "medium_back"));
+        paths.push_back(Utils::combinePath(collectionPath, "medium_artwork", "medium_front"));
+        paths.push_back(Utils::combinePath(collectionPath, "medium_artwork", "screenshot"));
+        paths.push_back(Utils::combinePath(collectionPath, "medium_artwork", "screentitle"));
+        paths.push_back(Utils::combinePath(collectionPath, "medium_artwork", "video"));
+        paths.push_back(Utils::combinePath(collectionPath, "medium_artwork", "videoPlayer"));
+        paths.push_back(Utils::combinePath(collectionPath, "medium_artwork", "videoSD"));
+        paths.push_back(Utils::combinePath(collectionPath, "roms"));
+        paths.push_back(Utils::combinePath(collectionPath, "system_artwork"));
+        paths.push_back(Utils::combinePath(collectionPath, "launchers"));
+        
+        // Folders for local launchers
+        if (collectionType == "local")
+        {
+            paths.push_back(Utils::combinePath(collectionPath, "launchers." + osType + ".local"));
+        }
 
-    std::string filename = Utils::combinePath(collectionPath, "include.txt");
-    std::cout << "Creating file \"" << filename << "\"" << std::endl;
+        for(auto it = paths.begin(); it != paths.end(); it++)
+        {
+            std::cout << "Creating folder \"" << *it << "\"" << std::endl;
 
-    std::ofstream includeFile;
-    includeFile.open(filename.c_str());
-    includeFile << "# Add a list of files to show on the menu (one filename per line, without the extension)." << std::endl;
-    includeFile << "# If no items are in this list then all files in the folder specified" << std::endl;
-    includeFile << "# by settings.conf will be used" << std::endl;
-    includeFile.close();
+    #if defined(_WIN32) && !defined(__GNUC__)
+            if (!CreateDirectory(it->c_str(), nullptr))
+            {
+                if (ERROR_ALREADY_EXISTS != GetLastError())
+                {
+                    std::cout << "Could not create folder \"" << *it << "\"" << std::endl;
+                    return false;
+                }
+            }
+    #else
+    #if defined(__MINGW32__)
+            if (mkdir(it->c_str()) == -1)
+    #else
+            if (mkdir(it->c_str(), 0755) == -1)
+    #endif
+            {
+               std::cout << "Could not create folder \"" << *it << "\":" << errno << std::endl;
+            }
+        #endif
+        }
 
-    filename = Utils::combinePath(collectionPath, "exclude.txt");
-    std::cout << "Creating file \"" << filename << "\"" << std::endl;
-    std::ofstream excludeFile;
-    excludeFile.open(filename.c_str());
+        std::string filename = Utils::combinePath(collectionPath, "include.txt");
+        std::cout << "Creating file \"" << filename << "\"" << std::endl;
 
-    includeFile << "# Add a list of files to hide on the menu (one filename per line, without the extension)." << std::endl;
-    excludeFile.close();
+        std::ofstream includeFile;
+        includeFile.open(filename.c_str());
+        includeFile << "# Add a list of files to show on the menu (one filename per line, without the extension)." << std::endl;
+        includeFile << "# If no items are in this list then all files in the folder specified" << std::endl;
+        includeFile << "# by settings.conf will be used" << std::endl;
+        includeFile.close();
 
-    filename = Utils::combinePath(collectionPath, "settings.conf");
-    std::cout << "Creating file \"" << filename << "\"" << std::endl;
-    std::ofstream settingsFile;
-    settingsFile.open(filename.c_str());
+        filename = Utils::combinePath(collectionPath, "exclude.txt");
+        std::cout << "Creating file \"" << filename << "\"" << std::endl;
+        std::ofstream excludeFile;
+        excludeFile.open(filename.c_str());
 
-    settingsFile << "# Uncomment and edit the following line to use a different ROM path." << std::endl;
-    settingsFile << "#list.path = " << Utils::combinePath("%BASE_ITEM_PATH%", "%ITEM_COLLECTION_NAME%", "roms") << std::endl;
-    settingsFile << "list.includeMissingItems = false" << std::endl;
-    settingsFile << "list.extensions = zip" << std::endl;
-    settingsFile << "list.menuSort = yes" << std::endl;
-    settingsFile << std::endl;
-    settingsFile << "launcher = mame" << std::endl;
-    settingsFile << "#metadata.type = MAME" << std::endl;
-    settingsFile << std::endl;
-    settingsFile << std::endl;
-    settingsFile << "#media.screenshot      = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "medium_artwork", "screenshot") << std::endl;
-    settingsFile << "#media.screentitle     = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "medium_artwork", "screentitle") << std::endl;
-    settingsFile << "#media.artwork_back    = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "medium_artwork", "artwork_back") << std::endl;
-    settingsFile << "#media.artwork_front   = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "medium_artwork", "artwork_front") << std::endl;
-    settingsFile << "#media.logo            = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "medium_artwork", "logo") << std::endl;
-    settingsFile << "#media.medium_back     = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "medium_artwork", "medium_back") << std::endl;
-    settingsFile << "#media.medium_front    = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "medium_artwork", "medium_front") << std::endl;
-    settingsFile << "#media.screenshot      = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "medium_artwork", "screenshot") << std::endl;
-    settingsFile << "#media.screentitle     = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "medium_artwork", "screentitle") << std::endl;
-    settingsFile << "#media.video           = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "medium_artwork", "video") << std::endl;
-    settingsFile << "#media.system_artwork  = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "system_artwork") << std::endl;
-    settingsFile.close();
+        includeFile << "# Add a list of files to hide on the menu (one filename per line, without the extension)." << std::endl;
+        excludeFile.close();
 
-    filename = Utils::combinePath(collectionPath, "menu.txt");
-    std::cout << "Creating file \"" << filename << "\"" << std::endl;
-    std::ofstream menuFile;
-    menuFile.open(filename.c_str());
-    menuFile.close();
+        filename = Utils::combinePath(collectionPath, "settings.conf");
+        std::cout << "Creating file \"" << filename << "\"" << std::endl;
+        std::ofstream settingsFile;
+        settingsFile.open(filename.c_str());
+
+        settingsFile << "# Uncomment and edit the following line to use a different ROM path." << std::endl;
+        settingsFile << "#list.path = " << Utils::combinePath("%BASE_ITEM_PATH%", "%ITEM_COLLECTION_NAME%", "roms") << std::endl;
+        settingsFile << "list.includeMissingItems = false" << std::endl;
+        settingsFile << "list.extensions = zip" << std::endl;
+        settingsFile << "list.menuSort = yes" << std::endl;
+        settingsFile << std::endl;
+        if (collectionType == " ")
+        {
+            settingsFile << "launcher = mame" << std::endl;
+        }
+        settingsFile << "#metadata.type = MAME" << std::endl;
+        settingsFile << std::endl;
+        settingsFile << std::endl;
+        settingsFile << "#media.screenshot      = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "medium_artwork", "screenshot") << std::endl;
+        settingsFile << "#media.screentitle     = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "medium_artwork", "screentitle") << std::endl;
+        settingsFile << "#media.artwork_back    = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "medium_artwork", "artwork_back") << std::endl;
+        settingsFile << "#media.artwork_front   = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "medium_artwork", "artwork_front") << std::endl;
+        settingsFile << "#media.logo            = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "medium_artwork", "logo") << std::endl;
+        settingsFile << "#media.medium_back     = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "medium_artwork", "medium_back") << std::endl;
+        settingsFile << "#media.medium_front    = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "medium_artwork", "medium_front") << std::endl;
+        settingsFile << "#media.screenshot      = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "medium_artwork", "screenshot") << std::endl;
+        settingsFile << "#media.screentitle     = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "medium_artwork", "screentitle") << std::endl;
+        settingsFile << "#media.video           = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "medium_artwork", "video") << std::endl;
+        settingsFile << "#media.system_artwork  = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "system_artwork") << std::endl;
+        settingsFile.close();
+        
+        if (collectionType == "local")
+        {
+            filename = Utils::combinePath(collectionPath, "launcher." + osType + ".conf");
+            std::cout << "Creating file \"" << filename << "\"" << std::endl;
+            std::ofstream localFile;
+            localFile.open(filename.c_str());
+            localFile.close();
+        }
+        
+//        filename = Utils::combinePath(collectionPath, "menu.txt");
+//        std::cout << "Creating file \"" << filename << "\"" << std::endl;
+//        std::ofstream menuFile;
+//        menuFile.open(filename.c_str());
+//        menuFile.close();
+    }
+    else {
+        std::cout << "A collection called " << name << " at " << "\"" << collectionPath << "\"" << " already exists" << std::endl;
+    }
 
     return true;
 }
@@ -449,7 +499,7 @@ void CollectionInfoBuilder::addPlaylists(CollectionInfo *info)
 
     // find and load favorites from global playlist if enabled
     bool globalFavLast = false;
-    (void)conf_.getProperty("globalFavLast", globalFavLast);
+    (void)conf_.getProperty(OPTION_GLOBALFAVLAST, globalFavLast);
     if (globalFavLast) {
         std::map<std::string, Item*> tmpPlaylistItems;
         // don't use collection's playlist
@@ -473,8 +523,8 @@ void CollectionInfoBuilder::addPlaylists(CollectionInfo *info)
     std::string settingPrefix = "collections." + info->name + ".";
     std::string cycleString;
     std::string firstCollection = "";
-    conf_.getProperty("firstCollection", firstCollection);
-    conf_.getProperty("cyclePlaylist", cycleString);
+    conf_.getProperty(OPTION_FIRSTCOLLECTION, firstCollection);
+    conf_.getProperty(OPTION_CYCLEPLAYLIST, cycleString);
     // use the global setting as overide if firstCollection == current
     if (cycleString == "" || firstCollection != info->name) {
         // check if collection has different setting
@@ -527,8 +577,8 @@ void CollectionInfoBuilder::loadPlaylistItems(CollectionInfo* info, std::map<std
     std::string settingPrefix = "collections." + info->name + ".";
     std::string cycleString;
     std::string firstCollection = "";
-    conf_.getProperty("firstCollection", firstCollection);
-    conf_.getProperty("cyclePlaylist", cycleString);
+    conf_.getProperty(OPTION_FIRSTCOLLECTION, firstCollection);
+    conf_.getProperty(OPTION_CYCLEPLAYLIST, cycleString);
 
     if (cycleString.empty() || firstCollection != info->name) {
         if (conf_.propertyExists(settingPrefix + "cyclePlaylist")) {
@@ -621,7 +671,7 @@ void CollectionInfoBuilder::updateLastPlayedPlaylist(CollectionInfo *info, Item 
 {
     std::string playlistCollectionName = info->name;
     bool globalFavLast = false;
-    (void)conf_.getProperty("globalFavLast", globalFavLast);
+    (void)conf_.getProperty(OPTION_GLOBALFAVLAST, globalFavLast);
     if (globalFavLast) {
         playlistCollectionName = "Favorites";
     }

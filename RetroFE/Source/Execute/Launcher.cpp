@@ -21,6 +21,7 @@
 #include "../Utility/Utils.h"
 #include "../RetroFE.h"
 #include "../SDL.h"
+#include "../Database/GlobalOpts.h"
 #include <cstdlib>
 #include <locale>
 #include <sstream>
@@ -173,33 +174,37 @@ bool Launcher::run(std::string collection, Item *collectionItem, Page *currentPa
 void Launcher::startScript()
 {
 #ifdef WIN32
-    std::string exe = Configuration::absolutePath + "\\start.bat";
-
+    std::string exe = Utils::combinePath(Configuration::absolutePath, "start.bat");
 #else
-    std::string exe = "./start.sh";
+    std::string exe = Utils::combinePath(Configuration::absolutePath, "start.sh");
 #endif
-    execute(exe, "", Configuration::absolutePath, false);
+    if(fs::exists(exe))
+    {
+        execute(exe, "", Configuration::absolutePath, false);
+    }
 }
 
 void Launcher::exitScript()
 {
 #ifdef WIN32
-    std::string exe = Configuration::absolutePath + "\\exit.bat";
-   
+    std::string exe = Utils::combinePath(Configuration::absolutePath, "exit.bat");
 #else
-    std::string exe = "./exit.sh";
+    std::string exe = Utils::combinePath(Configuration::absolutePath, "exit.sh");
 #endif
-    execute(exe, "", Configuration::absolutePath, false);
+    if(fs::exists(exe))
+    {
+        execute(exe, "", Configuration::absolutePath, false);
+    }
 }
 
 void Launcher::LEDBlinky( int command, std::string collection, Item *collectionItem )
 {
 	std::string LEDBlinkyDirectory = "";
-	config_.getProperty( "LEDBlinkyDirectory", LEDBlinkyDirectory );
+	config_.getProperty( OPTION_LEDBLINKYDIRECTORY, LEDBlinkyDirectory );
 	if (LEDBlinkyDirectory == "") {
         return;
     }
-    std::string exe  = LEDBlinkyDirectory + "\\LEDBlinky.exe";
+    std::string exe  = Utils::combinePath(LEDBlinkyDirectory, "LEDBlinky.exe");
 	std::string args = std::to_string( command );
 	bool wait = false;
 	if ( command == 2 )
@@ -287,7 +292,7 @@ bool Launcher::execute(std::string executable, std::string args, std::string cur
     std::thread proc_thread;
     bool multiple_display = SDL::getScreenCount() > 1;
     bool animateDuringGame = true;
-    config_.getProperty("animateDuringGame", animateDuringGame);
+    config_.getProperty(OPTION_ANIMATEDURINGGAME, animateDuringGame);
     if (animateDuringGame && multiple_display && currentPage != nullptr) {
         stop_thread = false;
         proc_thread = std::thread([this, &stop_thread, &currentPage]() {
@@ -346,7 +351,7 @@ bool Launcher::execute(std::string executable, std::string args, std::string cur
 
         //resume priority
         bool highPriority = false;
-        config_.getProperty("highPriority", highPriority);
+        config_.getProperty(OPTION_HIGHPRIORITY, highPriority);
         if (highPriority) {
             SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
         }
