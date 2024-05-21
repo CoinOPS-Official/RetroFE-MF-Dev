@@ -64,12 +64,10 @@ void Text::draw( )
     float imageHeight = 0;
     float imageWidth = 0;
     float imageMaxWidth = 0;
-    if (baseViewInfo.Width < baseViewInfo.MaxWidth && baseViewInfo.Width > 0)
-    {
+    if (baseViewInfo.Width < baseViewInfo.MaxWidth && baseViewInfo.Width > 0) {
         imageMaxWidth = baseViewInfo.Width;
     }
-    else
-    {
+    else {
         imageMaxWidth = baseViewInfo.MaxWidth;
     }
 
@@ -79,21 +77,15 @@ void Text::draw( )
     unsigned int textIndexMax = 0;
 
     // determine image width
-    for ( unsigned int i = 0; i < textData_.size( ); ++i )
-    {
+    for ( unsigned int i = 0; i < textData_.size( ); ++i ) {
         Font::GlyphInfo glyph;
-        if ( font->getRect( textData_[i], glyph ) )
-        {
-            if ( glyph.minX < 0 )
-            {
+        if ( font->getRect( textData_[i], glyph ) ) {
+            if ( glyph.minX < 0 ) {
                 imageWidth += glyph.minX;
             }
-
-            if ( (imageWidth + glyph.advance)*scale > imageMaxWidth )
-            {
+            if ( (imageWidth + glyph.advance)*scale > imageMaxWidth ) {
                 break;
             }
-
             textIndexMax = i;
             imageWidth  += glyph.advance;
         }
@@ -122,12 +114,10 @@ void Text::draw( )
     SDL_Rect rect = { 0, 0, 0, 0 };
     rect.x = static_cast<int>( xOrigin );
 
-    for ( unsigned int i = 0; i <= textIndexMax; ++i )
-    {
+    for ( unsigned int i = 0; i <= textIndexMax; ++i ) {
         Font::GlyphInfo glyph;
 
-        if ( font->getRect(textData_[i], glyph) && glyph.rect.h > 0 )
-        {
+        if ( font->getRect(textData_[i], glyph) && glyph.rect.h > 0 ) {
             SDL_Rect charRect = glyph.rect;
             auto h = charRect.h * scale ;
             float w = charRect.w * scale ;
@@ -135,12 +125,10 @@ void Text::draw( )
             rect.w = static_cast<int>( w );
             rect.y = static_cast<int>( yOrigin );
 
-            if(glyph.minX < 0)
-            {
+            if(glyph.minX < 0) {
                 rect.x += static_cast<int>( (float)(glyph.minX) * scale );
             }
-            if ( font->getAscent( ) < glyph.maxY )
-            {
+            if ( font->getAscent( ) < glyph.maxY ) {
                 rect.y += static_cast<int>( (font->getAscent( ) - glyph.maxY)*scale );
             }
 

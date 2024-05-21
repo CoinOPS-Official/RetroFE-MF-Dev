@@ -38,8 +38,7 @@ Image::~Image()
     Component::freeGraphicsMemory();
 
     SDL_LockMutex(SDL::getMutex());
-    if (texture_ != nullptr)
-    {
+    if (texture_ != nullptr) {
         SDL_DestroyTexture(texture_);
         texture_ = nullptr;
     }
@@ -51,8 +50,7 @@ void Image::freeGraphicsMemory()
     Component::freeGraphicsMemory();
 
     SDL_LockMutex(SDL::getMutex());
-    if (texture_ != nullptr)
-    {
+    if (texture_ != nullptr) {
         SDL_DestroyTexture(texture_);
         texture_ = nullptr;
     }
@@ -64,23 +62,18 @@ void Image::allocateGraphicsMemory()
     int width;
     int height;
 
-    if(!texture_)
-    {
+    if(!texture_) {
         SDL_LockMutex(SDL::getMutex());
         texture_ = IMG_LoadTexture(SDL::getRenderer(baseViewInfo.Monitor), file_.c_str());
-        if (!texture_ && altFile_ != "")
-        {
+        if (!texture_ && altFile_ != "") {
             texture_ = IMG_LoadTexture(SDL::getRenderer(baseViewInfo.Monitor), altFile_.c_str());
         }
 
-        if (texture_ != nullptr)
-        {
-            if (baseViewInfo.Additive)
-            {
+        if (texture_ != nullptr) {
+            if (baseViewInfo.Additive) {
                 SDL_SetTextureBlendMode(texture_, SDL_BLENDMODE_ADD);
             }
-            else
-            {
+            else {
                 SDL_SetTextureBlendMode(texture_, SDL_BLENDMODE_BLEND);
             }
             SDL_QueryTexture(texture_, nullptr, nullptr, &width, &height);
@@ -103,8 +96,7 @@ void Image::draw()
 {
     Component::draw();
 
-    if(texture_ && baseViewInfo.Alpha > 0.0f)
-    {
+    if(texture_ && baseViewInfo.Alpha > 0.0f) {
         SDL_Rect rect = { 0, 0, 0, 0 };
 
         rect.x = static_cast<int>(baseViewInfo.XRelativeToOrigin());

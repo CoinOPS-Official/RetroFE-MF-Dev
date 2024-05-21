@@ -62,12 +62,9 @@ std::string Menu::getKey() const
     SDL_Event   event;
     std::string return_value = "";
 
-    while ( return_value == "" )
-    {
-        while ( SDL_PollEvent( &event ) )
-        {
-            switch (event.type)
-            {
+    while ( return_value == "" ) {
+        while ( SDL_PollEvent( &event ) ) {
+            switch (event.type) {
                 case SDL_KEYDOWN:
                     if ( return_value.empty() )
                         return_value = SDL_GetKeyName( event.key.keysym.sym);
@@ -77,23 +74,19 @@ std::string Menu::getKey() const
                         return_value = "joyButton" + std::to_string( int( event.jbutton.button ) );
                     break;
                 case SDL_JOYAXISMOTION:
-                    if ((event.jaxis.value > 30000 || event.jaxis.value < -30000) && event.jaxis.axis <= 3)
-                    {
-                        if ( event.jaxis.value > 0 )
-                        {
+                    if ((event.jaxis.value > 30000 || event.jaxis.value < -30000) && event.jaxis.axis <= 3) {
+                        if ( event.jaxis.value > 0 ) {
                             if ( return_value.empty() )
                                 return_value = "joyAxis" + std::to_string( int( event.jaxis.axis ) ) + "+";
                         }
-                        else
-                        {
+                        else {
                             if ( return_value.empty() )
                                 return_value = "joyAxis" + std::to_string( int( event.jaxis.axis ) ) + "-";
                         }
                     }
                     break;
                 case SDL_JOYHATMOTION:
-                    switch( event.jhat.value )
-                    {
+                    switch( event.jhat.value ) {
                         case SDL_HAT_UP:
                             if ( return_value.empty() )
                                 return_value = "joyHat" + std::to_string( int( event.jhat.hat ) ) + "Up";

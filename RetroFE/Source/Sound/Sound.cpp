@@ -35,8 +35,7 @@ Sound::Sound(std::string file, std::string altfile)
 
 Sound::~Sound()
 {
-    if(chunk_)
-    {
+    if(chunk_) {
         Mix_FreeChunk(chunk_);
         chunk_ = NULL;
     }
@@ -44,16 +43,14 @@ Sound::~Sound()
 
 void Sound::play()
 {
-    if(chunk_)
-    {
+    if(chunk_) {
         channel_ = Mix_PlayChannel(-1, chunk_, 0);
     }
 }
 
 bool Sound::free()
 {
-    if(chunk_)
-    {
+    if(chunk_) {
         Mix_FreeChunk(chunk_);
         chunk_   = NULL;
         channel_ = -1;
@@ -64,8 +61,7 @@ bool Sound::free()
 
 bool Sound::allocate()
 {
-    if(!chunk_)
-    {
+    if(!chunk_) {
         chunk_ = Mix_LoadWAV(file_.c_str());
     }
 

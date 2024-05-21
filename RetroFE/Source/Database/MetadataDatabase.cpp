@@ -60,8 +60,7 @@ bool MetadataDatabase::resetDatabase()
 
     rc = sqlite3_exec(handle, sql.c_str(), nullptr, nullptr, &error);
 
-    if(rc != SQLITE_OK)
-    {
+    if(rc != SQLITE_OK) {
         std::stringstream ss;
         ss << "Unable to create Metadata table. Error: " << error;
         LOG_ERROR("Metadata", ss.str());
@@ -73,8 +72,7 @@ bool MetadataDatabase::resetDatabase()
 
 bool MetadataDatabase::initialize()
 {
-    if(needsRefresh())
-    {
+    if(needsRefresh()) {
         int rc;
         char* error = nullptr;
         sqlite3* handle = db_.handle;
@@ -99,18 +97,14 @@ bool MetadataDatabase::initialize()
 
         rc = sqlite3_exec(handle, sql.c_str(), nullptr, nullptr, &error);
 
-        if (rc != SQLITE_OK)
-        {
+        if (rc != SQLITE_OK) {
             std::stringstream ss;
             ss << "Unable to create Metadata table. Error: " << error;
             LOG_ERROR("Metadata", ss.str());
-
             return false;
         }
-
         importDirectory();
     }
-
     return true;
 }
 
@@ -172,8 +166,7 @@ void MetadataDatabase::injectMetadata(CollectionInfo* collection)
 
     rc = sqlite3_step(stmt);
 
-    while (rc == SQLITE_ROW)
-    {
+    while (rc == SQLITE_ROW) {
         std::string name = (const char*)sqlite3_column_text(stmt, 0);
         std::string fullTitle = (const char*)sqlite3_column_text(stmt, 1);
         std::string year = (const char*)sqlite3_column_text(stmt, 2);
@@ -191,8 +184,7 @@ void MetadataDatabase::injectMetadata(CollectionInfo* collection)
         std::string title = fullTitle;
 
 
-        if (std::map<std::string, Item*>::iterator it = itemMap.find(name); it != itemMap.end())
-        {
+        if (std::map<std::string, Item*>::iterator it = itemMap.find(name); it != itemMap.end()) {
             Item* item = it->second;
             item->title = title;
             item->fullTitle = fullTitle;
@@ -226,8 +218,7 @@ bool MetadataDatabase::needsRefresh()
 
     sqlite3_prepare_v2(handle, "SELECT COUNT(*) FROM Meta;", -1, &stmt, nullptr);
 
-    if (int rc = sqlite3_step(stmt); rc == SQLITE_ROW)
-    {
+    if (int rc = sqlite3_step(stmt); rc == SQLITE_ROW) {
         int count = sqlite3_column_int(stmt, 0);
 
         fs::path metaDbPath = Utils::combinePath(Configuration::absolutePath, "meta.db");
@@ -237,8 +228,7 @@ bool MetadataDatabase::needsRefresh()
         exePath = Utils::combinePath(Configuration::absolutePath, "retrofe", "RetroFE.exe");
 #else
         exePath = Utils::combinePath(Configuration::absolutePath, "RetroFE");
-        if (!fs::exists(exePath))
-        {
+        if (!fs::exists(exePath)) {
             exePath = Utils::combinePath(Configuration::absolutePath, "retrofe");
         }
 #endif
@@ -249,8 +239,7 @@ bool MetadataDatabase::needsRefresh()
 
         result = (count == 0 || metaDbTime < metadirTime || exeTime < metadirTime) ? true : false;
     }
-    else
-    {
+    else {
         result = true;
     }
 
@@ -359,14 +348,12 @@ bool MetadataDatabase::importMamelist(const std::string& filename, const std::st
 
     rootNode = doc.first_node("mame");
 
-    if (!rootNode)
-    {
+    if (!rootNode) {
         LOG_ERROR("Metadata", "Does not appear to be a MameList file (missing <mame> tag)");
         return false;
     }
 
-    if (sqlite3_exec(handle, "BEGIN IMMEDIATE TRANSACTION;", nullptr, nullptr, &error) != SQLITE_OK)
-    {
+    if (sqlite3_exec(handle, "BEGIN IMMEDIATE TRANSACTION;", nullptr, nullptr, &error) != SQLITE_OK) {
         std::string emsg = error;
         LOG_ERROR("Metadata", "SQL Error starting transaction: " + emsg);
         return false;
@@ -385,13 +372,11 @@ bool MetadataDatabase::importMamelist(const std::string& filename, const std::st
         -1, &stmt, nullptr);
 
 
-    for (rapidxml::xml_node<> const* game = rootNode->first_node(gameNodeName.c_str()); game; game = game->next_sibling())
-    {
+    for (rapidxml::xml_node<> const* game = rootNode->first_node(gameNodeName.c_str()); game; game = game->next_sibling()) {
         rapidxml::xml_attribute<> const* nameNode = game->first_attribute("name");
         rapidxml::xml_attribute<> const* cloneOfXml = game->first_attribute("cloneof");
 
-        if (nameNode != nullptr)
-        {
+        if (nameNode != nullptr) {
             std::string name = nameNode->value();
             rapidxml::xml_node<> const* descriptionNode = game->first_node("description");
             rapidxml::xml_node<> const* yearNode = game->first_node("year");
@@ -407,21 +392,17 @@ bool MetadataDatabase::importMamelist(const std::string& filename, const std::st
             std::string players;
             std::string buttons;
 
-            if (inputNode != nullptr)
-            {
+            if (inputNode != nullptr) {
                 rapidxml::xml_attribute<> const* playersAttribute = inputNode->first_attribute("players");
                 rapidxml::xml_attribute<> const* buttonsAttribute = inputNode->first_attribute("buttons");
 
-                if (playersAttribute)
-                {
+                if (playersAttribute) {
                     players = playersAttribute->value();
                 }
 
-                if (buttonsAttribute)
-                {
+                if (buttonsAttribute) {
                     buttons = buttonsAttribute->value();
                 }
-
             }
 
 
@@ -436,8 +417,7 @@ bool MetadataDatabase::importMamelist(const std::string& filename, const std::st
             sqlite3_bind_text(stmt, 8, cloneOf.c_str(), -1, SQLITE_TRANSIENT);
             sqlite3_bind_text(stmt, 9, collectionName.c_str(), -1, SQLITE_TRANSIENT);
 
-            if (int code = sqlite3_step(stmt) != SQLITE_DONE)
-            {
+            if (int code = sqlite3_step(stmt) != SQLITE_DONE) {
                 std::stringstream ss;
                 ss << "Failed to insert machine \"" << name << "\" into database; " << sqlite3_errstr(code) << "; " << sqlite3_errmsg(handle);
                 LOG_ERROR("Metadata", ss.str());
@@ -451,8 +431,7 @@ bool MetadataDatabase::importMamelist(const std::string& filename, const std::st
     sqlite3_finalize(stmt);
 
     config_.setProperty("status", "Saving data from \"" + filename + "\" to database");
-    if (sqlite3_exec(handle, "COMMIT TRANSACTION;", nullptr, nullptr, &error) != SQLITE_OK)
-    {
+    if (sqlite3_exec(handle, "COMMIT TRANSACTION;", nullptr, nullptr, &error) != SQLITE_OK) {
         std::string emsg = error;
         LOG_ERROR("Metadata", "SQL Error closing transaction: " + emsg);
     };
@@ -469,47 +448,40 @@ bool MetadataDatabase::importEmuArclist(const std::string& emuarclistFile)
     std::ifstream file(emuarclistFile.c_str());
     std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
-    try
-    {
+    try {
         buffer.push_back('\0');
 
         doc.parse<0>(&buffer[0]);
 
         rapidxml::xml_node<> const *root = doc.first_node("datafile");
 
-        if(!root)
-        {
+        if(!root) {
             LOG_ERROR("Metadata", "Does not appear to be a EmuArcList file (missing <datafile> tag)");
             return false;
         }
 
         rapidxml::xml_node<> const *header = root->first_node("header");
-        if (!header)
-        {
+        if (!header) {
             LOG_ERROR("Metadata", "Does not appear to be a EmuArcList file (missing <header> tag)");
             return false;
         }
         rapidxml::xml_node<> const *name = header->first_node("name");
-        if (!name)
-        {
+        if (!name) {
             LOG_ERROR("Metadata", "Does not appear to be a EmuArcList SuperDat file (missing <name> in <header> tag)");
             return false;
         }
         std::string collectionName = name->value();
-        if(std::size_t pos = collectionName.find(" - "); pos != std::string::npos)
-        {
+        if(std::size_t pos = collectionName.find(" - "); pos != std::string::npos) {
             collectionName = collectionName.substr(0, pos);
         }
         sqlite3 *handle = db_.handle;
         sqlite3_exec(handle, "BEGIN IMMEDIATE TRANSACTION;", nullptr, nullptr, &error);
         
 
-        for(rapidxml::xml_node<> const *game = root->first_node("game"); game; game = game->next_sibling("game"))
-        {
+        for(rapidxml::xml_node<> const *game = root->first_node("game"); game; game = game->next_sibling("game")) {
             rapidxml::xml_node<> const *descriptionXml = game->first_node("description");
             rapidxml::xml_node<> const *emuarcXml      = game->first_node("EmuArc");
-            if (!emuarcXml)
-            {
+            if (!emuarcXml) {
                 LOG_ERROR("Metadata", "Does not appear to be a EmuArcList SuperDat file (missing <emuarc> tag)");
                 return false;
             }
@@ -540,8 +512,7 @@ bool MetadataDatabase::importEmuArclist(const std::string& emuarclistFile)
             std::string numberJoyWays = "";
             std::string enabled       = enabledXml ? enabledXml->value() : "";
 
-            if(name.length() > 0)
-            {
+            if(name.length() > 0) {
                 sqlite3_stmt *stmt;
 
                 sqlite3_prepare_v2(handle,
@@ -572,8 +543,7 @@ bool MetadataDatabase::importEmuArclist(const std::string& emuarclistFile)
 
         return true;
     }
-    catch(rapidxml::parse_error &e)
-    {
+    catch(rapidxml::parse_error &e) {
         std::string what = e.what();
         auto line = static_cast<long>(std::count(&buffer.front(), e.where<char>(), char('\n')) + 1);
         std::stringstream ss;
@@ -581,8 +551,7 @@ bool MetadataDatabase::importEmuArclist(const std::string& emuarclistFile)
 
         LOG_ERROR("Metadata", ss.str());
     }
-    catch(std::exception &e)
-    {
+    catch(std::exception &e) {
         std::string what = e.what();
         LOG_ERROR("Metadata", "Could not parse EmuArclist file. Reason: " + what);
     }
@@ -596,8 +565,7 @@ fs::file_time_type MetadataDatabase::timeDir(const std::string& path)
 {
     fs::file_time_type lastTime = fs::file_time_type::min();
 
-    for (const auto& entry : fs::recursive_directory_iterator(path))
-    {
+    for (const auto& entry : fs::recursive_directory_iterator(path)) {
         if (!fs::is_regular_file(entry) && !fs::is_directory(entry)) {
             continue;
         }

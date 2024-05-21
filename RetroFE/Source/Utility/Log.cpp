@@ -31,8 +31,7 @@ bool Logger::initialize(std::string file, Configuration* config)
 {
     // Open the log file in truncate mode to clear it, then switch to append mode
     writeFileStream_.open(file.c_str(), std::ios::out | std::ios::trunc);
-    if (!writeFileStream_.is_open())
-    {
+    if (!writeFileStream_.is_open()) {
         return false;
     }
 
@@ -49,10 +48,8 @@ bool Logger::initialize(std::string file, Configuration* config)
 
 void Logger::deInitialize()
 {
-    if (writeFileStream_.is_open())
-    {
+    if (writeFileStream_.is_open()) {
         writeFileStream_.close();
-
     }
 
     std::cerr.rdbuf(cerrStream_);
@@ -85,7 +82,7 @@ bool Logger::isLevelEnabled(const std::string& zone) {
     static bool isNoticeEnabled = false;
     static bool isWarningEnabled = false;
     static bool isErrorEnabled = false;
-	static bool isFileCacheEnabled = false;
+    static bool isFileCacheEnabled = false;
     static std::string level;
 
     if (!config_) return false;
@@ -102,10 +99,15 @@ bool Logger::isLevelEnabled(const std::string& zone) {
             else if (token == "NOTICE") isNoticeEnabled = true;
             else if (token == "WARNING") isWarningEnabled = true;
             else if (token == "ERROR") isErrorEnabled = true;
-			else if (token == "FILECACHE") isFileCacheEnabled = true;
+	    else if (token == "FILECACHE") isFileCacheEnabled = true;
+            else if (token == "-DEBUG") isDebugEnabled = false;
+            else if (token == "-INFO") isInfoEnabled = false;
+            else if (token == "-NOTICE") isNoticeEnabled = false;
+            else if (token == "-WARNING") isWarningEnabled = false;
+            else if (token == "-ERROR") isErrorEnabled = false;
+            else if (token == "-FILECACHE") isFileCacheEnabled = false;
             else if (token == "ALL") {
                 isDebugEnabled = isInfoEnabled = isNoticeEnabled = isWarningEnabled = isErrorEnabled = isFileCacheEnabled = true;
-                break;
             }
         }
     }
@@ -122,8 +124,7 @@ bool Logger::isLevelEnabled(const std::string& zone) {
 
 std::string Logger::zoneToString(Zone zone)
 {
-    switch (zone)
-    {
+    switch (zone) {
     case ZONE_INFO:
         return "INFO";
     case ZONE_DEBUG:

@@ -73,8 +73,7 @@ std::string Utils::toLower(const std::string& inputStr)
 
 std::string Utils::uppercaseFirst(std::string str)
 {
-    if(str.length() > 0)
-    {
+    if(str.length() > 0) {
         std::locale loc;
         str[0] = std::toupper(str[0], loc);
     }
@@ -248,8 +247,7 @@ std::string Utils::getDirectory(const std::string& filePath)
     std::string directory = filePath;
 
     const size_t last_slash_idx = filePath.rfind(pathSeparator);
-    if (std::string::npos != last_slash_idx)
-    {
+    if (std::string::npos != last_slash_idx) {
         directory = filePath.substr(0, last_slash_idx);
     }
 
@@ -312,8 +310,7 @@ void Utils::listToVector( const std::string& str, std::vector<std::string> &vec,
     std::size_t current;
     std::size_t previous = 0;
     current = str.find( delimiter );
-    while (current != std::string::npos)
-    {
+    while (current != std::string::npos) {
         value = Utils::trimEnds(str.substr(previous, current - previous));
         if (value != "") {
             vec.push_back(value);

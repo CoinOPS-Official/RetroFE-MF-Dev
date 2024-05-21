@@ -28,23 +28,19 @@
 UserInput::UserInput(Configuration &c)
     : config_(c)
 {
-    for(unsigned int i = 0; i < KeyCodeMax; ++i)
-    {
+    for(unsigned int i = 0; i < KeyCodeMax; ++i) {
         currentKeyState_[i] = false;
         lastKeyState_[i] = false;
     }
-    for ( unsigned int i = 0; i < cMaxJoy; i++ )
-    {
+    for ( unsigned int i = 0; i < cMaxJoy; i++ ) {
         joysticks_[i] = -1;
     }
 }
 
 UserInput::~UserInput()
 {
-    for (unsigned int i = 0; i < keyHandlers_.size(); ++i)
-    {
-        if (keyHandlers_[i].first)
-        {
+    for (unsigned int i = 0; i < keyHandlers_.size(); ++i) {
+        if (keyHandlers_[i].first) {
             delete keyHandlers_[i].first;
         }
     }
@@ -88,8 +84,7 @@ bool UserInput::initialize()
     MapKey("settings", KeyCodeSettings, false);
     
     std::string jbKey;
-    if(config_.getProperty(OPTION_JUKEBOX, jbKey))
-    {
+    if(config_.getProperty(OPTION_JUKEBOX, jbKey)) {
         MapKey("jbFastForward1m", KeyCodeSkipForward, false);
         MapKey("jbFastRewind1m", KeyCodeSkipBackward, false);
         MapKey("jbFastForward5p", KeyCodeSkipForwardp, false);
@@ -104,22 +99,10 @@ bool UserInput::initialize()
     bool retVal = true;
     
     // At least have controls for either a vertical or horizontal menu
-    if(!MapKey("up", KeyCodeUp))
-    {
-        retVal = MapKey("left", KeyCodeUp) && retVal;
-    }
-    if(!MapKey("left", KeyCodeLeft))
-    {
-        retVal = MapKey("up", KeyCodeLeft) && retVal;
-    }
-    if(!MapKey("down", KeyCodeDown))
-    {
-        retVal = MapKey("right", KeyCodeDown ) && retVal;
-    }
-    if(!MapKey("right", KeyCodeRight ))
-    {
-        retVal = MapKey("down", KeyCodeRight ) && retVal;
-    }
+    if(!MapKey("up", KeyCodeUp)) { retVal = MapKey("left", KeyCodeUp) && retVal; }
+    if(!MapKey("left", KeyCodeLeft)) { retVal = MapKey("up", KeyCodeLeft) && retVal; }
+    if(!MapKey("down", KeyCodeDown)) { retVal = MapKey("right", KeyCodeDown ) && retVal; }
+    if(!MapKey("right", KeyCodeRight )) { retVal = MapKey("down", KeyCodeRight ) && retVal; }
     
     // These keys are mandatory
     retVal = MapKey("select", KeyCodeSelect) && retVal;
@@ -141,14 +124,11 @@ bool UserInput::MapKey(const std::string& keyDescription, KeyCode_E key, bool re
 
     std::string configKey = "controls." + keyDescription;
 
-    if (!config_.getProperty(configKey, description))
-    {
-        if (required)
-        {
+    if (!config_.getProperty(configKey, description)) {
+        if (required) {
             LOG_ERROR("Input", "Missing required property: " + configKey);
         }
-        else
-        {
+        else {
             LOG_INFO("Input", "Missing optional property: " + configKey);
         }
         return false;
@@ -179,15 +159,12 @@ bool UserInput::HandleInputMapping(const std::string& token, KeyCode_E key, cons
         keyHandlers_.push_back(std::pair<InputHandler*, KeyCode_E>(new KeyboardHandler(scanCode), key));
         found = true;
     }
-    else
-    {
+    else {
         std::string tokenLowered = Utils::toLower(token);
 
-        if (tokenLowered.find("mouse") == 0)
-        {
+        if (tokenLowered.find("mouse") == 0) {
             std::string mousedesc = Utils::replace(Utils::toLower(token), "mouse", "");
-            if (mousedesc.find("button") == 0)
-            {
+            if (mousedesc.find("button") == 0) {
                 int button = 0;
                 std::stringstream ss;
                 mousedesc = Utils::replace(mousedesc, "button", "");
@@ -202,24 +179,20 @@ bool UserInput::HandleInputMapping(const std::string& token, KeyCode_E key, cons
                 found = true;
             }
         }
-        else if (tokenLowered.find("joy") == 0)
-        {
+        else if (tokenLowered.find("joy") == 0) {
             std::string joydesc = Utils::replace(Utils::toLower(token), "joy", "");
             int joynum;
-            if (isdigit(joydesc.at(0)))
-            {
+            if (isdigit(joydesc.at(0))) {
                 std::stringstream ssjoy;
                 ssjoy << joydesc.at(0);
                 ssjoy >> joynum;
                 joydesc = joydesc.erase(0, 1);
             }
-            else
-            {
+            else {
                 joynum = -1;
             }
 
-            if (joydesc.find("button") == 0)
-            {
+            if (joydesc.find("button") == 0) {
                 unsigned int button;
                 std::stringstream ss;
                 ss << Utils::replace(joydesc, "button", "");
@@ -228,8 +201,7 @@ bool UserInput::HandleInputMapping(const std::string& token, KeyCode_E key, cons
                 LOG_INFO("Input", "Binding joypad button " + ss.str());
                 found = true;
             }
-            else if (joydesc.find("hat") == 0)
-            {
+            else if (joydesc.find("hat") == 0) {
                 Uint8 hat = 0;
 
                 joydesc = Utils::replace(joydesc, "hat", "");
@@ -253,8 +225,7 @@ bool UserInput::HandleInputMapping(const std::string& token, KeyCode_E key, cons
                 LOG_INFO("Input", "Binding joypad hat " + joydesc);
                 found = true;
             }
-            else if (joydesc.find("axis") == 0)
-            {
+            else if (joydesc.find("axis") == 0) {
                 // string is now axis0+
                 unsigned int axis;
                 Sint16       min = 0;
@@ -263,20 +234,17 @@ bool UserInput::HandleInputMapping(const std::string& token, KeyCode_E key, cons
 
                 joydesc = Utils::replace(joydesc, "axis", "");
 
-                if (!config_.getProperty("controls.deadZone", deadZone))
-                {
+                if (!config_.getProperty("controls.deadZone", deadZone)) {
                     deadZone = 3;
                 }
 
                 // string is now 0+
-                if (joydesc.find("-") != std::string::npos)
-                {
+                if (joydesc.find("-") != std::string::npos) {
                     min = -32768;
                     max = -32768 / 100 * deadZone;
                     joydesc = Utils::replace(joydesc, "-", "");
                 }
-                else if (joydesc.find("+") != std::string::npos)
-                {
+                else if (joydesc.find("+") != std::string::npos) {
                     min = 32767 / 100 * deadZone;
                     max = 32767;
                     joydesc = Utils::replace(joydesc, "+", "");
@@ -343,10 +311,8 @@ bool UserInput::MapKeyCombo(const std::string& keyDescription, KeyCode_E key1, K
 
 void UserInput::resetStates()
 {
-    for (unsigned int i = 0; i < keyHandlers_.size(); ++i)
-    {
-        if (keyHandlers_[i].first)
-        {
+    for (unsigned int i = 0; i < keyHandlers_.size(); ++i) {
+        if (keyHandlers_[i].first) {
             keyHandlers_[i].first->reset();
         }
         currentKeyState_[keyHandlers_[i].second] = false;
@@ -364,13 +330,10 @@ bool UserInput::update( SDL_Event &e )
     memset( currentKeyState_, 0, sizeof( currentKeyState_ ) );
 
     // Handle adding a joystick
-    if ( e.type == SDL_JOYDEVICEADDED )
-    {
+    if ( e.type == SDL_JOYDEVICEADDED ) {
         SDL_JoystickID id = SDL_JoystickInstanceID( SDL_JoystickOpen( e.jdevice.which ) );
-        for ( unsigned int i = 0; i < cMaxJoy; i++ )
-        {
-            if ( joysticks_[i] == -1 )
-            {
+        for ( unsigned int i = 0; i < cMaxJoy; i++ ) {
+            if ( joysticks_[i] == -1 ) {
                 joysticks_[i] = id;
                 break;
             }
@@ -378,12 +341,9 @@ bool UserInput::update( SDL_Event &e )
     }
 
     // Handle removing a joystick
-    if ( e.type == SDL_JOYDEVICEREMOVED )
-    {
-        for ( unsigned int i = 0; i < cMaxJoy; i++ )
-        {
-            if ( joysticks_[i] == e.jdevice.which )
-            {
+    if ( e.type == SDL_JOYDEVICEREMOVED ) {
+        for ( unsigned int i = 0; i < cMaxJoy; i++ ) {
+            if ( joysticks_[i] == e.jdevice.which ) {
                 joysticks_[i] = -1;
                 break;
             }
@@ -395,12 +355,9 @@ bool UserInput::update( SDL_Event &e )
     if ( e.type == SDL_JOYAXISMOTION ||
          e.type == SDL_JOYBUTTONUP   ||
          e.type == SDL_JOYBUTTONDOWN ||
-         e.type == SDL_JOYHATMOTION )
-    {
-        for ( unsigned int i = 0; i < cMaxJoy; i++ )
-        {
-            if ( joysticks_[i] == e.jdevice.which )
-            {
+         e.type == SDL_JOYHATMOTION ) {
+        for ( unsigned int i = 0; i < cMaxJoy; i++ ) {
+            if ( joysticks_[i] == e.jdevice.which ) {
                 e.jdevice.which = i;
                 e.jaxis.which   = i;
                 e.jbutton.which = i;
@@ -410,13 +367,10 @@ bool UserInput::update( SDL_Event &e )
         }
     }
 
-    for ( unsigned int i = 0; i < keyHandlers_.size( ); ++i )
-    {
+    for ( unsigned int i = 0; i < keyHandlers_.size( ); ++i ) {
         InputHandler *h = keyHandlers_[i].first;
-        if ( h )
-        {
+        if ( h ) {
             if ( h->update( e ) ) updated_ = true;
-
             currentKeyState_[keyHandlers_[i].second] |= h->pressed( );
         }
     }
@@ -446,8 +400,7 @@ bool UserInput::newKeyPressed(KeyCode_E code) const
 
 void UserInput::clearJoysticks( )
 {
-    for ( unsigned int i = 0; i < cMaxJoy; i++ )
-    {
+    for ( unsigned int i = 0; i < cMaxJoy; i++ ) {
         joysticks_[i] = -1;
     }
 }
@@ -457,10 +410,8 @@ void UserInput::reconfigure()
 {
     LOG_INFO("Input", "Reconfigure Inputs");
 
-    for (unsigned int i = 0; i < keyHandlers_.size(); ++i)
-    {
-        if (keyHandlers_[i].first)
-        {
+    for (unsigned int i = 0; i < keyHandlers_.size(); ++i) {
+        if (keyHandlers_[i].first) {
             delete keyHandlers_[i].first;
         }
     }
@@ -471,11 +422,9 @@ void UserInput::reconfigure()
 
 void UserInput::updateKeystate( )
 {
-    for ( unsigned int i = 0; i < keyHandlers_.size( ); ++i )
-    {
+    for ( unsigned int i = 0; i < keyHandlers_.size( ); ++i ) {
         InputHandler *h = keyHandlers_[i].first;
-        if ( h )
-        {
+        if ( h ) {
 			h->updateKeystate( );
             currentKeyState_[keyHandlers_[i].second] |= h->pressed( );
         }

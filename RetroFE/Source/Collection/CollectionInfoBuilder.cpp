@@ -93,13 +93,11 @@ bool CollectionInfoBuilder::createCollectionDirectory(const std::string& name, c
         paths.push_back(Utils::combinePath(collectionPath, "launchers"));
         
         // Folders for local launchers
-        if (collectionType == "local")
-        {
+        if (collectionType == "local") {
             paths.push_back(Utils::combinePath(collectionPath, "launchers." + osType + ".local"));
         }
 
-        for(auto it = paths.begin(); it != paths.end(); it++)
-        {
+        for(auto it = paths.begin(); it != paths.end(); it++) {
             std::cout << "Creating folder \"" << *it << "\"" << std::endl;
 
     #if defined(_WIN32) && !defined(__GNUC__)
@@ -152,8 +150,7 @@ bool CollectionInfoBuilder::createCollectionDirectory(const std::string& name, c
         settingsFile << "list.extensions = zip" << std::endl;
         settingsFile << "list.menuSort = yes" << std::endl;
         settingsFile << std::endl;
-        if (collectionType == " ")
-        {
+        if (collectionType == " ") {
             settingsFile << "launcher = mame" << std::endl;
         }
         settingsFile << "#metadata.type = MAME" << std::endl;
@@ -172,8 +169,7 @@ bool CollectionInfoBuilder::createCollectionDirectory(const std::string& name, c
         settingsFile << "#media.system_artwork  = " << Utils::combinePath("%BASE_MEDIA_PATH%", "%ITEM_COLLECTION_NAME%", "system_artwork") << std::endl;
         settingsFile.close();
         
-        if (collectionType == "local")
-        {
+        if (collectionType == "local") {
             filename = Utils::combinePath(collectionPath, "launcher." + osType + ".conf");
             std::cout << "Creating file \"" << filename << "\"" << std::endl;
             std::ofstream localFile;
@@ -221,8 +217,7 @@ CollectionInfo *CollectionInfoBuilder::buildCollection(const std::string& name, 
     (void)conf_.getProperty(metadataTypeKey, metadataType);
     (void)conf_.getProperty(metadataPathKey, metadataPath);
 
-    if (!conf_.getProperty(launcherKey, launcherName))
-    {
+    if (!conf_.getProperty(launcherKey, launcherName)) {
         std::stringstream ss;
         ss        << "\""
                   << launcherKey
@@ -248,19 +243,15 @@ bool CollectionInfoBuilder::ImportBasicList(CollectionInfo *info, const std::str
 {
     std::ifstream includeStream(file.c_str());
 
-    if (!includeStream.good())
-    {
+    if (!includeStream.good()) {
         return false;
     }
 
     std::string line; 
     Item* i;
-    while(std::getline(includeStream, line))
-    {
+    while(std::getline(includeStream, line)) {
         line = Utils::filterComments(line);
-        
-        if (!line.empty() && list.find(line) == list.end())
-        {
+        if (!line.empty() && list.find(line) == list.end()) {
             i = new Item();
             line.erase( std::remove(line.begin(), line.end(), '\r'), line.end() );
 
@@ -280,31 +271,25 @@ bool CollectionInfoBuilder::ImportBasicList(CollectionInfo *info, const std::str
 {
     std::ifstream includeStream(file.c_str());
 
-    if (!includeStream.good())
-    {
+    if (!includeStream.good()) {
         return false;
     }
 
     std::string line; 
     Item* i;
-    while(std::getline(includeStream, line))
-    {
+    while(std::getline(includeStream, line)) {
         line = Utils::filterComments(line);
         
-        if (!line.empty())
-        {
+        if (!line.empty()) {
 
             bool found = false;
-            for (auto it = list.begin(); it != list.end(); ++it)
-            {
-                if (line == (*it)->name)
-                {
+            for (auto it = list.begin(); it != list.end(); ++it) {
+                if (line == (*it)->name) {
                     found = true;
                 }
             }
 
-            if (!found)
-            {
+            if (!found) {
                 i = new Item();
                 line.erase( std::remove(line.begin(), line.end(), '\r'), line.end() );
 
@@ -336,15 +321,12 @@ bool CollectionInfoBuilder::ImportDirectory(CollectionInfo *info, const std::str
     bool romHierarchy = false;
     bool emuarc       = false;
  
-    if (mergedCollectionName != "")
-    {
-        
+    if (mergedCollectionName != "") {
         std::string mergedFile = Utils::combinePath(Configuration::absolutePath, "collections", mergedCollectionName, info->name + ".sub");
         LOG_INFO("CollectionInfoBuilder", "Checking for \"" + mergedFile + "\"");
         (void)conf_.getProperty("collections." + mergedCollectionName + ".list.includeMissingItems", showMissing);
         ImportBasicList(info, mergedFile, includeFilterUnsorted);
         ImportBasicList(info, mergedFile, includeFilter);
-
     }
     (void)conf_.getProperty("collections." + info->name + ".list.includeMissingItems", showMissing);
     (void)conf_.getProperty("collections." + info->name + ".list.romHierarchy", romHierarchy);
@@ -357,32 +339,25 @@ bool CollectionInfoBuilder::ImportDirectory(CollectionInfo *info, const std::str
     ImportBasicList(info, includeFile, includeFilter);
     ImportBasicList(info, excludeFile, excludeFilter);
 
-    for(auto it = includeFilterUnsorted.begin(); it != includeFilterUnsorted.end(); ++it)
-    {
-        if (showMissing && excludeFilter.find((*it)->name) == excludeFilter.end())
-        {
+    for(auto it = includeFilterUnsorted.begin(); it != includeFilterUnsorted.end(); ++it) {
+        if (showMissing && excludeFilter.find((*it)->name) == excludeFilter.end()) {
             info->items.push_back(*it);
         }
-        else
-        {
+        else {
             delete *it;
         }
     }
     includeFilterUnsorted.clear( );
 
     // Read ROM directory if showMissing is false
-    if (!showMissing || includeFilter.empty())
-    {
-        do
-        {
+    if (!showMissing || includeFilter.empty()) {
+        do {
              std::string rompath;
-             if(size_t position = path.find( ";" ); position != std::string::npos)
-             {
+             if(size_t position = path.find( ";" ); position != std::string::npos) {
                  rompath = path.substr(0, position);
                  path    = path.substr(position+1);
              }
-             else
-             {
+             else {
                  rompath = path;
                  path    = "";
              }
@@ -397,8 +372,7 @@ bool CollectionInfoBuilder::ImportDirectory(CollectionInfo *info, const std::str
     Item* i = nullptr;
 
     if (!curretPlayCountList.empty()) {
-        for (auto it = info->items.begin(); it != info->items.end(); ++it)
-        {   
+        for (auto it = info->items.begin(); it != info->items.end(); ++it) {
             lookup = "_" + info->name + ":" + (*it)->name;
             if (curretPlayCountList[lookup]) {
                 i = curretPlayCountList[lookup];
@@ -415,24 +389,20 @@ bool CollectionInfoBuilder::ImportDirectory(CollectionInfo *info, const std::str
     }
 
     // cleanup lists
-    while(!includeFilter.empty())
-    {
+    while(!includeFilter.empty()) {
         auto it = includeFilter.begin();
         // delete the unused items if they were never pushed to the main collection
-        if (!showMissing)
-        {
+        if (!showMissing) {
             delete it->second;
         }
         includeFilter.erase(it);
     }
-    while(!excludeFilter.empty())
-    {
+    while(!excludeFilter.empty()) {
         auto it = excludeFilter.begin();
         delete it->second;
         excludeFilter.erase(it);
     }
-    while (!curretPlayCountList.empty())
-    {
+    while (!curretPlayCountList.empty()) {
         auto it = curretPlayCountList.begin();
         delete it->second;
         curretPlayCountList.erase(it);
@@ -451,44 +421,36 @@ void CollectionInfoBuilder::addPlaylists(CollectionInfo *info)
 
     ImportBasicList(info, excludeAllFile, excludeAllFilter);
     // adds items to "all" list except those found in "exclude_all.txt"
-    if ( !excludeAllFilter.empty())
-    {
+    if ( !excludeAllFilter.empty()) {
         info->playlists["all"] = new std::vector<Item *>();
-        for(auto it = info->items.begin(); it != info->items.end(); it++)
-        {
+        for(auto it = info->items.begin(); it != info->items.end(); it++) {
             bool found = false;
-            for(auto itex = excludeAllFilter.begin(); itex != excludeAllFilter.end(); itex++)
-            {
+            for(auto itex = excludeAllFilter.begin(); itex != excludeAllFilter.end(); itex++) {
                 collectionName = info->name;
                 itemName       = itex->first;
                 if (itemName.at(0) == '_') // name consists of _<collectionName>:<itemName>
                 {
                      itemName.erase(0, 1); // Remove _
                      size_t position = itemName.find(":");
-                     if (position != std::string::npos )
-                     {
+                     if (position != std::string::npos ) {
                          collectionName = itemName.substr(0, position);
                          itemName       = itemName.erase(0, position+1);
                      }
                 }
-                if ( ((*it)->name == itemName || itemName == "*") && (*it)->collectionInfo->name == collectionName )
-                {
+                if ( ((*it)->name == itemName || itemName == "*") && (*it)->collectionInfo->name == collectionName ) {
                     found = true;
                 }
             }
-            if ( !found )
-            {
+            if ( !found ) {
                 info->playlists["all"]->push_back((*it));
             }
         }
-        while(!excludeAllFilter.empty())
-        {
+        while(!excludeAllFilter.empty()) {
             auto it = excludeAllFilter.begin();
             excludeAllFilter.erase(it);
         }
     }
-    else
-    {
+    else {
         info->playlists["all"] = &info->items;
     }
 
@@ -539,11 +501,9 @@ void CollectionInfoBuilder::addPlaylists(CollectionInfo *info)
     std::vector<std::string> cycleVector;
     Utils::listToVector(cycleString, cycleVector, ',');
 
-    if (cycleVector.size())
-    {
+    if (cycleVector.size()) {
         // add in order according to cycle list
-        for (auto itP = cycleVector.begin(); itP != cycleVector.end(); itP++)
-        {
+        for (auto itP = cycleVector.begin(); itP != cycleVector.end(); itP++) {
             if (playlistItems[*itP]) {
                 info->playlistItems.push_back(playlistItems[*itP]);
             }
@@ -551,20 +511,17 @@ void CollectionInfoBuilder::addPlaylists(CollectionInfo *info)
     }
     else {
         // convert lookup playlist map to vector
-        for (auto itP = playlistItems.begin(); itP != playlistItems.end(); itP++)
-        {
+        for (auto itP = playlistItems.begin(); itP != playlistItems.end(); itP++) {
             info->playlistItems.push_back(itP->second);
         }
     }
 
     // intialize empty dynamic playlists
-    if(info->playlists["favorites"] == nullptr)
-    {
+    if(info->playlists["favorites"] == nullptr) {
         info->playlists["favorites"] = new std::vector<Item *>();
     }
 
-    if(info->playlists["lastplayed"] == nullptr)
-    {
+    if(info->playlists["lastplayed"] == nullptr) {
         info->playlists["lastplayed"] = new std::vector<Item *>();
     }
 
@@ -701,8 +658,7 @@ void CollectionInfoBuilder::updateLastPlayedPlaylist(CollectionInfo *info, Item 
     info->playlists["lastplayed"]->push_back(item);
 
     // Add the items already in the playlist up to the lastplayedSize.
-    for(auto it = lastplayedList.begin(); it != lastplayedList.end(); it++)
-    {
+    for(auto it = lastplayedList.begin(); it != lastplayedList.end(); it++) {
         if (info->playlists["lastplayed"]->size() >= static_cast<unsigned int>( size ))
             break;
 
@@ -712,17 +668,14 @@ void CollectionInfoBuilder::updateLastPlayedPlaylist(CollectionInfo *info, Item 
         {
              itemName.erase(0, 1); // Remove _
              size_t position = itemName.find(":");
-             if (position != std::string::npos )
-             {
+             if (position != std::string::npos ) {
                  collectionName = itemName.substr(0, position);
                  itemName       = itemName.erase(0, position+1);
              }
         }
 
-        for(auto it = info->items.begin(); it != info->items.end(); it++)
-        {
-            if ( (*it)->name == itemName && (*it)->collectionInfo->name == collectionName && (*it) != item)
-            {
+        for(auto it = info->items.begin(); it != info->items.end(); it++) {
+            if ( (*it)->name == itemName && (*it)->collectionInfo->name == collectionName && (*it) != item) {
                 info->playlists["lastplayed"]->push_back((*it));
             }
         }
@@ -734,16 +687,12 @@ void CollectionInfoBuilder::updateLastPlayedPlaylist(CollectionInfo *info, Item 
     LOG_INFO("Collection", "Saving " + file);
 
     std::ofstream filestream;
-    try
-    {
+    try {
         // Create playlists directory if it does not exist yet.
-        if (struct stat infostat;  stat( dir.c_str(), &infostat ) != 0 )
-        {
+        if (struct stat infostat;  stat( dir.c_str(), &infostat ) != 0 ) {
 #if defined(_WIN32) && !defined(__GNUC__)
-            if(!CreateDirectory(dir.c_str(), NULL))
-            {
-                if(ERROR_ALREADY_EXISTS != GetLastError())
-                {
+            if(!CreateDirectory(dir.c_str(), NULL)) {
+                if(ERROR_ALREADY_EXISTS != GetLastError()) {
                     LOG_WARNING("Collection", "Could not create directory " + dir);
                     return;
                 }
@@ -760,8 +709,7 @@ void CollectionInfoBuilder::updateLastPlayedPlaylist(CollectionInfo *info, Item 
             }
 #endif
         }
-        else if ( !(infostat.st_mode & S_IFDIR) )
-        {
+        else if ( !(infostat.st_mode & S_IFDIR) ) {
             LOG_WARNING("Collection", dir + " exists, but is not a directory.");
             return;
         }
@@ -769,23 +717,19 @@ void CollectionInfoBuilder::updateLastPlayedPlaylist(CollectionInfo *info, Item 
         // write playlist file
         filestream.open(file.c_str());
         std::vector<Item *> *saveitems = info->playlists["lastplayed"];
-        for(auto it = saveitems->begin(); it != saveitems->end(); it++)
-        { 
+        for(auto it = saveitems->begin(); it != saveitems->end(); it++) {
             // append play count and last played time
-            if ((*it)->collectionInfo->name == playlistCollectionName)
-            {
+            if ((*it)->collectionInfo->name == playlistCollectionName) {
                 filestream << (*it)->name << std::endl;
             }
-            else
-            {
+            else {
                 filestream << "_" << (*it)->collectionInfo->name << ":" << (*it)->name << std::endl;
             }
         }
 
         filestream.close();
     }
-    catch(std::exception &)
-    {
+    catch(std::exception &) {
         LOG_ERROR("Collection", "Save failed: " + file);
     }
 
@@ -840,8 +784,7 @@ void CollectionInfoBuilder::AddToPlayCount(Item* item)
     LOG_INFO("PlayCount", "Saving " + file);
 
     std::ofstream filestream;
-    try
-    {
+    try {
         // Create playlists directory if it does not exist yet.
         if (struct stat infostat; stat(dir.c_str(), &infostat) != 0)
         {
@@ -866,24 +809,21 @@ void CollectionInfoBuilder::AddToPlayCount(Item* item)
             }
 #endif
         }
-        else if (!(infostat.st_mode & S_IFDIR))
-        {
+        else if (!(infostat.st_mode & S_IFDIR)) {
             LOG_WARNING("PlayCount", dir + " exists, but is not a directory.");
             return;
         }
 
         // write file
         filestream.open(file.c_str());
-        for (auto it = curretPlayCountList.begin(); it != curretPlayCountList.end(); it++)
-        {
+        for (auto it = curretPlayCountList.begin(); it != curretPlayCountList.end(); it++) {
             // append play count and last played time
             filestream << it->first << ";" << it->second->playCount << ";" << it->second->lastPlayed << std::endl;
         }
 
         filestream.close();
     }
-    catch (std::exception&)
-    {
+    catch (std::exception&) {
         LOG_ERROR("PlayCount", "Save failed: " + file);
     }
 }
@@ -892,8 +832,7 @@ std::map<std::string, Item*> CollectionInfoBuilder::ImportPlayCount(const std::s
 {
     std::ifstream includeStream(file.c_str());
     std::map<std::string, Item*> curretPlayCountList;
-    if (!includeStream.good())
-    {
+    if (!includeStream.good()) {
         return curretPlayCountList;
     }
 
@@ -903,20 +842,16 @@ std::map<std::string, Item*> CollectionInfoBuilder::ImportPlayCount(const std::s
     size_t timePosition;
    
     std::string line;
-    while (std::getline(includeStream, line))
-    {
+    while (std::getline(includeStream, line)) {
         line = Utils::filterComments(line);
-        if (!line.empty())
-        {
+        if (!line.empty()) {
             line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
             extraPosition = line.find(";");
-            if (extraPosition != std::string::npos)
-            {
+            if (extraPosition != std::string::npos) {
                 extra = line.substr(extraPosition + 1);
                 timePosition = extra.find(";");
                 line = line.substr(0, extraPosition);
-                if (timePosition != std::string::npos)
-                {
+                if (timePosition != std::string::npos) {
                     auto* item = new Item();
                     item->lastPlayed = extra.substr(timePosition + 1);
                     item->playCount = Utils::convertInt(extra.substr(0, timePosition));
@@ -941,17 +876,14 @@ void CollectionInfoBuilder::ImportRomDirectory(const std::string& path, Collecti
         return;
     }
 
-    for (const auto& entry : fs::directory_iterator(path))
-    {
+    for (const auto& entry : fs::directory_iterator(path)) {
         std::string file = entry.path().filename().string();
 
         // Check if the file is a directory or a file
-        if (romHierarchy && fs::is_directory(entry) && file != "." && file != "..")
-        {
+        if (romHierarchy && fs::is_directory(entry) && file != "." && file != "..") {
             ImportRomDirectory(entry.path().string(), info, includeFilter, excludeFilter, romHierarchy, emuarc);
         }
-        else if (fs::is_regular_file(entry) && file != "." && file != "..")
-        {
+        else if (fs::is_regular_file(entry) && file != "." && file != "..") {
             size_t position = file.find_last_of(".");
             std::string basename = (std::string::npos == position) ? file : file.substr(0, position);
 
@@ -961,13 +893,11 @@ void CollectionInfoBuilder::ImportRomDirectory(const std::string& path, Collecti
                 (excludeFilter.empty() || excludeFilter.find(basename) == excludeFilter.end()))
             {
                 // iterate through all known file extensions
-                for (const std::string& ext : extensions)
-                {
+                for (const std::string& ext : extensions) {
                     std::string comparator = "." + ext;
                     size_t start = file.length() >= comparator.length() ? file.length() - comparator.length() : std::string::npos;
 
-                    if (start != std::string::npos && file.compare(start, comparator.length(), comparator) == 0)
-                    {
+                    if (start != std::string::npos && file.compare(start, comparator.length(), comparator) == 0) {
                         // Add item if it doesn't already exist
                         bool found = std::any_of(info->items.begin(), info->items.end(), [&](const Item* item) { return item->name == basename; });
                         if (!found) {
@@ -979,8 +909,7 @@ void CollectionInfoBuilder::ImportRomDirectory(const std::string& path, Collecti
                             i->collectionInfo = info;
                             i->filepath = path + Utils::pathSeparator;
 
-                            if (emuarc)
-                            {
+                            if (emuarc) {
                                 i->file = basename;
                                 i->name = Utils::getFileName(path);
                                 i->fullTitle = i->name;

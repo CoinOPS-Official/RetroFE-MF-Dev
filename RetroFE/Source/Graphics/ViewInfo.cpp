@@ -58,21 +58,17 @@ float ViewInfo::ScaledHeight() const
             height = (scaleH > scaleW) ? MinHeight : (height * scaleW);
         }
     }
-    if (width > MaxWidth || height > MaxHeight)
-    {
+    if (width > MaxWidth || height > MaxHeight) {
         float scaleH = MaxHeight / height;
         float scaleW = MaxWidth / width;
 
-        if(width <= MaxWidth && height > MaxHeight)
-        {
+        if(width <= MaxWidth && height > MaxHeight) {
             height = MaxHeight;
         }
-        else if(width > MaxWidth && height <= MaxHeight)
-        {
+        else if(width > MaxWidth && height <= MaxHeight) {
             height = scaleW * height;
         }
-        else
-        {
+        else {
             height = (scaleH < scaleW) ? MaxHeight : (height * scaleW);
         }
     }
@@ -85,39 +81,31 @@ float ViewInfo::ScaledWidth() const
     float height = AbsoluteHeight();
     float width = AbsoluteWidth();
 
-    if (height < MinHeight || width < MinWidth)
-    {
+    if (height < MinHeight || width < MinWidth) {
         float scaleH = MinHeight / height;
         float scaleW = MinWidth / width;
 
-        if(height >= MinHeight && width < MinWidth)
-        {
+        if(height >= MinHeight && width < MinWidth) {
             width = MinWidth;
         }
-        else if(height < MinHeight && width >= MinWidth)
-        {
+        else if(height < MinHeight && width >= MinWidth) {
             width = scaleH * width;
         }
-        else
-        {
+        else {
             width = (scaleH > scaleW) ? MinWidth : (width * scaleH);
         }
     }
-    if (width > MaxWidth || height > MaxHeight)
-    {
+    if (width > MaxWidth || height > MaxHeight) {
         float scaleH = MaxHeight / height;
         float scaleW = MaxWidth / width;
 
-        if(height <= MaxHeight && width > MaxWidth)
-        {
+        if(height <= MaxHeight && width > MaxWidth) {
             width = MaxWidth;
         }
-        else if(height > MaxHeight && width <= MaxWidth)
-        {
+        else if(height > MaxHeight && width <= MaxWidth) {
             width = scaleH * width;
         }
-        else
-        {
+        else {
             width = (scaleH > scaleW) ? MaxWidth : (width * scaleH);
         }
     }
@@ -127,13 +115,11 @@ float ViewInfo::ScaledWidth() const
 
 float ViewInfo::AbsoluteHeight() const
 {
-    if(Height < 0 && Width < 0)
-    {
+    if(Height < 0 && Width < 0) {
         return ImageHeight;
     }
 
-    if (Height < 0 && ImageWidth != 0)
-    {
+    if (Height < 0 && ImageWidth != 0) {
         return ImageHeight * Width / ImageWidth;
     }
 
@@ -142,13 +128,11 @@ float ViewInfo::AbsoluteHeight() const
 
 float ViewInfo::AbsoluteWidth() const
 {
-    if(Height < 0 && Width < 0)
-    {
+    if(Height < 0 && Width < 0) {
         return ImageWidth;
     }
 
-    if (Width < 0 && ImageHeight != 0)
-    {
+    if (Width < 0 && ImageHeight != 0) {
         return ImageWidth * Height / ImageHeight;
     }
 

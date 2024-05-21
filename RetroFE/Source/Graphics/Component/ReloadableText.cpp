@@ -50,8 +50,7 @@ ReloadableText::ReloadableText(std::string type, Page &page, Configuration &conf
 
 ReloadableText::~ReloadableText()
 {
-    if (imageInst_ != NULL)
-    {
+    if (imageInst_ != NULL) {
         delete imageInst_;
     }
 }
@@ -60,8 +59,7 @@ bool ReloadableText::update(float dt)
 {
     if (newItemSelected ||
        (newScrollItemSelected && getMenuScrollReload()) ||
-        type_ == "time" || type_ == "current" || type_ == "duration" || type_ == "isPaused")
-    {
+        type_ == "time" || type_ == "current" || type_ == "duration" || type_ == "isPaused") {
         ReloadTexture();
         newItemSelected = false;
     }
@@ -83,8 +81,7 @@ void ReloadableText::freeGraphicsMemory()
 {
     Component::freeGraphicsMemory();
 
-    if (imageInst_ != NULL)
-    {
+    if (imageInst_ != NULL) {
         delete imageInst_;
         imageInst_ = NULL;
     }
@@ -105,159 +102,124 @@ void ReloadableText::deInitializeFonts()
 
 void ReloadableText::ReloadTexture()
 {
-    if (imageInst_ != NULL)
-    {
+    if (imageInst_ != NULL) {
         delete imageInst_;
         imageInst_ = NULL;
     }
 
     Item *selectedItem = page.getSelectedItem();
 
-    if (selectedItem != NULL)
-    {
+    if (selectedItem != NULL) {
         std::stringstream ss;
         std::string text = "";
-        if (type_ == "time")
-        {
-          time_t    now = time(0);
-          struct tm tstruct;
-          char      buf[80];
-          tstruct = *localtime(&now);
-          strftime(buf, sizeof(buf), timeFormat_.c_str(), &tstruct);
-          ss << buf;
+        if (type_ == "time") {
+            time_t    now = time(0);
+            struct tm tstruct;
+            char      buf[80];
+            tstruct = *localtime(&now);
+            strftime(buf, sizeof(buf), timeFormat_.c_str(), &tstruct);
+            ss << buf;
         }
-        if (type_ == "numberButtons")
-        {
+        if (type_ == "numberButtons") {
             text = selectedItem->numberButtons;
         }
-        else if (type_ == "numberPlayers")
-        {
+        else if (type_ == "numberPlayers") {
             text = selectedItem->numberPlayers;
         }
-        else if (type_ == "ctrlType")
-        {
+        else if (type_ == "ctrlType") {
             text = selectedItem->ctrlType;
         }
-        else if (type_ == "numberJoyWays")
-        {
+        else if (type_ == "numberJoyWays") {
             text = selectedItem->joyWays;
         }
-        else if (type_ == "rating")
-        {
+        else if (type_ == "rating") {
             text = selectedItem->rating;
         }
-        else if (type_ == "score")
-        {
+        else if (type_ == "score") {
             text = selectedItem->score;
         }
-        else if (type_ == "year")
-        {
-              text = selectedItem->year;
+        else if (type_ == "year") {
+            text = selectedItem->year;
         }
-        else if (type_ == "title")
-        {
+        else if (type_ == "title") {
             text = selectedItem->title;
         }
-        else if(type_ == "developer")
-        {
+        else if(type_ == "developer") {
             text = selectedItem->developer;
             // Overwrite in case developer has not been specified
-            if (text == "")
-            {
+            if (text == "") {
                 text = selectedItem->manufacturer;
             }
         }
-        else if (type_ == "manufacturer")
-        {
+        else if (type_ == "manufacturer") {
             text = selectedItem->manufacturer;
         }
-        else if (type_ == "genre")
-        {
+        else if (type_ == "genre") {
             text = selectedItem->genre;
         }
-        else if (type_ == "playCount")
-        {
+        else if (type_ == "playCount") {
             text = std::to_string(selectedItem->playCount);
         }
-        else if (type_ == "lastPlayed")
-        {
+        else if (type_ == "lastPlayed") {
             if (selectedItem->lastPlayed != "0") {
                 text = selectedItem->lastPlayed;// getTimeSince(selectedItem->lastPlayed);
             }
         }
-        else if (type_.rfind( "playlist", 0 ) == 0)
-        {
+        else if (type_.rfind( "playlist", 0 ) == 0) {
             text = playlistName;
         }
-        else if (type_ == "firstLetter")
-        {
+        else if (type_ == "firstLetter") {
           text = selectedItem->fullTitle.at(0);
         }
-        else if (type_ == "collectionName")
-        {
+        else if (type_ == "collectionName") {
             text = page.getCollectionName();
         }
-        else if (type_ == "collectionSize")
-        {
-            if (page.getCollectionSize() == 0)
-            {
+        else if (type_ == "collectionSize") {
+            if (page.getCollectionSize() == 0) {
                 ss << singlePrefix_ << page.getCollectionSize() << pluralPostfix_;
             }
-            else if (page.getCollectionSize() == 1)
-            {
+            else if (page.getCollectionSize() == 1) {
                 ss << singlePrefix_ << page.getCollectionSize() << singlePostfix_;
             }
-            else
-            {
+            else {
                 ss << pluralPrefix_ << page.getCollectionSize() << pluralPostfix_;
             }
         }
-        else if (type_ == "collectionIndex")
-        {
-            if (page.getSelectedIndex() == 0)
-            {
+        else if (type_ == "collectionIndex") {
+            if (page.getSelectedIndex() == 0) {
                 ss << singlePrefix_ << (page.getSelectedIndex()+1) << pluralPostfix_;
             }
-            else if (page.getSelectedIndex() == 1)
-            {
+            else if (page.getSelectedIndex() == 1) {
                 ss << singlePrefix_ << (page.getSelectedIndex()+1) << singlePostfix_;
             }
-            else
-            {
+            else {
                 ss << pluralPrefix_ << (page.getSelectedIndex()+1) << pluralPostfix_;
             }
         }
-        else if (type_ == "collectionIndexSize")
-        {
-            if (page.getSelectedIndex() == 0)
-            {
+        else if (type_ == "collectionIndexSize") {
+            if (page.getSelectedIndex() == 0) {
                 ss << singlePrefix_ << (page.getSelectedIndex()+1) << "/" << page.getCollectionSize() << pluralPostfix_;
             }
-            else if (page.getSelectedIndex() == 1)
-            {
+            else if (page.getSelectedIndex() == 1) {
                 ss << singlePrefix_ << (page.getSelectedIndex()+1) << "/" << page.getCollectionSize() << singlePostfix_;
             }
-            else
-            {
+            else {
                 ss << pluralPrefix_ << (page.getSelectedIndex()+1) << "/" << page.getCollectionSize() << pluralPostfix_;
             }
         }
-        else if (type_ == "isFavorite")
-        {
+        else if (type_ == "isFavorite") {
             if (selectedItem->isFavorite)
                 text = "yes";
             else
                 text = "no";
         }
-        else if (type_ == "isPaused")
-        {
+        else if (type_ == "isPaused") {
             if (page.isPaused( ))
                 text = "Paused";
             else
                 text = "";
         }
-        else if (type_ == "current")
-        {
+        else if (type_ == "current") {
             unsigned long long current = 0;
             current     = page.getCurrent( );
             current    /= 1000000000;
@@ -276,8 +238,7 @@ void ReloadableText::ReloadTexture()
 			if ( page.getDuration( ) == 0 )
 				text    = "--:--:--";
         }
-        else if (type_ == "duration")
-        {
+        else if (type_ == "duration") {
             unsigned long long duration = 0;
             duration    = page.getDuration( );
             duration   /= 1000000000;
@@ -319,40 +280,35 @@ void ReloadableText::ReloadTexture()
             }
         }
 
-        if (text == "0")
-        {
+        if (text == "0") {
             text = singlePrefix_ + text + pluralPostfix_;
         }
-        else if (text == "1")
-        {
+        else if (text == "1") {
             text = singlePrefix_ + text + singlePostfix_;
         }
-        else if (text != "")
-        {
+        else if (text != "") {
             text = pluralPrefix_ + text + pluralPostfix_;
         }
 
-        if (text != "")
-        {
-            if (textFormat_ == "uppercase")
-            {
+        if (text != "") {
+            if (textFormat_ == "uppercase") {
                 std::transform(text.begin(), text.end(), text.begin(), ::toupper);
             }
-            if (textFormat_ == "lowercase")
-            {
+            if (textFormat_ == "lowercase") {
                 std::transform(text.begin(), text.end(), text.begin(), ::tolower);
             }
             ss << text;
         }
 
-        imageInst_ = new Text(ss.str(), page, fontInst_, baseViewInfo.Monitor);
+        if (!ss.str().empty()) {
+            imageInst_ = new Text(ss.str(), page, fontInst_, baseViewInfo.Monitor);
+        }
     }
 }
 
 void ReloadableText::draw()
 {
-    if(imageInst_)
-    {
+    if(imageInst_) {
         imageInst_->baseViewInfo = baseViewInfo;
         if (baseViewInfo.Alpha > 0.0f)
             imageInst_->draw();

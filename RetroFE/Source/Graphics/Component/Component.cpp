@@ -73,8 +73,7 @@ void Component::freeGraphicsMemory()
 // used to draw lines in the layout using <container>
 void Component::allocateGraphicsMemory()
 {
-    if (!backgroundTexture_)
-    {
+    if (!backgroundTexture_) {
         // make a 4x4 pixel wide surface to be stretched during rendering, make it a white background so we can use
         // color  later
         SDL_Surface* surface = SDL_CreateRGBSurface(0, 4, 4, 32, 0, 0, 0, 0);
@@ -149,33 +148,28 @@ void Component::setTweens(AnimationEvents *set)
 
 std::string_view Component::filePath()
 {
-    return std::string();
+    return "";
 }
 
 bool Component::update(float dt)
 {
     elapsedTweenTime_ += dt;
-    if (animationRequested_ && animationRequestedType_ != "")
-    {
+    if (animationRequested_ && animationRequestedType_ != "") {
         Animation* newTweens;
         // Check if this component is part of an active scrolling list
-        if (menuIndex_ >= MENU_INDEX_HIGH)
-        {
+        if (menuIndex_ >= MENU_INDEX_HIGH) {
             // Check for animation at index i
             newTweens = tweens_->getAnimation(animationRequestedType_, MENU_INDEX_HIGH);
-            if (!(newTweens && newTweens->size() > 0))
-            {
+            if (!(newTweens && newTweens->size() > 0)) {
                 // Check for animation at the current menuIndex
                 newTweens = tweens_->getAnimation(animationRequestedType_, menuIndex_ - MENU_INDEX_HIGH);
             }
         }
-        else
-        {
+        else {
             // Check for animation at the current menuIndex
             newTweens = tweens_->getAnimation(animationRequestedType_, menuIndex_);
         }
-        if (newTweens && newTweens->size() > 0)
-        {
+        if (newTweens && newTweens->size() > 0) {
             //todo delete old tweens?
             animationType_ = animationRequestedType_;
             currentTweens_ = newTweens;
@@ -187,8 +181,7 @@ bool Component::update(float dt)
         animationRequested_ = false;
     }
 
-    if (tweens_ && currentTweenComplete_)
-    {
+    if (tweens_ && currentTweenComplete_) {
         animationType_ = "idle";
         currentTweens_ = tweens_->getAnimation("idle", menuIndex_);
         if (currentTweens_ && currentTweens_->size() == 0 && !page.isMenuScrolling())
@@ -203,8 +196,7 @@ bool Component::update(float dt)
     }
 
     currentTweenComplete_ = animate();
-    if ( currentTweenComplete_ )
-    {
+    if ( currentTweenComplete_ ) {
       currentTweens_     = nullptr;
       currentTweenIndex_ = 0;
     }
@@ -215,8 +207,7 @@ bool Component::update(float dt)
 // used to draw lines in the layout using <container>
 void Component::draw()
 {
-    if (backgroundTexture_ && baseViewInfo.Alpha > 0.0f)
-    {
+    if (backgroundTexture_ && baseViewInfo.Alpha > 0.0f) {
         SDL_Rect rect = { 0,0,0,0 };
         rect.h = static_cast<int>(baseViewInfo.ScaledHeight());
         rect.w = static_cast<int>(baseViewInfo.ScaledWidth());
@@ -268,8 +259,7 @@ bool Component::animate() {
             else
                 elapsedTime = tween->duration;
 
-            switch (tween->property)
-            {
+            switch (tween->property) {
             case TWEEN_PROPERTY_X:
                 if (tween->startDefined)
                     baseViewInfo.X = tween->animate(elapsedTime);

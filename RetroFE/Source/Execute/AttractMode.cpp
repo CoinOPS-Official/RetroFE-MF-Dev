@@ -41,8 +41,7 @@ void AttractMode::reset( bool set )
     isActive_    = false;
     isSet_       = set;
     activeTime_  = 0;
-    if (!set)
-    {
+    if (!set) {
         elapsedPlaylistTime_   = 0;
         elapsedCollectionTime_ = 0;
     }
@@ -50,27 +49,21 @@ void AttractMode::reset( bool set )
 
 int AttractMode::update(float dt, Page &page)
 {
-
     elapsedTime_           += dt;
     elapsedPlaylistTime_   += dt;
     elapsedCollectionTime_ += dt;
 
-    if ( page.isJukebox() )
-    {
-        if ( !isActive_ && !page.isJukeboxPlaying() && elapsedTime_ > 10 )
-        {
+    if ( page.isJukebox() ) {
+        if ( !isActive_ && !page.isJukeboxPlaying() && elapsedTime_ > 10 ) {
             isActive_    = true;
             isSet_       = true;
             elapsedTime_ = 0;
             activeTime_  = ((float)(minTime+(rand() % (maxTime-minTime)))) / 1000;
         }
     }
-    else
-    {
-
+    else {
         // Check if it's time to switch playlists
-        if (!isActive_ && elapsedPlaylistTime_ > idlePlaylistTime && idlePlaylistTime > 0)
-        {
+        if (!isActive_ && elapsedPlaylistTime_ > idlePlaylistTime && idlePlaylistTime > 0) {
             elapsedTime_         = 0;
             elapsedPlaylistTime_ = 0;
             return 1;
@@ -84,10 +77,9 @@ int AttractMode::update(float dt, Page &page)
             elapsedCollectionTime_ = 0;
             return 2;
         }
-    
+
         // enable attract mode when idling for the expected time. Disable if idle time is set to 0.
-        if(!isActive_ && ((elapsedTime_ > idleTime && idleTime > 0) || (isSet_ && elapsedTime_ > idleNextTime && idleNextTime > 0)))
-        {
+        if (!isActive_ && ((elapsedTime_ > idleTime && idleTime > 0) || (isSet_ && elapsedTime_ > idleNextTime && idleNextTime > 0))) {
             if (!isSet_)
                 elapsedPlaylistTime_ = 0; // Reset playlist timer if we are entering attract mode
             isActive_    = true;
@@ -95,13 +87,10 @@ int AttractMode::update(float dt, Page &page)
             elapsedTime_ = 0;
             activeTime_  = ((float)(minTime+(rand() % (maxTime-minTime)))) / 1000;
         }
-
     }
 
-    if(isActive_)
-    {
-        if (page.isMenuIdle())
-        {
+    if(isActive_) {
+        if (page.isMenuIdle()) {
             page.setScrolling(Page::ScrollDirectionForward);
             page.scroll(true);
             if (isFast) {
@@ -109,15 +98,12 @@ int AttractMode::update(float dt, Page &page)
             }
         }
 
-        if(elapsedTime_ > activeTime_)
-        {
+        if(elapsedTime_ > activeTime_) {
             elapsedTime_ = 0;
             isActive_ = false;
         }
     }
-
     return 0;
-
 }
 
 

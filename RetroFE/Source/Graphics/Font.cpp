@@ -56,15 +56,13 @@ bool Font::getRect(unsigned int charCode, GlyphInfo &glyph)
 {
     std::map<unsigned int, GlyphInfoBuild *>::iterator it = atlas.find(charCode);
 
-    if(it != atlas.end())
-    {
+    if(it != atlas.end()) {
         GlyphInfoBuild *info = it->second;
 
         glyph = info->glyph;
 
         return true;
     }
-
     return false;
 }
 
@@ -72,8 +70,7 @@ bool Font::initialize()
 {
     TTF_Font *font = TTF_OpenFont(fontPath_.c_str(), fontSize_);
 
-    if (!font)
-    {
+    if (!font) {
         std::stringstream ss;
         ss << "Could not open font: " << TTF_GetError();
         LOG_WARNING("FontCache", ss.str());
@@ -87,8 +84,7 @@ bool Font::initialize()
     height = TTF_FontHeight(font);
     ascent = TTF_FontAscent(font);
 
-    for(unsigned short int i = 32; i < 128; ++i)
-    {
+    for(unsigned short int i = 32; i < 128; ++i) {
         GlyphInfoBuild *info = new GlyphInfoBuild;
         memset(info, 0, sizeof(GlyphInfoBuild));
 
@@ -99,8 +95,7 @@ bool Font::initialize()
         		&info->glyph.minY, &info->glyph.maxY,
         		&info->glyph.advance);
 
-        if(x + info->surface->w >= 1024)
-        {
+        if(x + info->surface->w >= 1024) {
             atlasHeight += y;
             atlasWidth = (atlasWidth >= x) ? atlasWidth : x;
             x = 0;
@@ -138,8 +133,7 @@ bool Font::initialize()
 
     SDL_Surface *atlasSurface = SDL_CreateRGBSurface(0, atlasWidth, atlasHeight, 32, rmask, gmask, bmask, amask);
     std::map<unsigned int, GlyphInfoBuild *>::iterator it;
-    for(it = atlas.begin(); it != atlas.end(); it++)
-    {
+    for(it = atlas.begin(); it != atlas.end(); it++) {
         GlyphInfoBuild *info = it->second;
         SDL_BlitSurface(info->surface, NULL, atlasSurface, &info->glyph.rect);
         SDL_FreeSurface(info->surface);
@@ -161,8 +155,7 @@ bool Font::initialize()
 
 void Font::deInitialize()
 {
-    if(texture)
-    {
+    if(texture) {
         SDL_LockMutex(SDL::getMutex());
         SDL_DestroyTexture(texture);
         texture = NULL;
@@ -170,8 +163,7 @@ void Font::deInitialize()
     }
 
     std::map<unsigned int, GlyphInfoBuild *>::iterator atlasIt = atlas.begin();
-    while(atlasIt != atlas.end())
-    {
+    while(atlasIt != atlas.end()) {
         delete atlasIt->second;
         atlas.erase(atlasIt);
         atlasIt = atlas.begin();

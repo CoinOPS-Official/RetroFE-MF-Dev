@@ -61,8 +61,7 @@ void MenuParser::buildMenuFromCollectionLaunchers(CollectionInfo* collection, st
 bool MenuParser::buildMenuItems(CollectionInfo *collection, bool sort)
 {
 
-    if(!buildTextMenu(collection, sort))
-    {
+    if(!buildTextMenu(collection, sort)) {
         return buildLegacyXmlMenu(collection, sort);
     }
 
@@ -75,8 +74,7 @@ bool MenuParser::buildTextMenu(CollectionInfo* collection, bool sort)
     std::string menuFile = Utils::combinePath(Configuration::absolutePath, "collections", collection->name, "menu.txt");
     std::vector<Item*> menuItems;
 
-    if (!fs::exists(menuFile))
-    {
+    if (!fs::exists(menuFile)) {
         LOG_INFO("Menu", "File does not exist: \"" + menuFile + "\"; trying menu directory.");
 
         std::string path = Utils::combinePath(Configuration::absolutePath, "collections", collection->name, "menu");
@@ -86,10 +84,8 @@ bool MenuParser::buildTextMenu(CollectionInfo* collection, bool sort)
             return false;
         }
 
-        for (const auto& entry : fs::directory_iterator(path))
-        {
-            if (fs::is_regular_file(entry))
-            {
+        for (const auto& entry : fs::directory_iterator(path)) {
+            if (fs::is_regular_file(entry)) {
                 std::string file = entry.path().filename().string();
 
                 size_t position = file.find_last_of(".");
@@ -98,8 +94,7 @@ bool MenuParser::buildTextMenu(CollectionInfo* collection, bool sort)
                 std::string comparator = ".txt";
                 size_t start = file.length() >= comparator.length() ? file.length() - comparator.length() : 0;
 
-                if (file.compare(start, comparator.length(), comparator) == 0)
-                {
+                if (file.compare(start, comparator.length(), comparator) == 0) {
                     std::string title = basename;
                     auto* item = new Item();
                     item->title = title;
@@ -115,17 +110,14 @@ bool MenuParser::buildTextMenu(CollectionInfo* collection, bool sort)
 
         std::sort(menuItems.begin(), menuItems.end(), [](Item const* a, Item const* b) { return Utils::toLower(a->fullTitle) <= Utils::toLower(b->fullTitle); });
     }
-    else
-    {
+    else {
         std::ifstream includeStream(menuFile.c_str());
         std::string line;
 
-        while (std::getline(includeStream, line))
-        {
+        while (std::getline(includeStream, line)) {
             line = Utils::filterComments(line);
 
-            if (!line.empty())
-            {
+            if (!line.empty()) {
                 std::string title = line;
                 auto* item = new Item();
                 item->title = title;
@@ -152,13 +144,11 @@ bool MenuParser::buildLegacyXmlMenu(CollectionInfo *collection, bool sort)
     rapidxml::xml_node<> const * rootNode;
     std::vector<Item *> menuItems;
 
-    try
-    {
+    try {
         std::ifstream file(menuFilename.c_str());
 
         // gracefully exit if there is no menu file for the pa
-        if(file.good())
-        {
+        if(file.good()) {
             LOG_INFO("Menu", "Found: \"" + menuFilename + "\"");
             LOG_INFO("Menu", "Using legacy menu.xml file. Consider using the new menu.txt format");
             std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
@@ -169,12 +159,10 @@ bool MenuParser::buildLegacyXmlMenu(CollectionInfo *collection, bool sort)
 
             rootNode = doc.first_node("menu");
 
-            for (rapidxml::xml_node<> const * itemNode = rootNode->first_node("item"); itemNode; itemNode = itemNode->next_sibling())
-            {
+            for (rapidxml::xml_node<> const * itemNode = rootNode->first_node("item"); itemNode; itemNode = itemNode->next_sibling()) {
                 rapidxml::xml_attribute<> const *collectionAttribute = itemNode->first_attribute("collection");
 
-                if(!collectionAttribute)
-                {
+                if(!collectionAttribute) {
                     retVal = false;
                     LOG_ERROR("Menu", "Menu item tag is missing collection attribute");
                     break;
@@ -198,8 +186,7 @@ bool MenuParser::buildLegacyXmlMenu(CollectionInfo *collection, bool sort)
             retVal = true;
         }
     }
-    catch(std::ifstream::failure &e)
-    {
+    catch(std::ifstream::failure &e) {
         std::stringstream ss;
         ss << "Unable to open menu file \"" << menuFilename << "\": " << e.what();
         LOG_ERROR("Menu", ss.str());

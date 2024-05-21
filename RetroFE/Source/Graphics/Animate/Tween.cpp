@@ -86,8 +86,7 @@ bool Tween::getTweenProperty(std::string name, TweenProperty &property)
 {
     std::transform(name.begin(), name.end(), name.begin(), ::tolower);
 
-    if(tweenPropertyMap_.find(name) != tweenPropertyMap_.end())
-    {
+    if(tweenPropertyMap_.find(name) != tweenPropertyMap_.end()) {
         property = tweenPropertyMap_[name];
         return true;
     }
@@ -100,12 +99,10 @@ TweenAlgorithm Tween::getTweenType(std::string name)
 {
     std::transform(name.begin(), name.end(), name.begin(), ::tolower);
    
-    if(tweenTypeMap_.find(name) != tweenTypeMap_.end())
-    {
+    if(tweenTypeMap_.find(name) != tweenTypeMap_.end()) {
         return tweenTypeMap_[name];
     }
-    else
-    {
+    else {
         return tweenTypeMap_["linear"];
     }
 }
@@ -128,8 +125,7 @@ float Tween::animateSingle(TweenAlgorithm type, double start, double end, double
     double b = end - start;
     double result = 0;
 
-    switch(type)
-    {
+    switch(type) {
     case EASE_IN_QUADRATIC:
         result = easeInQuadratic(elapsedTime, duration, a, b);
         break;

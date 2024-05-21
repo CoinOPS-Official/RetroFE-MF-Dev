@@ -29,6 +29,7 @@ VideoComponent::VideoComponent(Page &p, const std::string& videoFile, int monito
     , videoFile_(videoFile)
     , numLoops_(numLoops)
     , monitor_(monitor)
+    , currentPage_(&p)
 {
 
 }
@@ -41,20 +42,19 @@ VideoComponent::~VideoComponent()
 
 bool VideoComponent::update(float dt)
 {
-    if (videoInst_)
-    {
+    if (videoInst_) {
         isPlaying_ = ((GStreamerVideo*)(videoInst_))->isPlaying();
     }
 
-    if (videoInst_ && isPlaying_)
-    {
+    if (videoInst_ && isPlaying_) {
         videoInst_->setVolume(baseViewInfo.Volume);
         videoInst_->update(dt);
-        videoInst_->loopHandler();
+        videoInst_->volumeUpdate();
+        if(!currentPage_->isMenuScrolling())
+            videoInst_->loopHandler();
 
         // video needs to run a frame to start getting size info
-        if (baseViewInfo.ImageHeight == 0 && baseViewInfo.ImageWidth == 0)
-        {
+        if (baseViewInfo.ImageHeight == 0 && baseViewInfo.ImageWidth == 0) {
             baseViewInfo.ImageHeight = static_cast<float>(videoInst_->getHeight());
             baseViewInfo.ImageWidth = static_cast<float>(videoInst_->getWidth());
         }
@@ -65,25 +65,24 @@ bool VideoComponent::update(float dt)
             hasBeenOnScreen_ = true;
 
         // Handle Pause/Resume based on visibility and PauseOnScroll setting
-        if (baseViewInfo.PauseOnScroll)
-        {
-            if (!isCurrentlyVisible && !isPaused())
-            {
+        if (baseViewInfo.PauseOnScroll && !currentPage_->isMenuFastScrolling()) {
+            if (!isCurrentlyVisible && !isPaused()) {
                 videoInst_->pause();
-                LOG_DEBUG("VideoComponent", "Paused " + Utils::getFileName(videoFile_));
+                if(Logger::isLevelEnabled("DEBUG"))
+                    LOG_DEBUG("VideoComponent", "Paused " + Utils::getFileName(videoFile_));
             }
-            else if (isCurrentlyVisible && isPaused())
-            {
+            else if (isCurrentlyVisible && isPaused()) {
                 videoInst_->pause(); // This resumes the video
-                LOG_DEBUG("VideoComponent", "Resumed " + Utils::getFileName(videoFile_));
+                if (Logger::isLevelEnabled("DEBUG"))
+                    LOG_DEBUG("VideoComponent", "Resumed " + Utils::getFileName(videoFile_));
             }
         }
 
         // Handle Restart
-        if (baseViewInfo.Restart && hasBeenOnScreen_)
-        {
+        if (baseViewInfo.Restart && hasBeenOnScreen_) {
             videoInst_->restart();
-            LOG_DEBUG("VideoComponent", "Seeking to beginning of " + Utils::getFileName(videoFile_));
+            if (Logger::isLevelEnabled("DEBUG"))
+                LOG_DEBUG("VideoComponent", "Seeking to beginning of " + Utils::getFileName(videoFile_));
             baseViewInfo.Restart = false;
         }
     }
@@ -96,8 +95,7 @@ void VideoComponent::allocateGraphicsMemory()
 {
     Component::allocateGraphicsMemory();
 
-    if(!isPlaying_)
-    {
+    if(!isPlaying_) {
         if (!videoInst_) {
             videoInst_ = VideoFactory::createVideo(monitor_, numLoops_);
         }
@@ -113,13 +111,14 @@ void VideoComponent::freeGraphicsMemory()
     //videoInst_->stop();
         
     Component::freeGraphicsMemory();
-    LOG_DEBUG("VideoComponent", "Component Freed " + Utils::getFileName(videoFile_));
+    if (Logger::isLevelEnabled("DEBUG"))
+        LOG_DEBUG("VideoComponent", "Component Freed " + Utils::getFileName(videoFile_));
     
-    if (videoInst_) 
-    {
+    if (videoInst_)  {
         delete videoInst_;
         isPlaying_ = false;
-        LOG_DEBUG("VideoComponent", "Deleted " + Utils::getFileName(videoFile_));
+        if (Logger::isLevelEnabled("DEBUG"))
+            LOG_DEBUG("VideoComponent", "Deleted " + Utils::getFileName(videoFile_));
         videoInst_ = nullptr;
         
     }
@@ -128,8 +127,7 @@ void VideoComponent::freeGraphicsMemory()
 
 void VideoComponent::draw()
 {
-    if (baseViewInfo.Alpha > 0.0f)
-    {
+    if (baseViewInfo.Alpha > 0.0f) {
         SDL_Rect rect = { 0, 0, 0, 0 };
 
         rect.x = static_cast<int>(baseViewInfo.XRelativeToOrigin());

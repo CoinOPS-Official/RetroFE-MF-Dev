@@ -43,6 +43,7 @@ bool Configuration::HardwareVideoAccel = false;
 int Configuration::AvdecMaxThreads = 2;
 int Configuration::AvdecThreadType = 2;
 bool Configuration::MuteVideo = false;
+bool Configuration::debugDotEnabled = false;
 
 Configuration::Configuration() = default;
 
@@ -52,6 +53,8 @@ void Configuration::initialize()
 {
     const char *environment = std::getenv("RETROFE_PATH");
     std::string sPath; // Declare sPath here
+    std::string debugDotDir = Utils::getEnvVar("GST_DEBUG_DUMP_DOT_DIR");
+    debugDotEnabled = !debugDotDir.empty();
 
 #if defined(__linux) || defined(__APPLE__)
     std::string home_load = std::getenv("HOME") + std::string("/.retrofe");
@@ -59,20 +62,17 @@ void Configuration::initialize()
 #endif
 
     // Check Environment for path
-    if (environment != nullptr)
-    {
+    if (environment != nullptr) {
         absolutePath = environment;
     }
 #if defined(__linux) || defined(__APPLE__)
     // Or check for home based flat file works on linux/mac
-    else if (retrofe_path && std::getline( retrofe_path, absolutePath ))
-    {
+    else if (retrofe_path && std::getline( retrofe_path, absolutePath )) {
     	retrofe_path.close();
     }
 #endif
     // Or check executable for path
-    else
-    {
+    else {
 #ifdef WIN32
         HMODULE hModule = GetModuleHandle(NULL);
         CHAR exe[MAX_PATH];
@@ -129,15 +129,13 @@ bool Configuration::import(const std::string& collection, const std::string& key
     std::string line;
     
     // Some dupe code in here we could probably bring out of branches but not yet
-    if (keyPrefix == "CLI")
-    {
+    if (keyPrefix == "CLI") {
         LOG_INFO("Configuration", "Importing command line arguments");
                 
         // Use an istringstream to read lines from string
         std::istringstream iss(file);
                         
-        while (std::getline(iss, line))
-        {
+        while (std::getline(iss, line)) {
             lineCount++;
             retVal = retVal && parseLine(collection, "", line, lineCount);
 
@@ -153,22 +151,17 @@ bool Configuration::import(const std::string& collection, const std::string& key
         
         std::ifstream ifs(file.c_str());
 
-        if (!ifs.is_open())
-        {
-            if (mustExist)
-            {
+        if (!ifs.is_open()) {
+            if (mustExist) {
                 LOG_ERROR("Configuration", "Could not open " + file + "\"");
             }
-            else
-            {
+            else {
                 LOG_WARNING("Configuration", "Could not open " + file + "\"");
             }
-
             return false;
         }
        
-        while (std::getline(ifs, line))
-        {
+        while (std::getline(ifs, line)) {
             lineCount++;
             retVal = retVal && parseLine(collection, keyPrefix, line, lineCount);
 
@@ -196,28 +189,22 @@ bool Configuration::parseLine(const std::string& collection, std::string keyPref
     // strip out any comments
     line = Utils::filterComments(line);
     
-    if(line.empty() || (line.find_first_not_of(" \t\r") == std::string::npos))
-    {
+    if(line.empty() || (line.find_first_not_of(" \t\r") == std::string::npos)) {
         retVal = true;
     }
     // all configuration fields must have an assignment operator
-    else if ((position = line.find(delimiter)) != std::string::npos)
-    {
-        if (keyPrefix.size() != 0)
-        {
+    else if ((position = line.find(delimiter)) != std::string::npos) {
+        if (keyPrefix.size() != 0) {
             keyPrefix += ".";
         }
 
         key = keyPrefix + line.substr(0, position);
-
         key = trimEnds(key);
-
 
         value = line.substr(position + delimiter.length(), line.length());
         value = trimEnds(value);
 
-        if (collection != "")
-        {
+        if (collection != "") {
             value = Utils::replace(value, "%ITEM_COLLECTION_NAME%", collection);
         }
 
@@ -226,12 +213,10 @@ bool Configuration::parseLine(const std::string& collection, std::string keyPref
         std::stringstream ss;
         ss << "Dump: "  << "\"" << key << "\" = \"" << value << "\"";
 
-
         LOG_INFO("Configuration", ss.str());
         retVal = true;
     }
-    else
-    {
+    else {
         std::stringstream ss;
         ss << "Missing an assignment operator (=) on line " << lineCount;
         LOG_ERROR("Configuration", ss.str());
@@ -245,10 +230,8 @@ std::string Configuration::trimEnds(std::string str)
     // strip off any initial tabs or spaces
     size_t trimStart = str.find_first_not_of(" \t");
 
-    if(trimStart != std::string::npos)
-    {
+    if(trimStart != std::string::npos) {
         size_t trimEnd = str.find_last_not_of(" \t");
-
         str = str.substr(trimStart, trimEnd - trimStart + 1);
     }
 
@@ -258,12 +241,10 @@ std::string Configuration::trimEnds(std::string str)
 bool Configuration::getRawProperty(const std::string& key, std::string& value)
 {
     auto it = properties_.find(key); // Use iterator to search for the key
-    if (it != properties_.end())
-    {
+    if (it != properties_.end()) {
         value = it->second; // Directly access the value from the iterator
         return true;
     }
-
     return false;
 }
 
@@ -282,15 +263,12 @@ bool Configuration::getProperty(const std::string& key, std::string& value)
 
     std::string_view valueView(value);
 
-    if (valueView.find("%BASE_MEDIA_PATH%") != std::string_view::npos)
-    {
+    if (valueView.find("%BASE_MEDIA_PATH%") != std::string_view::npos) {
         value = Utils::replace(value, "%BASE_MEDIA_PATH%", baseMediaPath);
     }
-    if (valueView.find("%BASE_ITEM_PATH%") != std::string_view::npos)
-    {
+    if (valueView.find("%BASE_ITEM_PATH%") != std::string_view::npos) {
         value = Utils::replace(value, "%BASE_ITEM_PATH%", baseItemPath);
     }
-
     return retVal;
 }
 
@@ -300,8 +278,7 @@ bool Configuration::getProperty(const std::string& key, int& value)
     std::string strValue;
     bool retVal = getProperty(key, strValue);
 
-    if (retVal)
-    {
+    if (retVal) {
         try {
             value = std::stoi(strValue);
         }
@@ -312,7 +289,6 @@ bool Configuration::getProperty(const std::string& key, int& value)
             LOG_WARNING("RetroFE", "Integer out of range for key: " + key);
         }
     }
-
     return retVal;
 }
 
@@ -322,12 +298,10 @@ bool Configuration::getProperty(const std::string& key, bool& value)
     std::string strValue;
     bool retVal = getProperty(key, strValue);
 
-    if (retVal)
-    {
+    if (retVal) {
         std::transform(strValue.begin(), strValue.end(), strValue.begin(), ::tolower);
         value = (strValue == "yes" || strValue == "true" || strValue == "on");
     }
-
     return retVal;
 }
 
@@ -352,8 +326,7 @@ bool Configuration::propertyPrefixExists(const std::string& key)
     std::string search = key + ".";
     auto it = properties_.lower_bound(search);
 
-    if (it != properties_.end() && it->first.compare(0, search.length(), search) == 0)
-    {
+    if (it != properties_.end() && it->first.compare(0, search.length(), search) == 0) {
         return true;
     }
 
@@ -367,13 +340,11 @@ void Configuration::childKeyCrumbs(const std::string& parent, std::vector<std::s
     auto it = properties_.lower_bound(search);
     std::set<std::string> uniqueChildren;
 
-    while (it != properties_.end() && it->first.compare(0, search.length(), search) == 0)
-    {
+    while (it != properties_.end() && it->first.compare(0, search.length(), search) == 0) {
         std::string crumb = it->first.substr(search.length());
         std::size_t end = crumb.find_first_of(".");
 
-        if (end != std::string::npos)
-        {
+        if (end != std::string::npos) {
             crumb = crumb.substr(0, end);
         }
 
@@ -389,8 +360,7 @@ std::string Configuration::convertToAbsolutePath(const std::string& prefix, cons
 {
     std::filesystem::path fsPath(path);
     // Check if the path is already an absolute path
-    if (!fsPath.is_absolute())
-    {
+    if (!fsPath.is_absolute()) {
         // Combine prefix and path
         std::filesystem::path absPath = std::filesystem::absolute(std::filesystem::path(prefix) / fsPath);
         return absPath.string();
@@ -409,8 +379,7 @@ bool Configuration::getPropertyAbsolutePath(const std::string& key, std::string 
         std::replace(value.begin(), value.end(), '\\', '/');
     #endif
 
-    if(retVal)
-    {
+    if(retVal) {
         value = convertToAbsolutePath(absolutePath, value);
     }
 
@@ -426,31 +395,26 @@ void Configuration::getMediaPropertyAbsolutePath(const std::string& collectionNa
 void Configuration::getMediaPropertyAbsolutePath(const std::string& collectionName, const std::string& mediaType, bool system, std::string &value)
 {
     std::string key = "collections." + collectionName + ".media." + mediaType;
-    if (system) 
-    {
+    if (system) {
         key = "collections." + collectionName + ".media.system_artwork";
     }
 
     // use user-overridden setting if it exists
-    if(getPropertyAbsolutePath(key, value))
-    {
+    if(getPropertyAbsolutePath(key, value)) {
         return;
     }
 
     // use user-overridden base media path if it was specified
     std::string baseMediaPath;
-    if(!getPropertyAbsolutePath("baseMediaPath", baseMediaPath))
-    {
+    if(!getPropertyAbsolutePath("baseMediaPath", baseMediaPath)) {
         // base media path was not specified, assume media files are in the collection
         baseMediaPath = Utils::combinePath(absolutePath, "collections");
     }
 
-    if(system)
-    {
+    if(system) {
         value = Utils::combinePath(baseMediaPath, collectionName, "system_artwork");
     }
-    else
-    {
+    else {
         value = Utils::combinePath(baseMediaPath, collectionName, "medium_artwork", mediaType);
     }
 }
@@ -459,14 +423,12 @@ void Configuration::getCollectionAbsolutePath(const std::string& collectionName,
 {
     std::string key = "collections." + collectionName + ".list.path";
 
-    if(getPropertyAbsolutePath(key, value))
-    {
+    if(getPropertyAbsolutePath(key, value)) {
         return;
     }
 
     std::string baseItemPath;
-    if(getPropertyAbsolutePath("baseItemPath", baseItemPath))
-    {
+    if(getPropertyAbsolutePath("baseItemPath", baseItemPath)) {
         value = Utils::combinePath(baseItemPath, collectionName);
         return;
     }
@@ -477,14 +439,12 @@ void Configuration::getCollectionAbsolutePath(const std::string& collectionName,
 bool Configuration::StartLogging(Configuration* config)
 {
 
-    if (std::string logFile = Utils::combinePath(Configuration::absolutePath, "log.txt"); !Logger::initialize(logFile, config))
-    {
+    if (std::string logFile = Utils::combinePath(Configuration::absolutePath, "log.txt"); !Logger::initialize(logFile, config)) {
         // Can't write to logs give a heads up...
         fprintf(stderr, "Could not open log: %s for writing!\nRetroFE will now exit...\n", logFile.c_str());
         //LOG_ERROR("RetroFE", "Could not open \"" + logFile + "\" for writing");
         return false;
     }
-
     return true;
 }
 

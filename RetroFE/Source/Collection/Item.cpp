@@ -141,8 +141,7 @@ void Item::loadInfo(const std::string& path)
         lineCount++;
         line = Utils::filterComments(line);
         // Check if the line has an assignment operator
-        if ((position = line.find("=")) != std::string::npos)
-        {
+        if ((position = line.find("=")) != std::string::npos) {
             key = line.substr(0, position);
             key = Utils::trimEnds(key);
             value = line.substr(position + 1);

@@ -38,13 +38,11 @@ FontCache::~FontCache()
 void FontCache::deInitialize()
 {
     std::map<std::string, Font *>::iterator it = fontFaceMap_.begin();
-    while(it != fontFaceMap_.end())
-    {
+    while(it != fontFaceMap_.end()) {
         delete it->second;
         fontFaceMap_.erase(it);
         it = fontFaceMap_.begin();
     }
-
     SDL_LockMutex(SDL::getMutex());
     TTF_Quit();
     SDL_UnlockMutex(SDL::getMutex());
@@ -62,8 +60,7 @@ Font *FontCache::getFont(std::string fontPath, int fontSize, SDL_Color color)
 
     std::map<std::string, Font *>::iterator it = fontFaceMap_.find(buildFontKey(fontPath, fontSize, color));
 
-    if(it != fontFaceMap_.end())
-    {
+    if(it != fontFaceMap_.end()) {
         t = it->second;
     }
 
@@ -83,8 +80,7 @@ bool FontCache::loadFont(std::string fontPath, int fontSize, SDL_Color color, in
     std::string key = buildFontKey(fontPath, fontSize, color);
     std::map<std::string, Font *>::iterator it = fontFaceMap_.find(key);
 
-    if(it == fontFaceMap_.end())
-    {
+    if(it == fontFaceMap_.end()) {
         Font *f = new Font(fontPath, fontSize, color, monitor);
         f->initialize();
         fontFaceMap_[key] = f;

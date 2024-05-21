@@ -127,39 +127,33 @@ int main(int argc, char** argv)
         
         if ((param == "-createcollection" ||
             param == "--createcollection" ||
-            param == "-cc") && argc > 2)
-        {
+            param == "-cc") && argc > 2) {
             // Generate a default collection structure
             std::string param = argv[1];
             std::string value = argv[2];
-            if (argc == 3)
-            {
+            if (argc == 3) {
                 CollectionInfoBuilder::createCollectionDirectory(value, "", Utils::getOSType());
                 return 0;
             }
-            else if (argc == 4 && std::string(argv[3]) == "local")
-            {
+            else if (argc == 4 && std::string(argv[3]) == "local") {
                 CollectionInfoBuilder::createCollectionDirectory(value, argv[3], Utils::getOSType());
                 return 0;
             }
-            else
-            {
+            else {
                 std::cout << std::endl << "Expected at least 1 argument for -createcollection, got " << argc - 2 << std::endl;
                 return 0;
             }
         }
         else if (param == "-version" ||
             param == "--version" ||
-            param == "-v")
-        {
+            param == "-v") {
             std::cout << std::endl << "RetroFE version " << Version::getString() << std::endl << std::flush;
             sendEnterKey();
             return 0;
         }
         else if (param == "-showusage" ||
             param == "--showusage" ||
-            param == "-su")
-        {
+            param == "-su") {
             // List all available global settings and there use
             std::cout << std::endl;
             showUsage(global_options::s_option_entries);
@@ -171,8 +165,7 @@ int main(int argc, char** argv)
             param == "--rebuilddatabase" ||
             param == "-rebuilddb" ||
             param == "-rbdb" ||
-            param == "-rdb")
-        {
+            param == "-rdb") {
             // Rebuild the database without doing a full init and bypasses metaLock
             DB* db = nullptr;
             MetadataDatabase* metadb = nullptr;
@@ -190,8 +183,7 @@ int main(int argc, char** argv)
         }
         else if (param == "-showconfig" ||
             param == "--showconfig" ||
-            param == "-sc")
-        {
+            param == "-sc") {
             // Prints all settingsX.conf to terminal
             ImportConfiguration(&config);
             fprintf(stdout, "\n");
@@ -202,11 +194,9 @@ int main(int argc, char** argv)
         }
         else if (param == "-dumpproperties" ||
                  param == "--dumpproperties" ||
-                 param == "-dump")
-        {
+                 param == "-dump") {
             // Equivalent to doing dumpProperties=true in settings.conf, we just don't do a full init
-            if (argc == 2)
-            {
+            if (argc == 2) {
                 gst_debug_set_default_threshold(GST_LEVEL_ERROR);
                 gst_init(nullptr, nullptr);
                 ImportConfiguration(&config);
@@ -216,8 +206,7 @@ int main(int argc, char** argv)
                 sendEnterKey();
                 return 0;
             }
-            else
-            {
+            else {
                 std::cout << std::endl << "Expected 1 argument for -dump, got " << argc - 2 << std::endl;
                 std::cout << "Usage [-dump]" << std::endl;
                 sendEnterKey();
@@ -226,31 +215,26 @@ int main(int argc, char** argv)
         }
         else if (param == "-createconfig" ||
             param == "--createconfig" ||
-            param == "-C")
-        {
+            param == "-C") {
             // Generate a default settings.conf and readme
             makeSettings(global_options::s_option_entries);
             makeSettingsReadme(global_options::s_option_entries);
             sendEnterKey();
             return 0;
         }
-        else if ((argc % 2 != 0 || argc % 2 == 0) && param != "-help" && param != "-h" && param != "--help")
-        {
+        else if ((argc % 2 != 0 || argc % 2 == 0) && param != "-help" && param != "-h" && param != "--help") {
             // Pass global settings via CLI
             for (int i = 1; i <= argc - 1 ; i+=2) {
                 // The odd argument should always be the key, and even will be value
-                if (argv[i+1] == nullptr)
-                {
+                if (argv[i+1] == nullptr) {
                     // If you don't pass a value with a key we need catch that here
                     if (param == "-createcollection" ||
                         param == "--createcollection" ||
-                        param == "-cc")
-                    {
+                        param == "-cc") {
                         std::cout << std::endl << "Usage [-createcollection] [collectionName] {local}" << std::endl;
                         sendEnterKey();
                     }
-                    else
-                    {
+                    else {
                         std::cout << std::endl << "Expected 1 argument for " << argv[i] << " got " << 0 << std::endl;
                         sendEnterKey();
                     }
@@ -258,31 +242,26 @@ int main(int argc, char** argv)
                 }
                 std::string CLIkey = argv[i];
                 std::string CLIvalue = argv[i+1];
-                if (Utils::startsWithAndStrip(CLIkey, "-") && ! Utils::startsWith(CLIvalue,"-"))
-                {
-                    if (CLIkey == OPTION_LOG)
-                    {
+                if (Utils::startsWithAndStrip(CLIkey, "-") && ! Utils::startsWith(CLIvalue,"-")) {
+                    if (CLIkey == OPTION_LOG) {
                         config.setProperty(OPTION_LOG, CLIvalue);
                         config.StartLogging(&config);
                     }
                     settingsFromCLI.push_back(CLIkey + "=" + CLIvalue + "\n");
                 }
-                else if(Utils::startsWith(CLIvalue,"-"))
-                {
+                else if(Utils::startsWith(CLIvalue,"-")) {
                     std::cout << std::endl << "Expected 1 argument for -" << CLIkey << " got " << 0 << std::endl;
                     sendEnterKey();
                     return 0;
                 }
-                else
-                {
+                else {
                     std::cout << std::endl << "To pass settings via CLI pairs use [-key] [value] format" << std::endl;
                     sendEnterKey();
                     return 0;
                 }
             }
         }
-        else
-        {
+        else {
             // Display information about RetroFE
             std::cout << std::endl;
             std::cout << "Absolute Path: " << Configuration::absolutePath << std::endl;
@@ -325,20 +304,15 @@ int main(int argc, char** argv)
     gst_init(nullptr, nullptr);
 
     try {
-        
-        while (true)
-        {
-            if (!ImportConfiguration(&config))
-            {
+        while (true) {
+            if (!ImportConfiguration(&config)) {
                 // Exit with a heads up...
                 std::string logFile = Utils::combinePath(Configuration::absolutePath, "log.txt");
-                if(Utils::isOutputATerminal())
-                {
+                if(Utils::isOutputATerminal()) {
                     fprintf(stderr, "RetroFE has failed to start due to a configuration error\nCheck the log for details: %s\n", logFile.c_str());
                     sendEnterKey();
                 }
-                else
-                {
+                else {
                     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Configuration Error", ("RetroFE has failed to start due to a configuration error\nCheck the log for details: \n" + logFile).c_str(), NULL);
                 }
                 exit(EXIT_FAILURE);
@@ -350,8 +324,7 @@ int main(int argc, char** argv)
                 break;
         }
     }
-    catch (std::exception& e)
-    {
+    catch (std::exception& e) {
         LOG_ERROR("EXCEPTION", e.what());
     }
 
@@ -360,47 +333,39 @@ int main(int argc, char** argv)
     return 0;
 }
 
-static bool ImportConfiguration(Configuration* c)
-{
+static bool ImportConfiguration(Configuration* c) {
     std::string configPath = Configuration::absolutePath; // Gets working directory
     fs::path launchersPath = Utils::combinePath(Configuration::absolutePath, "launchers." + Utils::getOSType()); // Gets launchers directory
     fs::path collectionsPath = Utils::combinePath(Configuration::absolutePath, "collections"); // Gets collections directory
     std::string settingsConfPath = Utils::combinePath(configPath, "settings"); // Gets root settings
     
-    if(!fs::exists(Utils::combinePath(Configuration::absolutePath, "settings.conf")))
-    {
+    if(!fs::exists(Utils::combinePath(Configuration::absolutePath, "settings.conf"))) {
         std::string logFile = "\nCheck the log for details: " + Utils::combinePath(Configuration::absolutePath, "log.txt");
-        if(Utils::isOutputATerminal())
-        {
+        if(Utils::isOutputATerminal()) {
             std::cout << std::endl << "RetroFE failed to find a valid settings.conf in the current directory" + logFile << std::endl;
             sendEnterKey();
         }
-        else
-        {
+        else {
             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Configuration", ("RetroFE failed to find a valid settings.conf in the current directory" + logFile).c_str(), NULL);
         }
         exit(EXIT_FAILURE);
     }
     
-    if (!c->import("", settingsConfPath + ".conf"))
-    {
+    if (!c->import("", settingsConfPath + ".conf")) {
         LOG_ERROR("RetroFE", "Could not import \"" + settingsConfPath + ".conf\"");
         return false;
     }
     for (int i = 1; i < 16; i++) {
         std::string settingsFile = settingsConfPath + std::to_string(i) + ".conf";
-        if (fs::exists(settingsFile)) 
-        {
+        if (fs::exists(settingsFile)) {
             c->import("", "", settingsFile, false);
         }
     }
     std::string savedSettingsFile = settingsConfPath + "_saved.conf";
-    if (fs::exists(savedSettingsFile)) 
-    {
+    if (fs::exists(savedSettingsFile)) {
         c->import("", "", savedSettingsFile, false);
     }
-    if (!settingsFromCLI.empty()) 
-    {
+    if (!settingsFromCLI.empty()) {
         // If settingsFromCLI isn't empty let's do something with it
         std::string result;
         for (const auto& str : settingsFromCLI) {
@@ -412,26 +377,24 @@ static bool ImportConfiguration(Configuration* c)
     // log version
     LOG_INFO("RetroFE", "Version " + Version::getString() + " starting");
 
-#ifdef WIN32
-    LOG_INFO("RetroFE", "OS: Windows");
-#elif __APPLE__
-    LOG_INFO("RetroFE", "OS: Mac");
-#else
-    LOG_INFO("RetroFE", "OS: Linux");
-#endif
+    #ifdef WIN32
+        LOG_INFO("RetroFE", "OS: Windows");
+    #elif __APPLE__
+        LOG_INFO("RetroFE", "OS: Mac");
+    #else
+        LOG_INFO("RetroFE", "OS: Linux");
+    #endif
     
     // Check if GStreamer initialization was successful
-    if (gst_is_initialized())
-    {
-#ifdef WIN32
-        std::string path = Utils::combinePath(Configuration::absolutePath, "retrofe");
-        GstRegistry* registry = gst_registry_get();
-        gst_registry_scan_path(registry, path.c_str());
-#endif
+    if (gst_is_initialized()) {
+    #ifdef WIN32
+            std::string path = Utils::combinePath(Configuration::absolutePath, "retrofe");
+            GstRegistry* registry = gst_registry_get();
+            gst_registry_scan_path(registry, path.c_str());
+    #endif
         LOG_INFO("RetroFE", "GStreamer successfully initialized");
     }
-    else
-    {
+    else {
         LOG_ERROR("RetroFE", "Failed to initialize GStreamer");
         return false;
     }
@@ -439,29 +402,23 @@ static bool ImportConfiguration(Configuration* c)
     LOG_INFO("RetroFE", "Absolute path: " + Configuration::absolutePath);
 
     // Process launchers
-    if (fs::is_directory(launchersPath))
-    {
-        for (const auto& entry : fs::directory_iterator(launchersPath))
-        {
-            if (entry.is_regular_file())
-            {
+    if (fs::is_directory(launchersPath)) {
+        for (const auto& entry : fs::directory_iterator(launchersPath)) {
+            if (entry.is_regular_file()) {
                 fs::path filePath = entry.path();
-                if (filePath.extension() == ".conf")
-                {
+                if (filePath.extension() == ".conf") {
                     std::string basename = filePath.stem().string();
                     std::string prefix = "launchers." + basename;
                     std::string importFile = filePath.string();
 
-                    if (!c->import(prefix, importFile))
-                    {
+                    if (!c->import(prefix, importFile)) {
                         LOG_ERROR("RetroFE", "Could not import \"" + importFile + "\"");
                     }
                 }
             }
         }
     }
-    else
-    {
+    else {
         LOG_NOTICE("RetroFE", "Launchers directory does not exist or is not a directory: " + launchersPath.string());
     }
 
@@ -521,8 +478,7 @@ static bool ImportConfiguration(Configuration* c)
                 localLaunchersPath = defaultLocalLaunchersPath;
             }
 
-            if (fs::is_directory(localLaunchersPath))
-            {
+            if (fs::is_directory(localLaunchersPath)) {
                 for (const auto& launcherEntry : fs::directory_iterator(localLaunchersPath)) {
                     if (launcherEntry.is_regular_file()) {
                         fs::path filePath = launcherEntry.path();
@@ -554,8 +510,6 @@ static bool ImportConfiguration(Configuration* c)
             if (!importFile.empty() && (collection.size() < 3 || collection.substr(collection.size() - 3) != "SUB")) {
                 c->setProperty(collectionLaunchers, launchers + collection + ",");
             }
-
-
 
             if (!settingsImported) {
                 LOG_ERROR("RetroFE", "Could not import any collection settings for " + collection);

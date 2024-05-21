@@ -30,6 +30,7 @@ public:
     virtual void update(float dt) = 0;
     virtual void draw() = 0;
     virtual void loopHandler() = 0;
+    virtual void volumeUpdate() = 0;
     virtual int getHeight() = 0;
     virtual int getWidth() = 0;
     virtual void setVolume(float volume) = 0;
@@ -43,4 +44,5 @@ public:
     virtual unsigned long long getDuration( ) = 0;
     virtual bool isPaused( ) = 0;
     virtual bool isPlaying() = 0;
+    virtual bool getFrameReady() = 0;
 };

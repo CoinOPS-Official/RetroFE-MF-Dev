@@ -84,31 +84,26 @@ bool Launcher::run(std::string collection, Item *collectionItem, Page *currentPa
     std::string args;
 
 
-    if(!launcherExecutable(executablePath, launcherName))
-    {
+    if(!launcherExecutable(executablePath, launcherName)) {
         LOG_ERROR("Launcher", "Failed to find launcher executable (launcher: " + launcherName + " executable: " + executablePath + " collection: " + collectionItem->collectionInfo->name + " item: " + collectionItem->name + ")");
         return false;
     }
-    if(!extensions(extensionstr, collection))
-    {
+    if(!extensions(extensionstr, collection)) {
         LOG_ERROR("Launcher", "No file extensions configured for collection \"" + collection + "\"");
         return false;
     }
-    if(!collectionDirectory(selectedItemsDirectory, collection))
-    {
+    if(!collectionDirectory(selectedItemsDirectory, collection)) {
         LOG_ERROR("Launcher", "Could not find files in directory \"" + selectedItemsDirectory + "\" for collection \"" + collection + "\"");
         return false;
     }
-    if(!launcherArgs(args, launcherName))
-    {
+    if(!launcherArgs(args, launcherName)) {
         LOG_ERROR("Launcher", "No launcher arguments specified for launcher " + launcherName);
         return false;
     }
 
 
     // Overwrite selectedItemsDirectory if already set in the file
-    if (collectionItem->filepath != "")
-    {
+    if (collectionItem->filepath != "") {
         selectedItemsDirectory = collectionItem->filepath;
     }
     LOG_DEBUG("LauncherDebug", "selectedItemsPath pre-find file: " + selectedItemsPath);
@@ -117,9 +112,6 @@ bool Launcher::run(std::string collection, Item *collectionItem, Page *currentPa
     LOG_DEBUG("LauncherDebug", "extensionstr pre - find file : " + extensionstr);
     LOG_DEBUG("LauncherDebug", "collectionItem->name pre - find file: " + collectionItem->name);
     LOG_DEBUG("LauncherDebug", "collectionItem->file pre - find file: " + collectionItem->file);
-
-
-
 
     // It is ok to continue if the file could not be found. We could be launching a merged romset
     if (collectionItem->file == "")
@@ -159,8 +151,7 @@ bool Launcher::run(std::string collection, Item *collectionItem, Page *currentPa
                                         selectedItemsDirectory,
                                         collection);
 
-    if(!execute(executablePath, args, currentDirectory, true, currentPage))
-    {
+    if(!execute(executablePath, args, currentDirectory, true, currentPage)) {
         LOG_ERROR("Launcher", "Failed to launch.");
         return false;
     }
@@ -178,8 +169,7 @@ void Launcher::startScript()
 #else
     std::string exe = Utils::combinePath(Configuration::absolutePath, "start.sh");
 #endif
-    if(fs::exists(exe))
-    {
+    if(fs::exists(exe)) {
         execute(exe, "", Configuration::absolutePath, false);
     }
 }
@@ -191,8 +181,7 @@ void Launcher::exitScript()
 #else
     std::string exe = Utils::combinePath(Configuration::absolutePath, "exit.sh");
 #endif
-    if(fs::exists(exe))
-    {
+    if(fs::exists(exe)) {
         execute(exe, "", Configuration::absolutePath, false);
     }
 }
@@ -209,8 +198,7 @@ void Launcher::LEDBlinky( int command, std::string collection, Item *collectionI
 	bool wait = false;
 	if ( command == 2 )
 		wait = true;
-	if ( command == 8 )
-	{
+	if ( command == 8 ) {
 		std::string launcherName = collectionItem->collectionInfo->launcher;
 		std::string launcherFile = Utils::combinePath( Configuration::absolutePath, "collections", collectionItem->collectionInfo->name, "launchers", collectionItem->name + ".conf" );
 		if (std::ifstream launcherStream( launcherFile.c_str( ) ); launcherStream.good( )) // Launcher file found
@@ -226,8 +214,7 @@ void Launcher::LEDBlinky( int command, std::string collection, Item *collectionI
 		config_.getProperty("launchers." + launcherName + ".LEDBlinkyEmulator", emulator );
 		args = args + " \"" + emulator + "\"";
 	}
-	if ( command == 3 || command == 9 )
-	{
+	if ( command == 3 || command == 9 ) {
 		std::string launcherName = collectionItem->collectionInfo->launcher;
 		std::string launcherFile = Utils::combinePath( Configuration::absolutePath, "collections", collectionItem->collectionInfo->name, "launchers", collectionItem->name + ".conf" );
 		if (std::ifstream launcherStream( launcherFile.c_str( ) ); launcherStream.good( )) // Launcher file found
@@ -245,8 +232,7 @@ void Launcher::LEDBlinky( int command, std::string collection, Item *collectionI
 		if ( emulator == "" )
 			return;
 	}
-	if ( LEDBlinkyDirectory != "" && !execute( exe, args, LEDBlinkyDirectory, wait ) )
-	{
+	if ( LEDBlinkyDirectory != "" && !execute( exe, args, LEDBlinkyDirectory, wait )) {
         LOG_WARNING("LEDBlinky", "Failed to launch." );
 	}
 	return;
@@ -319,8 +305,7 @@ bool Launcher::execute(std::string executable, std::string args, std::string cur
     if(!CreateProcess(nullptr, applicationName, nullptr, nullptr, FALSE, CREATE_NO_WINDOW, nullptr, currDir, &startupInfo, &processInfo))
 #else
     const std::size_t last_slash_idx = executable.rfind(Utils::pathSeparator);
-    if (last_slash_idx != std::string::npos)
-    {
+    if (last_slash_idx != std::string::npos) {
         std::string applicationName = executable.substr(last_slash_idx + 1);
         executionString = "cd \"" + currentDirectory + "\" && exec \"./" + applicationName + "\" " + args;
     }
@@ -336,15 +321,11 @@ bool Launcher::execute(std::string executable, std::string args, std::string cur
         // lower priority
         SetPriorityClass(GetCurrentProcess(), BELOW_NORMAL_PRIORITY_CLASS);
 
-		if ( wait )
-		{
-			while(WAIT_OBJECT_0 != MsgWaitForMultipleObjects(1, &processInfo.hProcess, FALSE, INFINITE, QS_ALLINPUT))
-			{
+		if ( wait ) {
+			while(WAIT_OBJECT_0 != MsgWaitForMultipleObjects(1, &processInfo.hProcess, FALSE, INFINITE, QS_ALLINPUT)) {
 				MSG msg;
-				while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
-				{
+				while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
 					DispatchMessage(&msg);
-                    
 				}
 			}
         }
@@ -388,16 +369,14 @@ void Launcher::keepRendering(std::atomic<bool> &stop_thread, Page &currentPage)
         lastTime = currentTime;
         currentTime = static_cast<float>(SDL_GetTicks()) / 1000;
 
-        if (currentTime < lastTime)
-        {
+        if (currentTime < lastTime) {
             currentTime = lastTime;
         }
 
         deltaTime = currentTime - lastTime;
         sleepTime = fpsTime - deltaTime * 1000;
             
-        if (sleepTime > 0 && sleepTime < 1000)
-        {
+        if (sleepTime > 0 && sleepTime < 1000) {
             SDL_Delay(static_cast<unsigned int>(sleepTime));
         }
         currentPage.update(float(0));
@@ -405,16 +384,14 @@ void Launcher::keepRendering(std::atomic<bool> &stop_thread, Page &currentPage)
 
         // start on secondary monitor
         // todo support future main screen swap
-        for (int i = 1; i < SDL::getScreenCount(); ++i)
-        {
+        for (int i = 1; i < SDL::getScreenCount(); ++i) {
             SDL_SetRenderDrawColor(SDL::getRenderer(i), 0x0, 0x0, 0x00, 0xFF);
             SDL_RenderClear(SDL::getRenderer(i));
         }
 
         currentPage.draw();
 
-        for (int i = 1; i < SDL::getScreenCount(); ++i)
-        {
+        for (int i = 1; i < SDL::getScreenCount(); ++i) {
             SDL_RenderPresent(SDL::getRenderer(i));
         }
 
@@ -425,8 +402,7 @@ void Launcher::keepRendering(std::atomic<bool> &stop_thread, Page &currentPage)
 bool Launcher::launcherName(std::string &launcherName, std::string collection)
 {
        // find the launcher for the particular item 
-    if (std::string launcherKey = "collections." + collection + ".launcher"; !config_.getProperty(launcherKey, launcherName))
-    {
+    if (std::string launcherKey = "collections." + collection + ".launcher"; !config_.getProperty(launcherKey, launcherName)) {
         std::stringstream ss;
 
         ss << "Launch failed. Could not find a configured launcher for collection \""
@@ -496,9 +472,7 @@ bool Launcher::launcherArgs(std::string& args, std::string launcherName) {
 
 bool Launcher::extensions(std::string &extensions, std::string collection)
 {
-
-    if(std::string extensionsKey = "collections." + collection + ".list.extensions"; !config_.getProperty(extensionsKey, extensions))
-    {
+    if(std::string extensionsKey = "collections." + collection + ".list.extensions"; !config_.getProperty(extensionsKey, extensions)) {
         LOG_ERROR("Launcher", "No extensions specified for: " + extensionsKey);
         return false;
     }

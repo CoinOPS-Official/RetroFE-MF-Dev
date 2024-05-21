@@ -31,8 +31,7 @@ VideoComponent * VideoBuilder::createVideo(const std::string& path, Page &page, 
 
     std::string prefix = Utils::combinePath(path, name);
 
-    if(std::string file; Utils::findMatchingFile(prefix, extensions, file))
-    {
+    if(std::string file; Utils::findMatchingFile(prefix, extensions, file)) {
         component = new VideoComponent(page, file, monitor, numLoops);
         component->allocateGraphicsMemory();
     }

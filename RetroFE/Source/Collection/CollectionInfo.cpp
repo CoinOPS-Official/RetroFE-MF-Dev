@@ -60,10 +60,8 @@ CollectionInfo::~CollectionInfo()
 {
     auto pit = playlists.begin();
 
-    while(pit != playlists.end())
-    {
-        if(pit->second != &items)
-        {
+    while(pit != playlists.end()) {
+        if(pit->second != &items) {
             delete pit->second;
         }
         playlists.erase(pit);
@@ -71,8 +69,7 @@ CollectionInfo::~CollectionInfo()
     }
 
 	auto it = items.begin();
-    while(it != items.end())
-    {
+    while(it != items.end()) {
         delete *it;
         items.erase(it);
         it = items.begin();
@@ -82,8 +79,7 @@ CollectionInfo::~CollectionInfo()
 bool CollectionInfo::saveFavorites(Item* removed)
 {
     bool retval = true;
-    if(saveRequest && name != "")
-    {
+    if(saveRequest && name != "") {
         std::string playlistCollectionName = name;
         bool globalFavLast = false;
         (void)conf_.getProperty(OPTION_GLOBALFAVLAST, globalFavLast);
@@ -95,8 +91,7 @@ bool CollectionInfo::saveFavorites(Item* removed)
         LOG_INFO("Collection", "Saving favorites " + file);
 
         std::ofstream filestream;
-        try
-        {
+        try {
             // Create playlists directory if it does not exist yet.
             struct stat info;
             if ( stat( dir.c_str(), &info ) != 0 )
@@ -122,15 +117,13 @@ bool CollectionInfo::saveFavorites(Item* removed)
                 }
 #endif
             }
-            else if ( !(info.st_mode & S_IFDIR) )
-            {
+            else if ( !(info.st_mode & S_IFDIR) ) {
                 LOG_WARNING("Collection", dir + " exists, but is not a directory.");
                 return false;
             }
             std::vector<Item*> saveitems;
             auto it = playlists["favorites"]->begin();
-            while (it != playlists["favorites"]->end())
-            {
+            while (it != playlists["favorites"]->end()) {
                 saveitems.push_back(*it);
                 it++;
             }
@@ -153,8 +146,7 @@ bool CollectionInfo::saveFavorites(Item* removed)
                     }
                     filestream.open(file.c_str());
                     auto it = remaining.begin();
-                    while (it != remaining.end())
-                    {
+                    while (it != remaining.end()) {
                         filestream << (*it) << std::endl;
                         it++;
                     }
@@ -185,8 +177,7 @@ bool CollectionInfo::saveFavorites(Item* removed)
                     }
                 }
                 auto it = saveitems.begin();
-                while (it != saveitems.end())
-                {
+                while (it != saveitems.end()) {
                     if (existing.find((*it)->collectionInfo->name) != existing.end() &&
                         existing[(*it)->collectionInfo->name].find((*it)->name) != existing[(*it)->collectionInfo->name].end()) {
                         // exists so don't add to file
@@ -203,14 +194,11 @@ bool CollectionInfo::saveFavorites(Item* removed)
                 filestream.open(file.c_str());
             }
             
-            for(auto it = saveitems.begin(); it != saveitems.end(); it++)
-            {
-                if ((*it)->collectionInfo->name == (*it)->name)
-                {
+            for(auto it = saveitems.begin(); it != saveitems.end(); it++) {
+                if ((*it)->collectionInfo->name == (*it)->name) {
                     filestream << (*it)->name << std::endl;
                 }
-                else
-                {
+                else {
                     filestream << "_" << (*it)->collectionInfo->name << ":" << (*it)->name << std::endl;
                 }
             }
@@ -239,8 +227,7 @@ void CollectionInfo::extensionList(std::vector<std::string> &extensionlist) cons
     std::istringstream ss(extensions_);
     std::string token;
 
-    while(std::getline(ss, token, ','))
-    {
+    while(std::getline(ss, token, ',')) {
         token = Utils::trimEnds(token);
     	extensionlist.push_back(token);
     }
@@ -305,10 +292,8 @@ void CollectionInfo::sortPlaylists()
     std::vector<Item *> const *allItems = &items;
     std::vector<Item *> toSortItems;
 
-    for ( auto itP = playlists.begin( ); itP != playlists.end( ); itP++ )
-    {
-        if ( itP->second != allItems )
-        {
+    for ( auto itP = playlists.begin( ); itP != playlists.end( ); itP++ ) {
+        if ( itP->second != allItems ) {
             // temporarily set collection info's sortType so search has access to it
             sortType = Item::validSortType(itP->first) ? itP->first : "";
             std::sort(itP->second->begin(), itP->second->end(), itemIsLess(sortType, menusort));

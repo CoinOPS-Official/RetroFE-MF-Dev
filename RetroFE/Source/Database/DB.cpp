@@ -34,26 +34,22 @@ bool DB::initialize()
 {
     bool retVal = false;
 
-    if(sqlite3_open(path_.c_str(), &handle) != 0)
-    {
+    if(sqlite3_open(path_.c_str(), &handle) != 0) {
         std::stringstream ss;
         ss << "Cannot open database: \"" << path_ << "\"" << sqlite3_errmsg(handle);
         LOG_ERROR("Database", ss.str());
     }
-    else
-    {
+    else {
         LOG_INFO("Database", "Opened database \"" + path_ + "\"");
         retVal = true;
     }
-
     return retVal;
 }
 
 
 void DB::deInitialize()
 {
-    if(handle != nullptr)
-    {
+    if(handle != nullptr) {
         sqlite3_close(handle);
         handle = nullptr;
     }
