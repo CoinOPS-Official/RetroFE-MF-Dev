@@ -854,6 +854,15 @@ bool RetroFE::run( )
 
         // Wait for onHighlightEnter animation to finish
         case RETROFE_HIGHLIGHT_ENTER:
+            // detect that playlist selected is different the current then go to that playlist      
+            if (currentPage_->isMenuIdle() && currentPage_->getPlaylistMenu()) {
+                std::string selected_playlist = currentPage_->getPlaylistMenu()->getSelectedItem()->name;
+                if (selected_playlist != currentPage_->getSelectedItem()->playlist) {
+                    currentPage_->selectPlaylist(selected_playlist);
+                    state = RETROFE_PLAYLIST_REQUEST;
+                    break;
+                }
+            } 
             if (RETROFE_STATE state_tmp = processUserInput(currentPage_); currentPage_->isMenuIdle() &&
                 (state_tmp == RETROFE_HIGHLIGHT_REQUEST ||
                     state_tmp == RETROFE_MENUJUMP_REQUEST ||
