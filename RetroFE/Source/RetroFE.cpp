@@ -857,7 +857,7 @@ bool RetroFE::run( )
             // detect that playlist selected is different the current then go to that playlist      
             if (currentPage_->isMenuIdle() && currentPage_->getPlaylistMenu()) {
                 std::string selected_playlist = currentPage_->getPlaylistMenu()->getSelectedItem()->name;
-                if (selected_playlist != currentPage_->getSelectedItem()->playlist) {
+                if (selected_playlist != currentPage_->getPlaylistName()) {
                     currentPage_->selectPlaylist(selected_playlist);
                     state = RETROFE_PLAYLIST_REQUEST;
                     break;
