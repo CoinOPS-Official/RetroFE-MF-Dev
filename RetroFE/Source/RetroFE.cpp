@@ -2019,6 +2019,21 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             }
             return RETROFE_SCROLL_BACK;
         }
+        // playlist scroll
+        if (input_.keystate(UserInput::KeyCodeRight)) {
+            attract_.reset();
+            if (infoExitOnScroll) {
+                resetInfoToggle();
+            }
+            return RETROFE_SCROLL_PLAYLIST_FORWARD;
+        }
+        else if (input_.keystate(UserInput::KeyCodeLeft)) {
+            attract_.reset();
+            if (infoExitOnScroll) {
+                resetInfoToggle();
+            }
+            return RETROFE_SCROLL_PLAYLIST_BACK;
+        }
     }
     
     // don't wait for idle
