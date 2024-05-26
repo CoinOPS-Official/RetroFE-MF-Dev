@@ -859,7 +859,7 @@ bool RetroFE::run( )
                 std::string selected_playlist = currentPage_->getPlaylistMenu()->getSelectedItem()->name;
                 if (selected_playlist != currentPage_->getPlaylistName()) {
                     currentPage_->selectPlaylist(selected_playlist);
-                    state = RETROFE_PLAYLIST_REQUEST;
+                    state = RETROFE_PLAYLIST_EXIT;
                     break;
                 }
             } 
