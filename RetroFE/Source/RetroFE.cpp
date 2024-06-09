@@ -1988,7 +1988,8 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             }
             return RETROFE_SCROLL_PLAYLIST_BACK;
         }
-        //
+
+        // game scroll
         if (input_.keystate(UserInput::KeyCodeRight)) {
             attract_.reset( );
             if (infoExitOnScroll) {
@@ -2007,6 +2008,7 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
     }
     else {
         // vertical 
+        // 
         // playlist scroll
         if (input_.keystate(UserInput::KeyCodeRight)) {
             attract_.reset();
@@ -2022,7 +2024,8 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             }
             return RETROFE_SCROLL_PLAYLIST_BACK;
         }
-        //
+
+        // game scroll
         if (input_.keystate(UserInput::KeyCodeDown)) {
            attract_.reset();
             if (infoExitOnScroll) {
