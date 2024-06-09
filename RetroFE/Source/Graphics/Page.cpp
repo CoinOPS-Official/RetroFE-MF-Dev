@@ -293,6 +293,9 @@ bool Page::addComponent(Component *c)
 
 bool Page::isMenuIdle()
 {
+    if (!playlistMenu_->isScrollingListIdle())
+        return false;
+
     for(auto it = menus_.begin(); it != menus_.end(); ++it) {
         for(auto it2 = it->begin(); it2 != it->end(); ++it2) {
             ScrollingList *menu = *it2;

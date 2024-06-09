@@ -1973,20 +1973,6 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
 
     // Handle next/previous game inputs
     if ( page->isHorizontalScroll( ) ) {
-        if (input_.keystate(UserInput::KeyCodeRight)) {
-            attract_.reset( );
-            if (infoExitOnScroll) {
-                resetInfoToggle();
-            }
-            return RETROFE_SCROLL_FORWARD;
-        }
-        else if (input_.keystate(UserInput::KeyCodeLeft)) {
-            attract_.reset( );
-            if (infoExitOnScroll) {
-                resetInfoToggle();
-            }
-            return RETROFE_SCROLL_BACK;
-        }
         // playlist scroll
         if (input_.keystate(UserInput::KeyCodeDown)) {
             attract_.reset();
@@ -2002,9 +1988,41 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
             }
             return RETROFE_SCROLL_PLAYLIST_BACK;
         }
+        //
+        if (input_.keystate(UserInput::KeyCodeRight)) {
+            attract_.reset( );
+            if (infoExitOnScroll) {
+                resetInfoToggle();
+            }
+            return RETROFE_SCROLL_FORWARD;
+        }
+        else if (input_.keystate(UserInput::KeyCodeLeft)) {
+            attract_.reset( );
+            if (infoExitOnScroll) {
+                resetInfoToggle();
+            }
+            return RETROFE_SCROLL_BACK;
+        }
+        
     }
     else {
         // vertical 
+        // playlist scroll
+        if (input_.keystate(UserInput::KeyCodeRight)) {
+            attract_.reset();
+            if (infoExitOnScroll) {
+                resetInfoToggle();
+            }
+            return RETROFE_SCROLL_PLAYLIST_FORWARD;
+        }
+        else if (input_.keystate(UserInput::KeyCodeLeft)) {
+            attract_.reset();
+            if (infoExitOnScroll) {
+                resetInfoToggle();
+            }
+            return RETROFE_SCROLL_PLAYLIST_BACK;
+        }
+        //
         if (input_.keystate(UserInput::KeyCodeDown)) {
            attract_.reset();
             if (infoExitOnScroll) {
