@@ -40,6 +40,7 @@ Page::Page(Configuration &config, int layoutWidth, int layoutHeight)
     , playlistMenu_(NULL)
     , menuDepth_(0)
     , scrollActive_(false)
+    , playlistScrollActive_(false)
     , selectedItem_(NULL)
     , textStatusComponent_(NULL)
     , loadSoundChunk_(NULL)
@@ -677,6 +678,7 @@ void Page::setScrolling(ScrollDirection direction)
                 menuScroll();
             }
             scrollActive_ = true;
+            playlistScrollActive_ = false;
             break;
         case ScrollDirectionPlaylistForward:
         case ScrollDirectionPlaylistBack:
@@ -685,10 +687,12 @@ void Page::setScrolling(ScrollDirection direction)
                 playlistScroll();
             }
             scrollActive_ = true;
+            playlistScrollActive_ = true;
             break;
         case ScrollDirectionIdle:
         default:
             scrollActive_ = false;
+            playlistScrollActive_ = false;
             break;
     }
 
@@ -1481,6 +1485,10 @@ bool Page::isMenuScrolling() const
     return scrollActive_;
 }
 
+bool Page::isPlaylistScrolling() const
+{
+    return playlistScrollActive_;
+}
 
 bool Page::isPlaying() const
 {

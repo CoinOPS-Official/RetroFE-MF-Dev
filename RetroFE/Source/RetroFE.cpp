@@ -626,7 +626,7 @@ bool RetroFE::run( )
             state = RETROFE_PLAYLIST_REQUEST;
             break;
         case RETROFE_SCROLL_FORWARD:
-            if (currentPage_->isIdle()) {
+            if (currentPage_->isIdle() && !currentPage_->isPlaylistScrolling()) {
                 currentPage_->setScrolling(Page::ScrollDirectionForward);
                 currentPage_->scroll(true, false);
                 currentPage_->updateScrollPeriod();
@@ -634,7 +634,7 @@ bool RetroFE::run( )
             state = RETROFE_IDLE;
             break;
         case RETROFE_SCROLL_BACK:
-            if (currentPage_->isIdle()) {
+            if (currentPage_->isIdle() && !currentPage_->isPlaylistScrolling()) {
                 currentPage_->setScrolling(Page::ScrollDirectionBack);
                 currentPage_->scroll(false, false);
                 currentPage_->updateScrollPeriod();
