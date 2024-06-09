@@ -1,4 +1,4 @@
-# RetroFE - A cross-platform frontend for MAME cabinets
+# RetroFE - A cross-platform frontend for game cabinets, jukeboxes and kiosk style media centres
 
 [Project Discord](https://discord.gg/dpcsP8Hm9W) | [GitHub Wiki](https://github.com/CoinOPS-Official/RetroFE/wiki) | [Changelog](CHANGELOG.md)
 

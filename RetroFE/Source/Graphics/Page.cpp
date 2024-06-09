@@ -494,7 +494,6 @@ void Page::playlistChange()
     updatePlaylistMenuPosition();
 }
 
-
 void Page::menuScroll()
 {
     if (Item const* item = selectedItem_; !item)
@@ -502,6 +501,16 @@ void Page::menuScroll()
 
     for (auto it = LayerComponents.begin(); it != LayerComponents.end(); ++it) {
         (*it)->triggerEvent("menuScroll", menuDepth_ - 1);
+    }
+}
+
+void Page::playlistScroll()
+{
+    if (Item const* item = selectedItem_; !item)
+        return;
+
+    for (auto it = LayerComponents.begin(); it != LayerComponents.end(); ++it) {
+        (*it)->triggerEvent("playlistScroll", menuDepth_ - 1);
     }
 }
 
@@ -658,18 +667,26 @@ void Page::setText( const std::string& text, int id )
 void Page::setScrolling(ScrollDirection direction)
 {
     switch(direction) {
-    case ScrollDirectionForward:
-    case ScrollDirectionBack:
-        if(!scrollActive_)
-        {
-            menuScroll();
-        }
-        scrollActive_ = true;
-        break;
-    case ScrollDirectionIdle:
-    default:
-        scrollActive_ = false;
-        break;
+        case ScrollDirectionForward:
+        case ScrollDirectionBack:
+            if(!scrollActive_)
+            {
+                menuScroll();
+            }
+            scrollActive_ = true;
+            break;
+        case ScrollDirectionPlaylistForward:
+        case ScrollDirectionPlaylistBack:
+            if (!scrollActive_)
+            {
+                playlistScroll();
+            }
+            scrollActive_ = true;
+            break;
+        case ScrollDirectionIdle:
+        default:
+            scrollActive_ = false;
+            break;
     }
 
 }
@@ -1503,12 +1520,12 @@ bool Page::isMenuFastScrolling() const
 }
 
 
-void Page::scroll(bool forward) {
+void Page::scroll(bool forward, bool playlist) {
     if (useThreading_) {
         // Asynchronous version
-        auto scrollFuture = pool_.enqueue([this, forward]() {
+        auto scrollFuture = pool_.enqueue([this, forward, playlist]() {
             for (auto& menu : activeMenu_) {
-                if (menu && !menu->isPlaylist()) {
+                if (menu && (playlist && menu->isPlaylist() || !playlist && !menu->isPlaylist())) {
                     menu->scroll(forward);
                 }
             }
@@ -1526,7 +1543,7 @@ void Page::scroll(bool forward) {
     else {
         // Synchronous version
         for (auto& menu : activeMenu_) {
-            if (menu && !menu->isPlaylist()) {
+            if (menu && (playlist && menu->isPlaylist() || !playlist && !menu->isPlaylist())) {
                 menu->scroll(forward);
             }
         }

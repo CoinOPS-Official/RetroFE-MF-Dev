@@ -957,6 +957,7 @@ AnimationEvents *PageBuilder::createTweenInstance(rapidxml::xml_node<> *componen
     buildTweenSet(tweens, componentXml, "onIdle",           "idle");
     buildTweenSet(tweens, componentXml, "onMenuIdle",       "menuIdle");
     buildTweenSet(tweens, componentXml, "onMenuScroll",     "menuScroll");
+    buildTweenSet(tweens, componentXml, "onPlaylistScroll", "playlistScroll");
     buildTweenSet(tweens, componentXml, "onHighlightEnter", "highlightEnter");
     buildTweenSet(tweens, componentXml, "onHighlightExit",  "highlightExit");
     buildTweenSet(tweens, componentXml, "onMenuEnter",      "menuEnter");

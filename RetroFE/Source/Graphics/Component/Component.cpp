@@ -138,7 +138,7 @@ bool Component::isAttractIdle() const
 
 bool Component::isMenuScrolling() const
 {
-    return (!currentTweenComplete_ && animationType_ == "menuScroll");
+    return (!currentTweenComplete_ && (animationType_ == "menuScroll" || animationType_ == "playlistScroll"));
 }
 
 void Component::setTweens(AnimationEvents *set)

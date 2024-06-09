@@ -65,8 +65,8 @@ bool VideoComponent::update(float dt)
             hasBeenOnScreen_ = true;
 
         // Handle Pause/Resume based on visibility and PauseOnScroll setting
-        if (baseViewInfo.PauseOnScroll && !currentPage_->isMenuFastScrolling()) {
-            if (!isCurrentlyVisible && !isPaused()) {
+        if (baseViewInfo.PauseOnScroll) {
+            if (!isCurrentlyVisible && !isPaused() && !currentPage_->isMenuFastScrolling()) {
                 videoInst_->pause();
                 if(Logger::isLevelEnabled("DEBUG"))
                     LOG_DEBUG("VideoComponent", "Paused " + Utils::getFileName(videoFile_));
