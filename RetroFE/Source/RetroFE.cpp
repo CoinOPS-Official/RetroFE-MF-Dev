@@ -626,7 +626,7 @@ bool RetroFE::run( )
             state = RETROFE_PLAYLIST_REQUEST;
             break;
         case RETROFE_SCROLL_FORWARD:
-            if (currentPage_->isIdle() && !currentPage_->isPlaylistScrolling()) {
+            if (currentPage_->isIdle()) {
                 currentPage_->setScrolling(Page::ScrollDirectionForward);
                 currentPage_->scroll(true, false);
                 currentPage_->updateScrollPeriod();
@@ -634,7 +634,7 @@ bool RetroFE::run( )
             state = RETROFE_IDLE;
             break;
         case RETROFE_SCROLL_BACK:
-            if (currentPage_->isIdle() && !currentPage_->isPlaylistScrolling()) {
+            if (currentPage_->isIdle()) {
                 currentPage_->setScrolling(Page::ScrollDirectionBack);
                 currentPage_->scroll(false, false);
                 currentPage_->updateScrollPeriod();
@@ -1991,20 +1991,25 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
 
         // game scroll
         if (input_.keystate(UserInput::KeyCodeRight)) {
-            attract_.reset( );
+            if (page->isPlaylistScrolling()) {
+                return RETROFE_HIGHLIGHT_REQUEST;
+            }
+            attract_.reset();
             if (infoExitOnScroll) {
                 resetInfoToggle();
             }
             return RETROFE_SCROLL_FORWARD;
         }
         else if (input_.keystate(UserInput::KeyCodeLeft)) {
-            attract_.reset( );
+            if (page->isPlaylistScrolling()) {
+                return RETROFE_HIGHLIGHT_REQUEST;
+            }
+            attract_.reset();
             if (infoExitOnScroll) {
                 resetInfoToggle();
             }
             return RETROFE_SCROLL_BACK;
         }
-        
     }
     else {
         // vertical 
@@ -2027,13 +2032,19 @@ RetroFE::RETROFE_STATE RetroFE::processUserInput( Page *page )
 
         // game scroll
         if (input_.keystate(UserInput::KeyCodeDown)) {
-           attract_.reset();
+            if (page->isPlaylistScrolling()) {
+                return RETROFE_HIGHLIGHT_REQUEST;
+            }
+            attract_.reset();
             if (infoExitOnScroll) {
                 resetInfoToggle();
             }
             return RETROFE_SCROLL_FORWARD;
         }
         else if (input_.keystate(UserInput::KeyCodeUp)) {
+            if (page->isPlaylistScrolling()) {
+                return RETROFE_HIGHLIGHT_REQUEST;
+            }
             attract_.reset();
             if (infoExitOnScroll) {
                 resetInfoToggle();
