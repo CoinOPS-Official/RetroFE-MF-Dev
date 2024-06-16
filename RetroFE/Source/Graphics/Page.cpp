@@ -295,7 +295,7 @@ bool Page::addComponent(Component *c)
 
 bool Page::isMenuIdle()
 {
-    if (!playlistMenu_->isScrollingListIdle())
+    if (playlistMenu_ && !playlistMenu_->isScrollingListIdle())
         return false;
 
     for(auto it = menus_.begin(); it != menus_.end(); ++it) {
