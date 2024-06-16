@@ -554,8 +554,8 @@ bool RetroFE::run( )
                     if (firstPlaylist_ == "" || firstCollection != currentPage_->getCollectionName()) {
                         // check collection for setting
                         std::string settingPrefix = "collections." + currentPage_->getCollectionName() + ".";
-                        if (config_.propertyExists(settingPrefix + "firstPlaylist")) {
-                            config_.getProperty(settingPrefix + "firstPlaylist", firstPlaylist_);
+                        if (config_.propertyExists(settingPrefix + OPTION_FIRSTPLAYLIST)) {
+                            config_.getProperty(settingPrefix + OPTION_FIRSTPLAYLIST, firstPlaylist_);
                         }
                     }
 
@@ -1813,8 +1813,8 @@ bool RetroFE::getAttractModeCyclePlaylist()
     // use the global setting as overide if firstCollection == current
     if (cycleString == "" || firstCollection != currentPage_->getCollectionName()) {
         // check if collection has different setting
-        if (config_.propertyExists(settingPrefix + "attractModeCyclePlaylist")) {
-            config_.getProperty(settingPrefix + "attractModeCyclePlaylist", attractModeCyclePlaylist);
+        if (config_.propertyExists(settingPrefix + OPTION_ATTRACTMODECYCLEPLAYLIST)) {
+            config_.getProperty(settingPrefix + OPTION_ATTRACTMODECYCLEPLAYLIST, attractModeCyclePlaylist);
         }
     }
 
@@ -1834,8 +1834,8 @@ std::vector<std::string> RetroFE::getPlaylistCycle()
         // use the global setting as overide if firstCollection == current
         if (cycleString == "" || firstCollection != collectionName) {
             // check if collection has different setting
-            if (config_.propertyExists(settingPrefix + "cyclePlaylist")) {
-                config_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
+            if (config_.propertyExists(settingPrefix + OPTION_CYCLEPLAYLIST)) {
+                config_.getProperty(settingPrefix + OPTION_CYCLEPLAYLIST, cycleString);
             }
         }
         Utils::listToVector(cycleString, cycleVector_, ',');

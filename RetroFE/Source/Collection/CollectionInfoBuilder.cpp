@@ -490,8 +490,8 @@ void CollectionInfoBuilder::addPlaylists(CollectionInfo *info)
     // use the global setting as overide if firstCollection == current
     if (cycleString == "" || firstCollection != info->name) {
         // check if collection has different setting
-        if (conf_.propertyExists(settingPrefix + "cyclePlaylist")) {
-            conf_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
+        if (conf_.propertyExists(settingPrefix + OPTION_CYCLEPLAYLIST)) {
+            conf_.getProperty(settingPrefix + OPTION_CYCLEPLAYLIST, cycleString);
         }
     }
     if (info->name == "Favorites") {
@@ -538,8 +538,8 @@ void CollectionInfoBuilder::loadPlaylistItems(CollectionInfo* info, std::map<std
     conf_.getProperty(OPTION_CYCLEPLAYLIST, cycleString);
 
     if (cycleString.empty() || firstCollection != info->name) {
-        if (conf_.propertyExists(settingPrefix + "cyclePlaylist")) {
-            conf_.getProperty(settingPrefix + "cyclePlaylist", cycleString);
+        if (conf_.propertyExists(settingPrefix + OPTION_CYCLEPLAYLIST)) {
+            conf_.getProperty(settingPrefix + OPTION_CYCLEPLAYLIST, cycleString);
         }
     }
     if (info->name == "Favorites") {

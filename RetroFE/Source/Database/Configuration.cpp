@@ -406,7 +406,7 @@ void Configuration::getMediaPropertyAbsolutePath(const std::string& collectionNa
 
     // use user-overridden base media path if it was specified
     std::string baseMediaPath;
-    if(!getPropertyAbsolutePath("baseMediaPath", baseMediaPath)) {
+    if(!getPropertyAbsolutePath(OPTION_BASEMEDIAPATH, baseMediaPath)) {
         // base media path was not specified, assume media files are in the collection
         baseMediaPath = Utils::combinePath(absolutePath, "collections");
     }
@@ -428,7 +428,7 @@ void Configuration::getCollectionAbsolutePath(const std::string& collectionName,
     }
 
     std::string baseItemPath;
-    if(getPropertyAbsolutePath("baseItemPath", baseItemPath)) {
+    if(getPropertyAbsolutePath(OPTION_BASEITEMPATH, baseItemPath)) {
         value = Utils::combinePath(baseItemPath, collectionName);
         return;
     }
